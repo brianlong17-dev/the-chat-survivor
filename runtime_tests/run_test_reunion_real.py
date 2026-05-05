@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.bootstrap import create_engine, ConsoleGameEventSink
 from core.phase_recipe import PhaseRecipe
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
+from agents.human_player import Human
 
 if __name__ == "__main__":
     # ── 1. Load agent state from logs ──
@@ -46,6 +47,12 @@ if __name__ == "__main__":
         agent = agents[name]
         engine.eliminate_player(agent)
         engine.gameBoard.remove_agent_state(agent.name)
+        
+    human = True
+    if human:
+        human_agent = Human("Brian")
+        human_agent.game_over = True
+        engine.dead_agents.append(human_agent)
 
     # ── 6. Apply saved state to all agents ──
     for name, state in agent_state.items():

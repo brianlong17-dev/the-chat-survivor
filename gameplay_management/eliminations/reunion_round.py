@@ -30,40 +30,42 @@ class FinaleReunionRound(VoteMechanicsMixin):
 
 
     def _wake_up_player_reunion(self, player):
-            #--------- First message ---------
-            host_message = ("Hey, welcome back to the game. You have been watching since your elimination. "
-            "But now you will have a chance to have your say- to air any grievances or settle any scores. "
-            "At the end of this round you and the other eliminated players will get to vote on who the final winner will be.")
-            conversation_id = self._initialise_private_host_conversation(player, host_message)
+        if player.is_human():
+            return None
+        #--------- First message ---------
+        host_message = ("Hey, welcome back to the game. You have been watching since your elimination. "
+        "But now you will have a chance to have your say- to air any grievances or settle any scores. "
+        "At the end of this round you and the other eliminated players will get to vote on who the final winner will be.")
+        conversation_id = self._initialise_private_host_conversation(player, host_message)
 
-            #----- Response -----
-            public_response_prompt = "This is only shared in the private conversation between you and the Host."
-            instruction_override = player.detailed_summaries_string()
-            self._private_host_conversation_get_response(player, conversation_id, public_response_prompt)
+        #----- Response -----
+        public_response_prompt = "This is only shared in the private conversation between you and the Host."
+        instruction_override = player.detailed_summaries_string()
+        self._private_host_conversation_get_response(player, conversation_id, public_response_prompt)
 
-            #--------- Second message ---------
-            host_message = ("So, to remember the drama, can you detail any personal relationship you have with the two finalists? "
-                            "Did they ever betray you, ally with you, align with your enemies? We want grudges and memories, so look deep into your memory. "
-                            "When you were watching, how did you personally feel about either player? Did they hurt anyone you liked, or maybe got revenge on your behalf?")
-            self._private_host_conversation_host_message(conversation_id, host_message)
+        #--------- Second message ---------
+        host_message = ("So, to remember the drama, can you detail any personal relationship you have with the two finalists? "
+                        "Did they ever betray you, ally with you, align with your enemies? We want grudges and memories, so look deep into your memory. "
+                        "When you were watching, how did you personally feel about either player? Did they hurt anyone you liked, or maybe got revenge on your behalf?")
+        self._private_host_conversation_host_message(conversation_id, host_message)
 
-            public_response_prompt = "Write a detailed recollection of your relationships with both finalists."
-            self._private_host_conversation_get_response(player, conversation_id, public_response_prompt, instruction_override)
+        public_response_prompt = "Write a detailed recollection of your relationships with both finalists."
+        self._private_host_conversation_get_response(player, conversation_id, public_response_prompt, instruction_override)
 
-            host_message = "If the vote were held right now, who are you likely to vote for? On a scale of 1-10, how likely is it that they would change your mind? "
-            self._private_host_conversation_host_message(conversation_id, host_message)
-            public_response_prompt = "Respond to the host. "
-            self._private_host_conversation_get_response(player, conversation_id, public_response_prompt)
-            self.private_host_conversations[player.name] = conversation_id
-            return conversation_id
+        host_message = "If the vote were held right now, who are you likely to vote for? On a scale of 1-10, how likely is it that they would change your mind? "
+        self._private_host_conversation_host_message(conversation_id, host_message)
+        public_response_prompt = "Respond to the host. "
+        self._private_host_conversation_get_response(player, conversation_id, public_response_prompt)
+        return conversation_id
 
     def _wake_up_round(self):
         self._on_segment(self._WAKEUP)
-        self.private_host_conversations = {}
         self.gameBoard._loading_string("Waking players up")
-        conversation_ids = self._run_tasks([[agent] for agent in self.voting_players], self._wake_up_player_reunion, parallel=True)
+        agents_to_wake = [[agent] for agent in self.voting_players if not agent.is_human()]
+        conversation_ids = self._run_tasks(agents_to_wake, self._wake_up_player_reunion, parallel=True)
         for conv_id in conversation_ids:
-            self.gameBoard.close_private_conversation(conv_id)
+            if conv_id: #human - return None
+                self.gameBoard.close_private_conversation(conv_id)
         self.gameBoard._end_loading()
 
     def _set_segment_titles(self, segments):
@@ -287,7 +289,13 @@ class FinaleReunionRound(VoteMechanicsMixin):
         question = "Which players, based on the conversation with the host, would have the most explosive confrontation with either of the finalists? "
         undecided_names = self.simulationEngine.game_master.select_players(
             question, self._host_current_round_history(), self._names(self.voting_players), 3)
-
+        
+        #maybe method this 
+        voting_human = next((agent for agent in self.voting_players if agent.is_human()), None)
+        if voting_human:
+            if voting_human.name not in undecided_names:
+                undecided_names.append(voting_human.name)
+                
         for player_name in undecided_names:
             
             player = self._agent_by_name(player_name, incl_dead=True)

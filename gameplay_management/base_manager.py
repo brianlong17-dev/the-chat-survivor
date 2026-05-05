@@ -47,9 +47,14 @@ class BaseRound:
     #   Agent Access    #
     #####################
 
+    #should be a property
     def agents(self):
         return self.simulationEngine.agents
     
+    @property
+    def human_player(self):
+        return next((agent for agent in self.agents() if agent.is_human()), None)
+       
     def _other_agents(self, agent, agents):
         return [a for a in agents if a != agent]
     

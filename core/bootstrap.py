@@ -10,17 +10,19 @@ from core.sinks.console_sink import ConsoleGameEventSink
 from core.phase_recipe_factory import PhaseRecipeFactoryDefault
 from core.simulation_engine import SimulationEngine
 from core.api_client import api_client
+from agents.player import Debater
 
 
 #gemini-2.0-flash-lite
 #"gemini-3.1-flash-lite-preview",
 #gemini-2.5-flash-lite
-DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite-preview"
-#DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
+#DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite-preview"
+DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
 #DEFAULT_MODEL_NAME = "gemini-2.0-flash-lite"
 DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
 #gemini-3-flash-preview
-
+def create_agent(name):
+    return Debater(name, '', DEFAULT_MODEL_NAME, higher_model_name = DEFAULT_HIGHER_MODEL_NAME)
 
 def create_engine(game_sink, number_of_players: int = 0, generic_players: bool = False, names=None,
                   agents = None,

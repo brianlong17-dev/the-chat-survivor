@@ -45,11 +45,13 @@ def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination
     from core.phase_recipe import PhaseRecipe
     from gameplay_management.eliminations.reunion_round import FinaleReunionRound
     from agents.human_player import Human
+    from core.bootstrap import create_agent
 
     agent_state = _load_fixture(fixture_filename)
     all_names = list(agent_state.keys())
+    agents = [create_agent(name) for name in all_names]
 
-    engine = create_engine(sink, names=all_names, allow_rename=False)
+    engine = create_engine(sink, agents=agents, allow_rename=False)
     if phase_number:
         engine.gameBoard.phase_number = 11
 
@@ -58,7 +60,10 @@ def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination
         agent_to_replace = next((a for a in engine.agents if a.name == human_name), None)
         if agent_to_replace:
             engine.agents.remove(agent_to_replace)
-        engine.agents.append(human)
+            engine.agents.append(human)
+        else:
+            human.game_over = True
+            engine.dead_agents.append(human)
 
     engine.initialiseGameBoard()
     agents = {a.name: a for a in engine.agents}
@@ -66,8 +71,7 @@ def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination
     for name, score in finalist_scores.items():
         engine.gameBoard.agent_scores[name] = score
 
-    if human_name:
-        engine.gameBoard.agent_scores[human_name] = 0
+    
 
     for name in elimination_order:
         agent = agents[name]
