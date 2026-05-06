@@ -36,7 +36,8 @@ class DynamicModelFactory:
         private_thoughts_prompt: str = None, 
         additional_thought_nudge: str = None, 
         game_logic_fields: Dict[str, tuple] = None,   # Logic fields prompted by the game
-        action_fields: Dict[str, tuple] = None      # Actions required by the game (e.g. dropdowns)
+        action_fields: Dict[str, tuple] = None,      # Actions required by the game (e.g. dropdowns),
+        action_post_response = False
     ) -> Type[BaseModel]:
         if agent.is_human(): # and not agent.is_testing:
             return cls.create_human_model(public_response_prompt, action_fields)
@@ -79,12 +80,16 @@ class DynamicModelFactory:
         ordered_fields["private_thoughts"] = (str, Field(description=base_thought))
         
         #....action 
-        if action_fields:
+        if action_fields and not action_post_response:
             ordered_fields.update(action_fields)
         #...... public response
         pub_prompt = public_response_prompt or PromptLibrary.desc_message
         
         ordered_fields["public_response"] = (str, Field(description=pub_prompt))
+        #....action 
+        if action_fields and action_post_response:
+            ordered_fields.update(action_fields)
+                
         #........ self-learning
         
         if agent_complex_fields:

@@ -3,6 +3,9 @@ import random
 from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
 from models.player_models import DynamicModelFactory
 from prompts.gamePrompts import GamePromptLibrary
+from pydantic import Field
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 class FinaleReunionRound(VoteMechanicsMixin):
     
@@ -27,37 +30,67 @@ class FinaleReunionRound(VoteMechanicsMixin):
     @classmethod
     def is_private_round(cls):
         return False
+    
+    
+    def _host_back_and_forth(self, player, questions, instruction_override=None):
+    
+        conversation_id = None
+
+        action_fields = {}
+        for key, value in questions.items():
+            action_fields = action_fields | {key: (str, Field(description=value))}
+
+        basic_model = DynamicModelFactory.create_model_(
+            player, "basic_turn",
+            action_fields=action_fields,
+            action_post_response=True #need - we're overwriting public response
+        )
+        user_content = "Respond privately to each question, back and forth with the host."
+        result = player.take_turn_standard(
+            user_content, self.gameBoard, basic_model,
+            instruction_override=instruction_override
+        )
+
+        for key, value in questions.items():
+            answer = getattr(result, key, "")
+            if not conversation_id:
+                conversation_id = self._initialise_private_host_conversation(player, value)
+            else:
+                self._private_host_conversation_host_message(conversation_id, value)
+            self.gameBoard.log_message_to_conversation(conversation_id, player.name, answer)
+        elapsed = time.time() - self.start
+        self.debug_print(f"done : {player.name} -  {elapsed:.2f}s")
+        return conversation_id
 
 
     def _wake_up_player_reunion(self, player):
         if player.is_human():
             return None
-        #--------- First message ---------
-        host_message = ("Hey, welcome back to the game. You have been watching since your elimination. "
-        "But now you will have a chance to have your say- to air any grievances or settle any scores. "
-        "At the end of this round you and the other eliminated players will get to vote on who the final winner will be.")
-        conversation_id = self._initialise_private_host_conversation(player, host_message)
+        
+        finalist_names = self.format_list(self._names(self.finalists))
 
-        #----- Response -----
-        public_response_prompt = "This is only shared in the private conversation between you and the Host."
-        instruction_override = player.detailed_summaries_string()
-        self._private_host_conversation_get_response(player, conversation_id, public_response_prompt)
+        
+        questions = {}
+        questions["public_response"] = (
+            "Hey- welcome back to the game. You have been watching since your elimination. "
+            "But now you will have a chance to have your say- to air any grievances or settle any scores. "
+            "Later in the round, the eliminated players will vote to pick the final winner."
+        )
+        questions["memories_and_relationships"] = (
+            f"Our finalists: {finalist_names}. For both finalists, can you tell your story as it crossed paths with both players? "
+            "What were your feelings- the biggest moments. Moments of allyship or betrayal. "
+        )
+        questions["pre_vote_poll"] = (
+            "You will vote later. But if the vote were held right now, who would you vote for to win? "
+            "On a scale of 1-10, how likely is it that your mind could be changed?"
+        )
 
-        #--------- Second message ---------
-        host_message = ("So, to remember the drama, can you detail any personal relationship you have with the two finalists? "
-                        "Did they ever betray you, ally with you, align with your enemies? We want grudges and memories, so look deep into your memory. "
-                        "When you were watching, how did you personally feel about either player? Did they hurt anyone you liked, or maybe got revenge on your behalf?")
-        self._private_host_conversation_host_message(conversation_id, host_message)
-
-        public_response_prompt = "Write a detailed recollection of your relationships with both finalists."
-        self._private_host_conversation_get_response(player, conversation_id, public_response_prompt, instruction_override)
-
-        host_message = "If the vote were held right now, who are you likely to vote for? On a scale of 1-10, how likely is it that they would change your mind? "
-        self._private_host_conversation_host_message(conversation_id, host_message)
-        public_response_prompt = "Respond to the host. "
-        self._private_host_conversation_get_response(player, conversation_id, public_response_prompt)
-        return conversation_id
-
+        return self._host_back_and_forth(
+            player, questions,
+            instruction_override=player.detailed_summaries_string()
+        )
+        
+        
     def _wake_up_round(self):
         self._on_segment(self._WAKEUP)
         self.gameBoard._loading_string("Waking players up")
@@ -85,9 +118,14 @@ class FinaleReunionRound(VoteMechanicsMixin):
                                        
 
         #- action -#
-        self._wake_up_round()
+        self.start = time.time()
+        executor = ThreadPoolExecutor()
+        wake_up_future = executor.submit(self._wake_up_round)
+                
         self._host_broadcast("In this last round, our eliminated players will return to cast the final vote to determine the winner of the game.")
         self.host_intro_finalists()
+        wake_up_future.result() #Wait for wakeup to finish
+
         self._questions_and_answers()
         
         self._host_broadcast("Finalists- what is the last thing you would like to say to the players before the vote?")
