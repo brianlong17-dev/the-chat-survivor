@@ -124,7 +124,8 @@ class FinaleReunionRound(VoteMechanicsMixin):
                 
         self._host_broadcast("In this last round, our eliminated players will return to cast the final vote to determine the winner of the game.")
         self.host_intro_finalists()
-        wake_up_future.result() #Wait for wakeup to finish
+        wake_up_future.result()
+        executor.shutdown(wait=False) #Wait for wakeup to finish
 
         self._questions_and_answers()
         

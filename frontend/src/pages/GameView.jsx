@@ -28,6 +28,7 @@ export default function GameView({
   const userScrolledUpRef = useRef(false)
   const lastScrollTopRef = useRef(0)
   const leftDragRef = useRef({ startX: 0, startWidth: 0, moved: false })
+  const [leftToggleCursor, setLeftToggleCursor] = useState('col-resize')
 
   const onLeftResizeStart = (e) => {
     const startWidth = settings.leftSidebarWidth ?? 220
@@ -175,7 +176,14 @@ export default function GameView({
         <button
           className="sidebar-toggle sidebar-toggle-left"
           onMouseDown={onLeftResizeStart}
-          style={{ cursor: 'col-resize' }}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect()
+            const offsetY = e.clientY - rect.top
+            const dist = Math.abs(offsetY - rect.height / 2)
+            const next = dist <= 24 ? 'pointer' : 'col-resize'
+            if (next !== leftToggleCursor) setLeftToggleCursor(next)
+          }}
+          style={{ cursor: leftToggleCursor }}
         >
           {settings.leftSidebarOpen === false ? '›' : '‹'}
         </button>
