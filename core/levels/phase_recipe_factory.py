@@ -1,8 +1,9 @@
 from core.game_config import GameConfig
-from core.phase_recipe import PhaseRecipe
+from core.levels.phase_recipe import PhaseRecipe
 from gameplay_management.discussion_round import DiscussionRound
 from gameplay_management.eliminations.voting_elect_leader import VoteElectLeader
 from gameplay_management.wake_up_round import WakeUpRound
+from gameplay_management.discussion_rounds.introduction_round import IntroRound
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
 from gameplay_management.games.game_rps import GameRockPaperScissors
 from gameplay_management.games.game_guess import GameGuess
@@ -68,6 +69,8 @@ class PhaseRecipeFactory:
                    "We need to find the greatest among you. Your goal? IS TO WIN!"
         )
         return topicString
+
+
     
 class PhaseRecipeFactoryDefault(PhaseRecipeFactory):
     
@@ -85,7 +88,7 @@ class PhaseRecipeFactoryDefault(PhaseRecipeFactory):
             None,  # phase 0 unused
             
             #rich foes
-            PhaseRecipe(rounds=[WakeUpRound, DiscussionRound, GameRockPaperScissors, VoteElectLeader]),
+            PhaseRecipe(rounds=[IntroRound, DiscussionRound, GameRockPaperScissors, VoteElectLeader]),
             PhaseRecipe(rounds=[GameTargetedChoiceGive, VoteBottomTwo]),
             PhaseRecipe(rounds=[GameTargetedChoiceSteal, VoteBottomTwo]),
             PhaseRecipe(rounds=[GameCircle, DiscussionRound, VoteBottomTwo]),

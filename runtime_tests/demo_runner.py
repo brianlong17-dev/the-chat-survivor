@@ -42,7 +42,7 @@ def _apply_agent_state(agents: dict, agent_state: dict):
 
 def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination_order: list, human_name: str = None, phase_number = None):
     from core.bootstrap import create_engine
-    from core.phase_recipe import PhaseRecipe
+    from core.levels.phase_recipe import PhaseRecipe
     from gameplay_management.eliminations.reunion_round import FinaleReunionRound
     from agents.human_player import Human
     from core.bootstrap import create_agent
@@ -116,7 +116,7 @@ def run_demo_reunion_2(sink, human_name: str = None):
 def run_demo_game(sink, human_name: str = None):
     """Game Phase: 11 real players, mid-game Knives + Vote round."""
     from core.bootstrap import create_engine
-    from core.phase_recipe import PhaseRecipe
+    from core.levels.phase_recipe import PhaseRecipe
     from gameplay_management.game_cycle.game_knives import GameKnives
     from gameplay_management.game_targeted.game_targeted_give import GameTargetedChoiceGive
     from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo

@@ -28,13 +28,13 @@ export default function App() {
   return (
     <>
       {status === 'idle' && (
-        <>
+        <div className="idle-layout">
           <nav className="main-nav">
             <button className={`nav-btn ${view === 'lobby' ? 'active' : ''}`} onClick={() => setView('lobby')}>Game</button>
             <button className={`nav-btn ${view === 'demos' ? 'active' : ''}`} onClick={() => setView('demos')}>Demos</button>
           </nav>
           {view === 'lobby' ? <Lobby onStart={startGame} /> : <DemosPage onStart={startDemo} />}
-        </>
+        </div>
       )}
     </>
   )

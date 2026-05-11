@@ -11,13 +11,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.sinks.websocket_sink import WebSocketSink
 from runtime_tests.demo_runner import DEMO_REGISTRY
 from core.api_client import api_client
+from core.levels.level_registry import phase_factory_for_id
 
 load_dotenv()
 
 app = FastAPI()
 
 # Feature flags — set to True to enable before publishing
-GAME_ENABLED = False
+GAME_ENABLED = True
 DEMO_ENABLED = True
 
 _allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
@@ -105,6 +106,27 @@ async def get_characters():
     }
 
 # ---------------------------------------------------------------------------
+# Levels endpoint
+# ---------------------------------------------------------------------------
+
+@app.get("/api/levels")
+async def get_levels():
+    from core.levels import AVAILABLE_LEVELS
+    return {
+        "levels": [
+            {
+                "id": level.id,
+                "name": level.name,
+                "description": level.description,
+                "min_players": level.min_players,
+                "max_players": level.max_players,
+                "locked": level.locked,
+            }
+            for level in AVAILABLE_LEVELS
+        ]
+    }
+
+# ---------------------------------------------------------------------------
 # WebSocket endpoint
 # ---------------------------------------------------------------------------
 
@@ -147,16 +169,24 @@ async def game_ws(websocket: WebSocket):
 
         sink = WebSocketSink(websocket, loop)
 
+        
+
         player_names = [str(n)[:30] for n in msg.get("names", [])[:12]]
         human_player_name = str(msg["human_name"])[:30] if msg.get("human_name") else None
+
+        level_id = msg.get("levelId")
+        
+        
+        
+        phase_factory = phase_factory_for_id(level_id)
 
         def run_game():
             try:
                 from core.bootstrap import create_engine
                 if player_names:
-                    engine = create_engine(sink, names=player_names)
+                    engine = create_engine(sink, names=player_names, phase_factory=phase_factory)
                 else:
-                    engine = create_engine(sink, number_of_players=7, generic_players=False)
+                    engine = create_engine(sink, number_of_players=7, generic_players=False, phase_factory=phase_factory)
                 engine.run(human_player_name=human_player_name)
             except Exception as e:
                 asyncio.run_coroutine_threadsafe(

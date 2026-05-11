@@ -1,26 +1,27 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react' 
 import { MAX_INPUT_CHARS } from '../utils/settings'
 
 export default function InputRequest({ request, onSubmit, playerNames = [] }) {
   const [value, setValue] = useState('')
   const [listening, setListening] = useState(false)
+  const [transcribing, setTranscribing] = useState(false)
   const recorderRef = useRef(null)
 
   const textareaRef = useRef(null)
   const inactive = !request
   const description = request?.description ?? 'Waiting...'
 
-  const submit = (val) => { onSubmit(val); setValue(''); resetHeight() }
-
-  const resetHeight = () => {
-    const el = textareaRef.current
-    if (!el) return
-    el.style.height = 'auto'
-  }
+  const submit = (val) => { onSubmit(val); setValue(''); }
 
   const handleChange = (e) => {
     setValue(e.target.value)
-    const el = e.target
+  }
+
+  useEffect(() => { resize() }, [value])
+
+  const resize = () => {
+    const el = textareaRef.current
+    if (!el) return
     el.style.height = 'auto'
     el.style.height = el.scrollHeight + 'px'
   }
@@ -37,13 +38,15 @@ export default function InputRequest({ request, onSubmit, playerNames = [] }) {
     recorder.onstop = async () => {
       stream.getTracks().forEach(t => t.stop())
       setListening(false)
+      setTranscribing(true)
       const blob = new Blob(chunks, { type: recorder.mimeType })
       const form = new FormData()
       form.append('audio', blob, 'recording.webm')
       if (playerNames.length) form.append('names', JSON.stringify(playerNames))
       const res = await fetch('/api/transcribe', { method: 'POST', body: form })
       const data = await res.json()
-      if (data.text) setValue(data.text)
+      if (data.text) setValue(prev => prev ? prev + ' ' + data.text : data.text)
+      setTranscribing(false)
     }
     recorderRef.current = recorder
     recorder.start()
@@ -76,7 +79,7 @@ export default function InputRequest({ request, onSubmit, playerNames = [] }) {
               {value.length} / {MAX_INPUT_CHARS} — will be truncated
             </span>
           )}
-          <button className={`mic-btn ${listening ? 'active' : ''}`} onClick={toggleMic} title="Voice input">
+          <button className={`mic-btn ${listening ? 'active' : ''} ${transcribing ? 'transcribing' : ''}`} onClick={toggleMic} title="Voice input">
             {listening
               ? (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

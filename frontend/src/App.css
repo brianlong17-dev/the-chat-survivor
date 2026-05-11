@@ -823,10 +823,16 @@
 
 .mic-btn:hover { border-color: var(--text-dim); color: var(--text); }
 .mic-btn.active { border-color: #d9706a; color: #d9706a; animation: pulse 1s infinite; }
+.mic-btn.transcribing { box-shadow: 0 0 0 2px var(--accent); animation: pulse-glow 1.5s infinite; }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 2px var(--accent), 0 0 8px var(--accent); }
+  50% { box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.3), 0 0 2px rgba(255, 140, 0, 0.1); }
 }
 
 .input-submit {
@@ -878,8 +884,16 @@
 
 /* ── Lobby ── */
 
-.lobby {
+.idle-layout {
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lobby {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   padding: 40px 60px 30px;
@@ -894,6 +908,88 @@
   letter-spacing: 0.4em;
   color: var(--accent);
   text-align: center;
+}
+
+.lobby-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.level-cards {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.level-card {
+  position: relative;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 180px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.level-card:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--bg3);
+}
+
+.level-card.selected {
+  border-color: var(--accent);
+  background: var(--bg3);
+  color: var(--accent);
+}
+
+.level-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.level-card-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.level-card-description {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.level-card-info {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: auto;
+}
+
+.level-card.locked .level-card-name {
+  color: var(--text-dim);
+}
+
+.level-card-lock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  display: none;
+}
+
+.level-card.locked .level-card-lock {
+  display: block;
 }
 
 .lobby-selected {

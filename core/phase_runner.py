@@ -7,7 +7,7 @@ from gameplay_management.immunities.immunity_mechanicsMixin import ImmunityMecha
 
 if TYPE_CHECKING:
     from core.simulation_engine import SimulationEngine
-    from core.phase_recipe import PhaseRecipe
+    from core.levels.phase_recipe import PhaseRecipe
 
 
 

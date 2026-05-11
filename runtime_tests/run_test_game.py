@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) 
 from core.bootstrap import create_engine, ConsoleGameEventSink
 from core.api_client import api_client
-from core.phase_recipe import PhaseRecipe
+from core.levels.phase_recipe import PhaseRecipe
 from agents.human_player import Human
 from runtime_tests.hardcoded_cast import build_hardcoded_debaters
 from gameplay_management.game_cycle.game_circle import GameCircle

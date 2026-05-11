@@ -147,8 +147,8 @@ export function useGameSocket(autoRun, animateText) {
     }
   }, [handleMessage])
 
-  const startGame = useCallback(({ names = [], humanName = null } = {}) => {
-    connect(WS_URL, { type: 'start', names, human_name: humanName })
+  const startGame = useCallback(({ names = [], humanName = null, levelId = null } = {}) => {
+    connect(WS_URL, { type: 'start', names, human_name: humanName, levelId })
   }, [connect])
 
   const startDemo = useCallback(({ demoId, humanName = null } = {}) => {

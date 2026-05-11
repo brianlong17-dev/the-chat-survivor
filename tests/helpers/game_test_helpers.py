@@ -4,7 +4,7 @@ from agents.player import Debater
 from core.game_config import GameConfig
 from core.gameboard import GameBoard
 from core.phase_runner import PhaseRunner
-from core.phase_recipe import PhaseRecipe
+from core.levels.phase_recipe import PhaseRecipe
 from gameplay_management.game_cycle.game_knives import GameKnives
 
 

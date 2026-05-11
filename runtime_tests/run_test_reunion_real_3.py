@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.bootstrap import create_engine, ConsoleGameEventSink, create_agent
-from core.phase_recipe import PhaseRecipe
+from core.levels.phase_recipe import PhaseRecipe
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
 
 if __name__ == "__main__":
