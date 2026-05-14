@@ -9,6 +9,7 @@ import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Literal, get_args, get_origin
+from pydantic import BaseModel
 import google.genai.types as types
 
 
@@ -51,6 +52,8 @@ class APIClient:
                     values[name] = [random.choice(get_args(inner))]
                 else:
                     values[name] = [f"test [{name}]"]
+            elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
+                values[name] = self._mock_response(annotation)
             else:
                 values[name] = f"{long_text}  [{name}]"
         return response_model(**values)
@@ -71,7 +74,7 @@ class APIClient:
                         response_schema=response_model,
                         thinking_config=types.ThinkingConfig(#thinking_budget=512, 
                                                             include_thoughts=False,),
-                        temperature=1.5,
+                        temperature=1,
                         #top_p=0.99,
                         #top_k=64
                     ),
