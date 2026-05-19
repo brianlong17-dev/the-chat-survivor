@@ -1,5 +1,5 @@
 from collections import deque
-from core.models import MessageEntry, RoundEntry
+from core.game_context.models import MessageEntry, RoundEntry
 
 
 SYS_ADMIN = "SYS_ADMIN"

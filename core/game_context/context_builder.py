@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 from core.game_context.dashboard import Dashboard
-from core.models import RoundEntry
+from core.game_context.models import RoundEntry
 
 if TYPE_CHECKING:
     from core.gameboard import GameBoard
