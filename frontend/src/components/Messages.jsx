@@ -68,8 +68,12 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
       timeoutId = setTimeout(tick, 300)
     }
 
-    const splitSentences = (para) =>
-      para.match(/[^.!?]+[.!?]+[\s]*/g) || [para]
+    const splitSentences = (para) => {
+      const matches = para.match(/[^.!?]+[.!?]+[\s]*/g) || []
+      const consumed = matches.join('').length
+      if (consumed < para.length) matches.push(para.slice(consumed))
+      return matches.length ? matches : [para]
+    }
 
     const runParagraph = (paraIdx, onDone) => {
       if (paraIdx >= paragraphs.length) return
