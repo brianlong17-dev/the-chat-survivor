@@ -37,6 +37,7 @@ class VoteEachPlayer(VoteMechanicsMixin):
         host_message = (f"🚨🚨🚨 IT'S TIME TO VOTE. ")
         host_message += VoteEachPlayer.rules_description_detailed(self)             
         host_message += self.immunity_string(immunity_players, players_up_for_elimination )
+        host_message += self._facing_the_vote_string(players_up_for_elimination)
         
         self.gameBoard.host_broadcast(host_message)
         victim_name, voting_results = self.process_vote_rounds(players_up_for_elimination)

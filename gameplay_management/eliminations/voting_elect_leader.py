@@ -74,7 +74,8 @@ class VoteElectLeader(VoteMechanicsMixin):
             f"The votes are in... {leader_name}, you have been elected Executioner. "
             f"With great power comes great vengeance. Who will you be sending home today, and why?"
         )
-        host_message += self.immunity_string(immunity_players, players_up_for_elimination)
+        #TODO actually we should annouce immunity here
+        #host_message += self.immunity_string(immunity_players, players_up_for_elimination)
 
         # Leader chooses from non-immune players only
         action_fields = self.turn_manager._choose_name_field(players_up_for_elimination, "Choose who to send home.")

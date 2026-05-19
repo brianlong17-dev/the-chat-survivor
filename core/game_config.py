@@ -79,7 +79,7 @@ class GameConfig:
         # --------------------------------------------------------------
         # Votes
         # --------------------------------------------------------------
-        self.vote_bottom_two_multiple = False
+        self.vote_bottom_two_expand_ties = False
         self.vote_dont_miss = True
         self.vote_missed_points = 2
 

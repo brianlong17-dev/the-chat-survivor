@@ -26,11 +26,7 @@ class VoteMechanicsMixin(BaseRound):
             host_message = VotePromptLibrary.elimination_host_msg.format(victim_name=victim.name)
             self.gameBoard.host_broadcast(host_message)
             final_words_prompt = PromptLibrary.final_words_prompt()
-
-            
             self.simulationEngine.eliminate_player(victim)
-            
-            
             final_words_result = self.turn_manager.respond_to(victim, final_words_prompt)
 
             self.publicPrivateResponse(victim, final_words_result)
@@ -40,7 +36,7 @@ class VoteMechanicsMixin(BaseRound):
     
     
     def _validate_immunity(self, immunity_players: Optional[Sequence[str]]) -> list[str]:
-        
+        #Tosses out immunity if all players are immune? 
         if immunity_players is None:
             return []
         immunity_players = list(dict.fromkeys(immunity_players))
@@ -50,20 +46,22 @@ class VoteMechanicsMixin(BaseRound):
             immunity_players = []
         return immunity_players
        
-   
+    def _facing_the_vote_string(self, players_up_for_elimination: Sequence[str]):
+        players_up_for_elimination_string = (
+            f"\nThe following players are up for elimination:\n *{self.format_list(players_up_for_elimination)}*"
+        )
+        return players_up_for_elimination_string
     
-    def immunity_string(self, immunity_players: Sequence[str], players_up_for_elimination: Sequence[str]) -> str:
+    def immunity_string(self, immunity_players: Sequence[str], players_up_for_elimination: Sequence[str], 
+                        include_annouce_candidates = True) -> str:
         immunity_string = ""
         if immunity_players:
             immunity_string = (
                 f"{VotePromptLibrary.immunity_players_prefix}\n"
                 f" {', '.join(immunity_players)}.\n"
             )
-        players_up_for_elimination_string = (
-            f"\n{VotePromptLibrary.elimination_players_prefix}\n"
-            f" {', '.join(players_up_for_elimination)}\n"
-        )
-        return f"{immunity_string}{players_up_for_elimination_string}\n"
+        
+        return f"{immunity_string}\n"
             
 
     def _players_up_for_elimination(self, immunity_players: Optional[Sequence[str]]) -> List['Debater']:
@@ -73,7 +71,8 @@ class VoteMechanicsMixin(BaseRound):
     ###############
     #   Logic     #
     ###############
-    def vote_one_player_off(self, player, eligible_players_names):
+    def vote_one_player_off(self, player, eligible_players_names, is_revote = False):
+        #If you are up for elimination - this has to double as the plea ? 
         names_str = self.format_list(eligible_players_names)
         user_content = VotePromptLibrary.vote_one_player_user_content.format(
             eligible_player_names=names_str
@@ -84,8 +83,16 @@ class VoteMechanicsMixin(BaseRound):
         response_model = DynamicModelFactory.create_model_(player, model_name="vote_out_player", action_fields=action_fields, action_post_response = True) 
         vote_result = player.take_turn_standard(user_content, self.gameBoard, response_model)
         #-----------------
+        
         return vote_result
-           
+    
+    def _handle_vote_response(self, votes, agent, vote_response):
+        actual_vote = self.turn_manager._get_target_name_from_response(vote_response)
+        votes.append(actual_vote)
+        self.gameBoard.handle_public_private_output(agent, vote_response, is_reply = True, delay = 2, pre_string = f"*{actual_vote.upper()}*")
+        self._update_voting_widget(agent.name, actual_vote or "—")
+        return actual_vote #used in leader_chooses
+        
     def _collect_votes(self, players_up_for_elimination: Sequence[str], pass_allowed: bool = False):
         votes = []
         voting_results = []
@@ -93,45 +100,17 @@ class VoteMechanicsMixin(BaseRound):
 
         voter_names = [a.name for a in self.simulationEngine.agents]
         self._initialise_voting_widget(players_up_for_elimination, voter_names, theme="blood")
-
-        with ThreadPoolExecutor() as executor:
-            for agent in self.simulationEngine.agents:
-                future = executor.submit(self.vote_one_player_off, agent, players_up_for_elimination)
-                voting_futures.append(future)
-
-            voting_results = [vote_future.result() for vote_future in voting_futures]
+        voting_results = self._run_tasks([(agent, players_up_for_elimination) for agent in self.agents], 
+                                            self.vote_one_player_off)
 
         for agent, vote_response in zip(self.simulationEngine.agents, voting_results):
-            actual_vote = self.turn_manager._get_target_name_from_response(vote_response)
-            actual_vote = actual_vote.strip() if actual_vote else ""
-
-            if actual_vote not in players_up_for_elimination:
-                if pass_allowed:
-                    print(
-                        VotePromptLibrary.collect_votes_invalid_skip_msg.format(
-                            agent_name=agent.name, vote=actual_vote
-                        )
-                    )
-                    actual_vote = None
-                else:
-                    print(
-                        VotePromptLibrary.collect_votes_invalid_self_msg.format(
-                            agent_name=agent.name, vote=actual_vote
-                        )
-                    )
-                if actual_vote:
-                    actual_vote = agent.name
-            if actual_vote:
-                votes.append(actual_vote)
-
-            self._update_voting_widget(agent.name, actual_vote or "—")
-            self.gameBoard.handle_public_private_output(agent, vote_response, is_reply = True, delay = 2)
+            self._handle_vote_response(votes, agent, vote_response)
             
         return votes, voting_results
    
     def process_vote_rounds(self, players_up_for_elimination: Sequence[str], revote_count: int = 0, initial_votes = None):
         
-        if revote_count > 3:
+        if revote_count > 3: #this should be done manually?
             self.gameBoard.host_broadcast(VotePromptLibrary.voting_round_random_elimination_msg)
             self._vote_widget_vote_finalised()
             return random.choice(players_up_for_elimination), initial_votes
@@ -182,7 +161,7 @@ class VoteMechanicsMixin(BaseRound):
 
         if survivors_rewarded:
             reward_str = ", ".join([f"{name} (+{pts})" for name, pts in survivors_rewarded.items()])
-            
+
             self.gameBoard.host_broadcast(
                 f"🛡️ BULLET DODGER BONUS! The following players took heat but survived the vote. "
                 f"They receive points for every vote they survived: {reward_str}"

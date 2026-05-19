@@ -122,6 +122,7 @@ class TurnManager:
         else:
             result = player.take_turn_standard(user_content, self.gameBoard, model, instruction_override=instruction_override)
 
+        #TODO modified broadcasts need to live outside
         if broadcast and result and result.public_response:
             directed_to_name = self._get_target_name_from_response(result) if include_target_name else None
             #this needs to go out of here. 
@@ -148,13 +149,21 @@ class TurnManager:
 
     def _ask_directed_question(self, player, possible_target_names, user_content,
                                public_response_prompt, additional_thought_nudge = None):
-        action_fields = self._choose_name_field(possible_target_names, "Who your question/statement is directed to. ")
+        #Maybe depreciate - 
+        target_field_description = "Who your question/statement is directed to. " 
+        return self._targeted_turn(player, possible_target_names, target_field_description, user_content,
+                               public_response_prompt, additional_thought_nudge, broadcast = True, include_target_name = True)
+        
+    def _targeted_turn(self, player, possible_target_names, target_field_description, user_content,
+                               public_response_prompt, additional_thought_nudge = None, broadcast = False, 
+                               include_target_name = False):
+        action_fields = self._choose_name_field(possible_target_names, target_field_description)
         return self.take_turn(player, user_content,
                               public_response_prompt=public_response_prompt,
                               additional_thought_nudge=additional_thought_nudge,
                               action_fields=action_fields,
-                              broadcast=True,
-                              include_target_name = True)
+                              broadcast=broadcast,
+                              include_target_name = include_target_name)
 
     def _basic_turn(self, agent, user_content_prompt, public_response_prompt,
                     private_thoughts_prompt = None, optional = False):

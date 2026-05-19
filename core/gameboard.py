@@ -125,13 +125,15 @@ class GameBoard:
         ]
 
     def handle_public_private_output(self, agent: BaseAgent, response, delay: float = 0.0, output_inner_workings=False, 
-                                     directed_to_name = None, is_reply: bool = False, pre_string = None):
+                                     directed_to_name = None, is_reply: bool = False, pre_string = None, post_string = None):
 
         if self.game_log._current_round_most_recent_player_entry(self.RESERVED_NAMES) and not agent.is_human():
             self.game_sink.await_continue()
         public_message, private_message = response.public_response, response.private_thoughts
         if pre_string:
             public_message = f"{pre_string}\n{public_message}"
+        if post_string:
+            public_message = f"{public_message}\n{post_string}"
 
 
         self.broadcast_public_action(agent, public_message, directed_to_name=directed_to_name, is_reply=is_reply)
