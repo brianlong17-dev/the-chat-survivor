@@ -129,7 +129,7 @@ class PhaseRecipeFactoryDefault(PhaseRecipeFactory):
 
     @classmethod
     def get_phase_compelling(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):
-        cfg.vote_bottom_two_multiple = True
+        cfg.vote_bottom_two_expand_ties = True
 
         if agent_number == 2:
             return  PhaseRecipe(rounds=[FinaleReunionRound])

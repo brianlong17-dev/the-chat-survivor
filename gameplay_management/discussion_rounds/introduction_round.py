@@ -90,7 +90,7 @@ class IntroRound(BaseRound):
             
 
     def run_game(self):
-        conversation_ids = self._run_tasks([[agent] for agent in self._shuffled_agents()], 
+        conversation_ids = self._run_tasks([[agent] for agent in self._shuffled_agents() if not agent.is_human()], 
                                            self._wake_up_player_i, parallel = True)
         for conv_id in conversation_ids:
             self.gameBoard.close_private_conversation(conv_id)

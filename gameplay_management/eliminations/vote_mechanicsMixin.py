@@ -52,8 +52,7 @@ class VoteMechanicsMixin(BaseRound):
         )
         return players_up_for_elimination_string
     
-    def immunity_string(self, immunity_players: Sequence[str], players_up_for_elimination: Sequence[str], 
-                        include_annouce_candidates = True) -> str:
+    def immunity_string(self, immunity_players: Sequence[str], players_up_for_elimination: Sequence[str]) -> str:
         immunity_string = ""
         if immunity_players:
             immunity_string = (
@@ -71,7 +70,7 @@ class VoteMechanicsMixin(BaseRound):
     ###############
     #   Logic     #
     ###############
-    def vote_one_player_off(self, player, eligible_players_names, is_revote = False):
+    def vote_one_player_off(self, player, eligible_players_names):
         #If you are up for elimination - this has to double as the plea ? 
         names_str = self.format_list(eligible_players_names)
         user_content = VotePromptLibrary.vote_one_player_user_content.format(
