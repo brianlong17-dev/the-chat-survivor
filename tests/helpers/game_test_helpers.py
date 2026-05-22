@@ -32,7 +32,7 @@ class TestGameSink:
         raise RuntimeError("TestGameSink cannot collect user input")
 
     def on_game_intro(self, message): pass
-    def on_game_over(self, winner_name): pass
+    def on_game_over(self, winner_names): pass
     def on_phase_header(self, phase_number): pass
     def on_phase_intro(self, host_text, summary_text): pass
     def on_round_start(self, round_number, scores): pass

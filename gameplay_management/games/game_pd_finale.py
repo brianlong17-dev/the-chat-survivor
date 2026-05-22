@@ -65,14 +65,14 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     #####################
     
     def finale_reg_split_or_steal(self, player, tie_possible):
-        tie_string = "If you end on equal points, you share the crown. Otherwise: " if tie_possible else ""
-        user_content_post = ( f"{tie_string}" #maybe cut
+        tie_string = "If you end on equal points, you may share the crown. Otherwise: " if tie_possible else ""
+        user_content_post = ( f"{tie_string}" 
             f"The player with the most points wins, and the loser is evicted. "
             f"Remember:\n {self.points_rules_string_technical()}")
         opponent = self._other_agents(player, self.agents)[0]
         user_content = (
             f"The finale. You are facing {opponent.name}.\n"
-            f"You have {self.gameBoard.agent_scores[player.name]}. Your opponent has {self.gameBoard.agent_scores[opponent.name]}\n"
+            f"You have {self.gameBoard.agent_scores[player.name]} points. Your opponent has {self.gameBoard.agent_scores[opponent.name]} points. \n"
             f"{user_content_post}"
         )
         additional_thought_nudge = "What is the outcome you want? What choice will you make? "
@@ -98,20 +98,18 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     
     
     def _process_choices(self, agent0, agent1, results):
-        #TODO - replace inline duplicates in run_reg_game / run_tie with a call to this once testing scaffolds are removed
         choices = []
         c = 0
         for agent, res in zip((agent0, agent1), results):
             c += 1
             choice = res.action
-            if False: #c == 1:
-                choice = 'split'
+            if False:
+                choice = 'steal'
                 
             self.gameBoard.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{choice.upper()}*")
             agent.clear_round_specific_strategy()
             choices.append(choice)
-        return choices[0], choices[1]
-   
+        return choices
    
     def _process_tie_results(self, choice0, choice1, agent0, agent1):
         if choice0 == 'split' and choice1 == 'split':
@@ -129,7 +127,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             self._result_react(agent, 
             "You are a co-champion. You both split. You won together! This is your final turn to say everything you have left to say, and to celebrate your win! ",
             "How does it feel? What do you say to your co-champion and to everyone watching? LETS MAKE IT BIG !!! WOOHOO!!!")
-        #TODO send double win
+        self.gameBoard.game_over = True
         
     def _double_loss(self):
         self._host_broadcast("After everything- neither player wins. Was it greed? Was it spite? Will we ever really know? Do you both just hate the other more than you loved yourself? ")
@@ -138,11 +136,9 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             self._result_react(agent,
             "You both stole. Neither of you won. It's over. This is your final turn, these are your final words. What do you have to say?",
             "You came so close. What do you say on your final turn?")
-            #having no players crashes the UI
-            #self._eliminate_player(agent)
+            self._eliminate_player(agent)
             
     def _one_winner_from_tie(self, winner, loser):
-        #should also run if leapfrog
         self._host_broadcast(f"That means we finally have our winner! *{winner.name.upper()}*!")
        
         
@@ -162,10 +158,8 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
          
     def _one_winner_reg(self, winner, loser, commentary = "", is_upset = False):
         
-        
-        
         if is_upset:
-            winner_msg = (f"In a a result NO ONE saw coming... Our winner is *{winner.name.upper()}*!")
+            winner_msg = (f"In a result NO ONE saw coming... Our winner is *{winner.name.upper()}*!")
             loser_question = f"This is an utter shock - no one can quite believe it. Least of all, {loser.name}, who almost had it all- {loser.name}, how are feeling right now?"
         else:
             winner_msg = (f"That means we finally have our winner! *{winner.name.upper()}*!")
@@ -182,7 +176,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             f"{commentary}. Respond to host question: {winner_q}. What do you say to your vanquished competitors and to everyone watching? YOU WON!!")
         
         self._host_broadcast(loser_question)
-        self._result_react(loser, #replace with generic react to host?
+        self._result_react(loser, 
             f"You were beaten by {winner.name}. {commentary}. Then the host's question: {loser_question}.",
             f"Respond to the final game and the host's question. Afterwards you can give your final thoughts and words to everyone.")
         
@@ -212,7 +206,6 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     #####################
     #  Run              #
     #####################
-       
            
     def run_game(self):
         if False: #self._agent_by_name("Finn"):
@@ -239,31 +232,17 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         follower = agent1 if leader is agent0 else agent0
         
         self._host_broadcast(self._reg_intro(is_coronation, tie_possible, leader))
-        
         for player in self.agents:
             self._pre_game_exchange(player)
         for player in self.agents:
             self._pre_game_exchange_2(player, is_coronation)
-        
-        #this will go into a method    
         self._host_broadcast(f"Ok let's go- a nation holds its breath- {self.format_list(self._names(self.agents))} ... please reveal your choice.")
-        results = [self.finale_reg_split_or_steal(agent, tie_possible) for agent in self.agents]
-        choices = []
-        c = 0
-        for agent, res in zip((agent0, agent1), results):
-            c += 1
-            choice = res.action
-            if False:
-                choice = 'steal'
-                
-            self.gameBoard.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{choice.upper()}*")
-            agent.clear_round_specific_strategy()
-            choices.append(choice)
-        #choices0, choices1 = self._process_results(agent0, agent1, results)
+        results = self._run_tasks([(agent, tie_possible) for agent in self.agents], self.finale_reg_split_or_steal)
+        #results = [self.finale_reg_split_or_steal(agent, tie_possible) for agent in self.agents]
         
+        choices = self._process_choices(agent0, agent1, results)
         result_msg = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
         
-        #TODO maybe put this in a method for consistancy?
         if self._is_tie(agent0, agent1):
             commentary = f"This means {follower.name} has lept into a tie for first place! "
             self._host_broadcast(f"{result_msg} {commentary}")
@@ -286,35 +265,22 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self._host_broadcast(self._get_tie_intro(is_second_game))
         for player in self.agents:
             self._pre_game_exchange(player, is_tie = True)
-            
         for agent in self.agents:
             self._pre_game_exchange_2(agent, is_tie = True)
-                            
         
         self._host_broadcast(f"Ok let's go- a nation holds its breath- {self.format_list(self._names(self.agents))} ... please reveal your choice.")
-        results = [self.finale_tie_split_or_steal(agent) for agent in self.agents]
-        choices = []
-        c = 0
-        for agent, res in zip((agent0, agent1), results):
-            c += 1
-            choice = res.action
-            if False:
-                choice = 'split'
-            
-            
-            self.gameBoard.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{choice.upper()}*")
-            agent.clear_round_specific_strategy()
-            choices.append(choice)
+        results = self._run_tasks([(agent,) for agent in self.agents], self.finale_tie_split_or_steal)
+        #results = [self.finale_tie_split_or_steal(agent) for agent in self.agents]
+        choices = self._process_choices(agent0, agent1, results)
         _, _, msg = self._calculate_pd_payout(choices[0], choices[1], agent0.name, agent1.name)
+        
         self._host_broadcast(msg)
         self._process_tie_results(choices[0], choices[1], agent0, agent1)
-    
     
     #####################
     #  Host Scripts     #
     #####################
-            
-             
+                 
     def _get_tie_intro(self, is_second_game):
         if is_second_game:
             intro = "We have landed in a tie- that means one final game to determine the winner. "
