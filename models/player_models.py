@@ -64,6 +64,7 @@ class DynamicModelFactory:
             ordered_fields.update(agent_logic_fields)
         # I guess this should merge with game logic fields .... i just like the thouht being different base on this
         #TODO depreciate
+        
         if additional_thought_nudge:
             ordered_fields["logic_processing"] = (
                 str, Field(description=f"Work through the logic step-by-step: {additional_thought_nudge}")
@@ -79,6 +80,7 @@ class DynamicModelFactory:
             base_thought = private_thoughts_prompt
      
         ordered_fields["private_thoughts"] = (str, Field(description=base_thought))
+        ordered_fields["private_thoughts_brief"] = (str, Field(description="Give a one line sum up of your private thoughts."))
         
         #....action 
         if action_fields and not action_post_response:

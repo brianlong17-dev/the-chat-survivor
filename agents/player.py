@@ -36,6 +36,7 @@ class Debater(BaseAgent):
         self.initialising = False
         self.optional_response_buffer = 0
         self.round_specific_strategy = ""
+        self.most_recent_internal_thought = ""
         
         #todo : implement temperature
     
@@ -82,6 +83,9 @@ class Debater(BaseAgent):
         return SystemPrompt.render(self)
       
     def process_turn_cognitive_fields(self, turn):
+        thought = getattr(turn, 'private_thoughts_brief', "")
+        self.most_recent_internal_thought = thought
+      
 
         personality_field_names = list(self.cognitive_fields()) + [self.round_specific_strategy_name()]
         for field_name in personality_field_names:
@@ -107,14 +111,9 @@ class Debater(BaseAgent):
     def _get_full_user_content(self, gameBoard, turn_prompt, instruction_override=None) :
         return UserContent.render(self, gameBoard, turn_prompt, instruction_override)
 
-    def take_turn_standard(self, turn_prompt, gameBoard, model, system_content = None, instruction_override=None):
-                           #, context_model = StandardContext):
-        #TODO instruction_override is redudundant now
-        #user_content = context_model._get_full_user_content(gameBoard, user_content, instruction_override)
-        #TODO - system conent should also be generated here?
-
+    def take_turn_standard(self, turn_prompt, gameBoard, model, instruction_override=None):
         full_user_content = self._get_full_user_content(gameBoard, turn_prompt, instruction_override)
-        turn = self.get_response(full_user_content, model, gameBoard, system_content) #TODO temperature
+        turn = self.get_response(full_user_content, model, gameBoard) 
         self.process_turn_cognitive_fields(turn)
         return turn
     

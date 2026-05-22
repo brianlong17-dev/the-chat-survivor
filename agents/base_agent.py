@@ -135,10 +135,9 @@ class BaseAgent:
     # ------------------------------------------------------------------
     # Core API call
     # ------------------------------------------------------------------
-    def get_response(self, user_content: str, response_model, gameBoard, system_content: str = None):
+    def get_response(self, user_content: str, response_model, gameBoard):
 
-        if system_content is None:
-            system_content = self._system_prompt(gameBoard)
+        system_content = self._system_prompt(gameBoard)
 
         messages = [
             {"role": "system", "content": system_content},

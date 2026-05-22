@@ -37,7 +37,7 @@ class GameMaster(BaseAgent):
         fields = {"target_name" : choice_definition, "public_reason" : public_reason}
         response_model = create_model("choose_agent_based_on_parameter", __base__=BaseResponse, **fields)
         user_content = (f"You need to choose a single player that best represents this parameter: '{parameter}'.")
-        return self.get_response(user_content, response_model, gameBoard, system_content = None)
+        return self.get_response(user_content, response_model, gameBoard)
         #---------------
     
     def summariseRound(self, gameBoard):

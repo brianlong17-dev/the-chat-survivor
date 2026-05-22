@@ -56,5 +56,8 @@ class SystemPrompt:
 
         if agent.initialising:
             output_string += f"\n{cls.system_prompt_init()}"
+            
+        if agent.most_recent_internal_thought:
+            output_string += f"\n\nYour internal thoughts at your last turn: \n{agent.most_recent_internal_thought}"
 
         return output_string
