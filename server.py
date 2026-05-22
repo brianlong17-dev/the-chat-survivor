@@ -256,6 +256,7 @@ async def demo_ws(websocket: WebSocket):
         msg = json.loads(data)
         demo_id = msg.get("demo_id")
         human_name = str(msg["human_name"])[:30] if msg.get("human_name") else None
+        fixture_choice = str(msg["fixture_choice"])[:30] if msg.get("fixture_choice") else None
 
         LOCKED_DEMOS = {} #"game_phase"}
         if demo_id in LOCKED_DEMOS:
@@ -270,7 +271,7 @@ async def demo_ws(websocket: WebSocket):
         sink = WebSocketSink(websocket, loop)
         def run_demo():
             try:
-                runner(sink, human_name=human_name)
+                runner(sink, human_name=human_name, fixture_choice=fixture_choice)
             except Exception as e:
                 asyncio.run_coroutine_threadsafe(
                     websocket.send_text(json.dumps({"type": "error", "message": str(e)})),

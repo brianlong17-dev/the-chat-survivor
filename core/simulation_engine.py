@@ -32,7 +32,6 @@ class SimulationEngine:
         self.agents = agents
         self._select_debug_targets()
         self.dead_agents = []
-        self._dev_test_phase = None
             
     def initialiseGameBoard(self):
         self.gameBoard.initialize_agents(self.agents)
@@ -65,15 +64,14 @@ class SimulationEngine:
             self.agents.append(human_player)
             
         self.initialiseGameBoard()
-        
+        self.run_phase_loop()
+    
+    def run_phase_loop(self):
         while len(self.agents) > 1 and not self.gameBoard.game_over:
-            if self._dev_test_phase:
-                phase = self._dev_test_phase
-            else:
-                phase = self.phase_factory.get_phase_recipe(self.gameBoard.phase_number + 1, len(self.agents), self.gameplay_config)
+            phase = self.phase_factory.get_phase_recipe(self.gameBoard.phase_number + 1, len(self.agents), self.gameplay_config)
             self.phase_runner.run_phase(phase)
         #------------Fin------------#
-        self.gameBoard.game_sink.on_game_over([agent.name for agent in self.agents]) #instead this will send agents
+        self.gameBoard.game_sink.on_game_over([agent.name for agent in self.agents])
         api_client.print_summary()
         self._post_game_interview()
         

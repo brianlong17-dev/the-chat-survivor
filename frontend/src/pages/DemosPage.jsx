@@ -2,16 +2,66 @@ import { useState } from 'react'
 
 const DEMOS = [
   {
-    id: 'reunion_3',
-    title: 'Reunion Finale — Game 3',
-    description: 'Tied 39–39. Avatar Aang vs Morty Smith. The jury decides who wins.',
-    cast: ['Avatar Aang', 'Morty Smith', 'HAL 9000', 'Michael Jackson', 'Amy March', 'Benoit Blanc', 'Buffy Summers', 'Gollum', 'Lady Macbeth', 'Jo March', 'Lady Dianna'],
+    id: 'reunion',
+    title: 'Reunion Finale',
+    description: 'The jury of eliminated players decides who wins, then a final split-or-steal.',
+    fixtures: [
+      {
+        id: 'game_3',
+        label: 'Game 3',
+        description: 'Tied 39–39. Avatar Aang vs Morty Smith.',
+        cast: ['Avatar Aang', 'Morty Smith', 'HAL 9000', 'Michael Jackson', 'Amy March', 'Benoit Blanc', 'Buffy Summers', 'Gollum', 'Lady Macbeth', 'Jo March', 'Lady Diana'],
+      },
+      {
+        id: 'game_2',
+        label: 'Game 2',
+        description: 'Amy March (41) vs Lady Diana (48).',
+        cast: ['Amy March', 'Lady Diana', 'Morty Smith', 'Lady Macbeth', 'HAL 9000', 'Jo March', 'Michael Jackson', 'Avatar Aang', 'Gollum', 'Buffy Summers', 'Benoit Blanc'],
+      },
+      {
+        id: 'finn_lsp',
+        label: 'Finn vs LSP',
+        description: 'Tied 17–17. Finn vs Lumpy Space Princess.',
+        cast: ['Finn', 'Lumpy Space Princess', 'BMO', 'Princess Bubblegum', 'Ice King', 'Jake the Dog'],
+      },
+      {
+        id: 'adventure_time_pre_finale',
+        label: 'Finn vs Jake',
+        description: 'Jake (16) vs Finn (13).',
+        cast: ['Finn', 'Jake the Dog', 'Princess Bubblegum', 'Ice King', 'Lumpy Space Princess', 'BMO'],
+      },
+    ],
   },
   {
-    id: 'reunion_2',
-    title: 'Reunion Finale — Game 2',
-    description: 'Amy March (41) vs Lady Dianna (48). The jury has the final say.',
-    cast: ['Amy March', 'Lady Dianna', 'Morty Smith', 'Lady Macbeth', 'HAL 9000', 'Jo March', 'Michael Jackson', 'Avatar Aang', 'Gollum', 'Buffy Summers', 'Benoit Blanc'],
+    id: 'pd_finale',
+    title: "Prisoner's Dilemma Finale",
+    description: 'Two finalists, one last split-or-steal. Trust, betrayal, or a tie.',
+    fixtures: [
+      {
+        id: 'finn_lsp',
+        label: 'Finn vs LSP',
+        description: 'Tied 17–17. Finn vs Lumpy Space Princess.',
+        cast: ['Finn', 'Lumpy Space Princess', 'BMO', 'Princess Bubblegum', 'Ice King', 'Jake the Dog'],
+      },
+      {
+        id: 'adventure_time_pre_finale',
+        label: 'Finn vs Jake',
+        description: 'Jake (16) vs Finn (13).',
+        cast: ['Finn', 'Jake the Dog', 'Princess Bubblegum', 'Ice King', 'Lumpy Space Princess', 'BMO'],
+      },
+      {
+        id: 'game_3',
+        label: 'Game 3',
+        description: 'Tied 39–39. Avatar Aang vs Morty Smith.',
+        cast: ['Avatar Aang', 'Morty Smith', 'HAL 9000', 'Michael Jackson', 'Amy March', 'Benoit Blanc', 'Buffy Summers', 'Gollum', 'Lady Macbeth', 'Jo March', 'Lady Diana'],
+      },
+      {
+        id: 'game_2',
+        label: 'Game 2',
+        description: 'Amy March (41) vs Lady Diana (48).',
+        cast: ['Amy March', 'Lady Diana', 'Morty Smith', 'Lady Macbeth', 'HAL 9000', 'Jo March', 'Michael Jackson', 'Avatar Aang', 'Gollum', 'Buffy Summers', 'Benoit Blanc'],
+      },
+    ],
   },
   {
     id: 'game_phase',
@@ -25,6 +75,7 @@ const DEMOS = [
 function DemoCard({ demo, onStart }) {
   const [mode, setMode] = useState('watch')
   const [humanName, setHumanName] = useState('')
+  const [fixtureId, setFixtureId] = useState(demo.fixtures ? demo.fixtures[0].id : null)
 
   const canStart = mode === 'watch' || humanName.trim()
 
@@ -43,12 +94,40 @@ function DemoCard({ demo, onStart }) {
     )
   }
 
+  const activeFixture = demo.fixtures ? demo.fixtures.find(f => f.id === fixtureId) : null
+  const cast = activeFixture ? activeFixture.cast : demo.cast
+
+  const handleFixtureChange = (id) => {
+    setFixtureId(id)
+    setMode('watch')
+    setHumanName('')
+  }
+
   return (
     <div className="demo-card">
       <h2 className="demo-title">{demo.title}</h2>
       <p className="demo-description">{demo.description}</p>
+      {demo.fixtures && (
+        <div className="demo-fixture-select">
+          {demo.fixtures.map(fx => (
+            <label key={fx.id} className="mode-opt">
+              <input
+                type="radio"
+                name={`fixture-${demo.id}`}
+                value={fx.id}
+                checked={fixtureId === fx.id}
+                onChange={() => handleFixtureChange(fx.id)}
+              />
+              {fx.label}
+            </label>
+          ))}
+        </div>
+      )}
+      {activeFixture && (
+        <p className="demo-fixture-description">{activeFixture.description}</p>
+      )}
       <div className="demo-cast">
-        {demo.cast.map(name => (
+        {cast.map(name => (
           <span
             key={name}
             className={`demo-cast-chip demo-cast-chip--clickable${humanName === name && mode === 'play' ? ' demo-cast-chip--selected' : ''}`}
@@ -78,7 +157,7 @@ function DemoCard({ demo, onStart }) {
       <button
         className="lobby-start-btn"
         disabled={!canStart}
-        onClick={() => onStart({ demoId: demo.id, humanName: mode === 'play' ? humanName.trim() : null })}
+        onClick={() => onStart({ demoId: demo.id, humanName: mode === 'play' ? humanName.trim() : null, fixtureChoice: fixtureId })}
       >
         Run Demo
       </button>
