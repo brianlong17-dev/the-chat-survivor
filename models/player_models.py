@@ -36,6 +36,7 @@ class DynamicModelFactory:
         private_thoughts_prompt: str = None, 
         additional_thought_nudge: str = None, 
         game_logic_fields: Dict[str, tuple] = None,   # Logic fields prompted by the game
+        round_specific_strategy=None,
         action_fields: Dict[str, tuple] = None,      # Actions required by the game (e.g. dropdowns),
         action_post_response = False
     ) -> Type[BaseModel]:
@@ -94,6 +95,11 @@ class DynamicModelFactory:
         
         if agent_complex_fields:
             ordered_fields.update(agent_complex_fields)
+            
+            
+        #......... round specific strategy 
+        if round_specific_strategy and agent.round_specific_strategy_name():
+            ordered_fields[agent.round_specific_strategy_name()] = (str, Field(description=round_specific_strategy))
 
         return create_model(model_name, **ordered_fields)
     

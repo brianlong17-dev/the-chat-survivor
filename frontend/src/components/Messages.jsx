@@ -168,7 +168,7 @@ function PublicAction({ speaker, message, color, animate, onComplete, skipRef, a
       {isSystem && <span className="speaker system-speaker">{speaker}</span>}
       {animate
         ? <WordByWord text={message} onComplete={onComplete} skipRef={skipRef} animateText={animateText} />
-        : <span className="message-text">{message}</span>
+        : <span className="message-text">{renderBold(message)}</span>
       }
     </div>
   )
@@ -211,20 +211,31 @@ function LoadingMessage({ message }) {
   )
 }
 
-function SystemPrivate({ message }) {
+function SystemPrivate({ message, border_bottom }) {
   return (
-    <div className="msg system-private">
+    <div className={`msg system-private${border_bottom ? ' border-bottom' : ''}`}>
       <span className="sys-icon">⚙</span>
       <span className="sys-text">{message}</span>
     </div>
   )
 }
 
-function GameOver({ winner }) {
+function GameOver({ winners }) {
+  let text, trophy
+  if (!winners || winners.length === 0) {
+    text = 'No one wins, sadly enough.'
+    trophy = ':('
+  } else if (winners.length === 1) {
+    text = `${winners[0]} wins!`
+    trophy = '🏆'
+  } else {
+    text = `Winners: ${winners.join(' & ')}!`
+    trophy = '🏆 '.repeat(winners.length)
+  }
   return (
     <div className="msg game-over">
-      <span className="trophy">🏆</span>
-      <span className="winner-text">{winner} wins!</span>
+      <div className="trophy">{trophy}</div>
+      <div className="winner-text">{text}</div>
     </div>
   )
 }
@@ -348,7 +359,7 @@ export function Message({ event, colorMap, onComplete, skipRef, animateText}) {
     case 'game_intro':
       return <PublicAction speaker="HOST" message={event.message} color="#aaa" />
     case 'game_over':
-      return <GameOver winner={event.winner} />
+      return <GameOver winners={event.winners} />
     case 'error':
       return <ErrorMsg message={event.message} />
     case 'loading':

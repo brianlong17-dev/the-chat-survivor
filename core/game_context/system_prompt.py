@@ -40,6 +40,8 @@ class SystemPrompt:
             f"=== YOUR INTERNAL STRATEGY AND ASSESSMENT ===\n"
             f"Current Strategy: {agent.game_strategy}\n"
             f"Position Assessment: {agent.position_assessment}\n")
+            if agent.round_specific_strategy:
+                output_string += (f"\n\nCurrent round strategy: {agent.round_specific_strategy}\n")
 
         if agent.initialising:
             output_string += f"\n{agent.system_prompt_init()}"

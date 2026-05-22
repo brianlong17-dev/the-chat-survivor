@@ -18,6 +18,12 @@ class BaseAgent:
         self._log_call_index = 0        # monotonic counter per agent instance
         self._log_path = None           # set on first write, reused within a run
 
+    def __repr__(self):
+        return f"<{type(self).__name__} {self.name}>"
+
+    def __str__(self):
+        return self.name
+
     def lazy_responses(self):
         return {"", "none", " ", "n/a", "not applicable", "nothing", "no lesson"}
     
@@ -42,7 +48,10 @@ class BaseAgent:
         "is perfection",
         "already perfect",
     }
- 
+    
+    def round_specific_strategy_name(self):
+        return None
+    
     def _check_if_empty(self, text: str):
         if not text:
             return True

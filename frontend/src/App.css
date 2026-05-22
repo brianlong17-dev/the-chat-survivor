@@ -206,6 +206,12 @@
   border-bottom: 1px solid var(--border);
 }
 
+.border-bottom {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
 .round-label {
   font-size: 11px;
   color: var(--text-dim);
@@ -329,6 +335,7 @@
 /* Game over */
 .game-over {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
   margin: 24px 0;
@@ -1358,6 +1365,19 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.demo-fixture-select {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.demo-fixture-description {
+  font-size: 0.9em;
+  opacity: 0.75;
+  margin: 0 0 8px;
 }
 
 /* ── Feed tabs ── */

@@ -100,10 +100,10 @@ class FinaleReunionRound(VoteMechanicsMixin):
         
         self._host_broadcast("Finalists- what is the last thing you would like to say to the players before the vote?")
         for agent in self.finalists:
-            self._reunion_turn(agent, "", "Respond to the host, and the other players. ")
+            self._reunion_turn(agent, "", "Respond to the host, and the other players. ", is_reply = True)
         self.time_to_vote()
 
-    def _reunion_turn(self, agent, user_content_prompt, public_response_prompt, optional=False, private_thoughts_prompt = None):
+    def _reunion_turn(self, agent, user_content_prompt, public_response_prompt, optional=False, private_thoughts_prompt = None, is_reply = False):
         #TODO depreciate
         if optional:
             public_response_prompt += " Note: this is an optional turn. If you have nothing to say leave this blank. "
@@ -116,10 +116,9 @@ class FinaleReunionRound(VoteMechanicsMixin):
         result = agent.take_turn_standard(user_content_prompt, self.gameBoard, basic_model)
         
         if not result.public_response:
-            print("BEEP BEEP")
             self.private_system_message(agent, "You declined to say anything on this turn. ", )
         else:
-            self.gameBoard.handle_public_private_output(agent, result)
+            self.gameBoard.handle_public_private_output(agent, result, is_reply = is_reply)
 
     def _get_highlights(self, player):
         return self.simulationEngine.game_master.create_host_script(
@@ -141,11 +140,11 @@ class FinaleReunionRound(VoteMechanicsMixin):
 
         player_1_highlights = self._get_highlights(player1).script
         self._host_broadcast(player_1_highlights)
-        self._reunion_turn(player1, "", prompt)
+        self._reunion_turn(player1, "", prompt, is_reply = True)
 
         player_2_highlights = self._get_highlights(player2).script
         self._host_broadcast(player_2_highlights)
-        self._reunion_turn(player2, "", prompt)
+        self._reunion_turn(player2, "", prompt, is_reply = True)
 
         
 
@@ -208,7 +207,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
             action_fields=action_fields
         )
         result = juror.take_turn_standard(user_content, self.gameBoard, response_model)
-        self.gameBoard.handle_public_private_output(juror, result)
+        self.gameBoard.handle_public_private_output(juror, result, is_reply = True)
         return result
 
     def time_to_vote(self):
@@ -322,7 +321,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
                 user_content = "Direct a question or statement to one of the finalists."
                 additional_thought_nudge = "What could you ask that would change your mind? What would cause the most drama? "
                 result = self.turn_manager._ask_directed_question(
-                    player, self._names(self.finalists), user_content, public_response_prompt, additional_thought_nudge
+                    player, self._names(self.finalists), user_content, public_response_prompt, additional_thought_nudge, is_reply = True
                 )
 
                 #--------Get some answers ------
@@ -330,6 +329,6 @@ class FinaleReunionRound(VoteMechanicsMixin):
                 if chosen_name:
                     chosen_agent = self._agent_by_name(chosen_name.strip())
                     if chosen_agent:
-                        self._reunion_turn(chosen_agent, "", f"Respond to {player_name}'s question. Directly say anything else you want to say.")
+                        self._reunion_turn(chosen_agent, "", f"Respond to {player_name}'s question. Directly say anything else you want to say.", is_reply = True)
                         self._reunion_turn(player, f"{chosen_agent.name} has responded to your question. Do you have anything to say in response to their answer? Do not repeat what you said in your question. ", "Anything else to add?", 
-                                           optional=True, private_thoughts_prompt = "They responded to your question. Did they answer well enough? Do you have anything left to say to them, or to the other voters? You will have another chance to share your mind when you vote. ")
+                                           optional=True, private_thoughts_prompt = "They responded to your question. Did they answer well enough? Do you have anything left to say to them, or to the other voters? You will have another chance to share your mind when you vote. ", is_reply = True)

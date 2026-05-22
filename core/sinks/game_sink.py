@@ -25,8 +25,8 @@ class GameEventSink(ABC):
         ...
 
     @abstractmethod
-    def on_game_over(self, winner_name: str) -> None:
-        """Final survivor declared. Fired once at the end."""
+    def on_game_over(self, winner_names: list[str]) -> None:
+        """Final survivor(s) declared. Fired once at the end."""
         ...
 
     # -- Phase lifecycle ------------------------------------------------------
@@ -113,7 +113,7 @@ class GameEventSink(ABC):
         ...
 
     @abstractmethod
-    def system_private(self, message: str) -> None:
+    def system_private(self, message: str, border_bottom: bool = False) -> None:
         """System-only private output that should never enter public history."""
         ...
 
@@ -208,7 +208,7 @@ class NoopGameSink(GameEventSink):
         raise RuntimeError("NoopGameSink cannot collect user input")
 
     def on_game_intro(self, message): pass
-    def on_game_over(self, winner_name): pass
+    def on_game_over(self, winner_names): pass
     def on_phase_header(self, phase_number): pass
     def on_phase_intro(self, host_text, summary_text): pass
     def on_phase_rounds(self, rounds): pass
@@ -219,7 +219,7 @@ class NoopGameSink(GameEventSink):
     def on_public_action(self, speaker, message, color="", animate=True, directed_to_name=None, is_reply=False): pass
     def on_private_thought(self, speaker, message): pass
     def on_inner_workings(self, speaker, inner_workings, override=False): pass
-    def system_private(self, message): pass
+    def system_private(self, message, border_bottom=False): pass
     def on_warning(self, message): pass
     def delay(self, delay): pass
     def on_points_update(self, points): pass
@@ -241,7 +241,7 @@ class CapturingGameSink(GameEventSink):
 
     def __init__(self):
         self.game_intros: list[str] = []
-        self.game_overs: list[str] = []
+        self.game_overs: list[list[str]] = []
         self.phase_headers: list[int] = []
         self.phase_intros: list[dict] = []
         self.round_starts: list[dict] = []
@@ -265,8 +265,8 @@ class CapturingGameSink(GameEventSink):
     def on_game_intro(self, message):
         self.game_intros.append(message)
 
-    def on_game_over(self, winner_name):
-        self.game_overs.append(winner_name)
+    def on_game_over(self, winner_names):
+        self.game_overs.append(winner_names)
 
     def on_phase_header(self, phase_number):
         self.phase_headers.append(phase_number)
@@ -303,7 +303,7 @@ class CapturingGameSink(GameEventSink):
             }
         )
 
-    def system_private(self, message):
+    def system_private(self, message, border_bottom=False):
         self.system_messages.append({"message": message})
 
     def on_warning(self, message):

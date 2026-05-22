@@ -32,8 +32,8 @@ class WebSocketSink(GameEventSink):
     def on_game_intro(self, message: str):
         self._send({"type": "game_intro", "message": message})
 
-    def on_game_over(self, winner_name: str):
-        self._send({"type": "game_over", "winner": winner_name})
+    def on_game_over(self, winner_names: list[str]):
+        self._send({"type": "game_over", "winners": winner_names})
 
     # -- Phase lifecycle ------------------------------------------------------
 
@@ -41,6 +41,7 @@ class WebSocketSink(GameEventSink):
         self._send({"type": "phase_header", "phase_number": phase_number})
 
     def on_phase_intro(self, host_text: str, summary_text: str):
+        #depreciate
         self._send({"type": "phase_intro", "host_text": host_text, "summary_text": summary_text})
 
     def on_phase_rounds(self, rounds: list[str]):
@@ -87,8 +88,8 @@ class WebSocketSink(GameEventSink):
     def on_warning(self, message: str):
         self._send({"type": "warning", "message": message})
 
-    def system_private(self, message: str):
-        self._send({"type": "system_private", "message": str(message)})
+    def system_private(self, message: str, border_bottom: bool = False):
+        self._send({"type": "system_private", "message": str(message), "border_bottom": border_bottom})
 
     def on_points_update(self, points: dict):
         self._send({"type": "points_update", "scores": points})

@@ -28,8 +28,15 @@ class ConsoleGameEventSink(GameEventSink):
     def on_game_intro(self, message: str) -> None:
         ConsoleRenderer.print_public_action("HOST", message)
 
-    def on_game_over(self, winner_name: str) -> None:
-        ConsoleRenderer.print_system_private(f"🏆 FINAL SURVIVOR: {winner_name}")
+    def on_game_over(self, winner_names: list[str]) -> None:
+        if not winner_names:
+            result = "No one wins :("
+        elif len(winner_names) == 1:
+            result = f"🏆 FINAL SURVIVOR: {winner_names[0]}"
+        else:
+            names = ' & '.join(winner_names)
+            result = f"{'🏆' * len(winner_names)} FINAL SURVIVORS: {names}"
+        ConsoleRenderer.print_system_private(result)
 
     def on_phase_header(self, phase_number: int) -> None:
         from prompts.prompts import PromptLibrary
@@ -77,8 +84,10 @@ class ConsoleGameEventSink(GameEventSink):
         ConsoleRenderer.print_system_private(f"[End Private]")
        
 
-    def system_private(self, message: str) -> None:
+    def system_private(self, message: str, border_bottom: bool = False) -> None:
         ConsoleRenderer.print_system_private(message)
+        if border_bottom:
+            ConsoleRenderer.print_system_private('----')
         
     def on_inner_workings(
         self,

@@ -82,6 +82,9 @@ class BaseRound:
     def _shuffled_agents(self):
         agents = list(self.simulationEngine.agents)
         return random.sample(agents, k=len(agents))
+    
+    def _agent_score(self, agent_name):
+        return self.gameBoard.agent_scores[agent_name] 
 
     def get_strategic_players(self, available_agents, top_player = True, multiple = False) -> list[Debater]:
         """

@@ -2,7 +2,7 @@ from typing import Union
 from agents.base_agent import BaseAgent
 from core.game_context.context_builder import ContextBuilder
 from core.game_context.game_log import GameLog
-from core.models import RoundEntry
+from core.game_context.models import RoundEntry
 
 
 class GameBoard:
@@ -23,6 +23,8 @@ class GameBoard:
         self.context_builder = ContextBuilder(game_board=self, game_log=self.game_log)
 
         self.phase_runner = None
+        
+        self.game_over = False
 
 
     def _human_in_restriction(self, restricted_users):
@@ -143,19 +145,19 @@ class GameBoard:
         self.game_sink.delay(delay)
 
     def _should_animate(self, speaker):
-        is_system_speaker = speaker in ("SYSTEM", "")
+        is_system_speaker = speaker in ("SYSTEM", "", "HOST")
         is_human_speaker = hasattr(speaker, 'is_human') and speaker.is_human()
         return not (is_system_speaker or is_human_speaker)
 
-    def broadcast_public_action(self, speaker: Union[str, BaseAgent], message: str, color: str = "", directed_to_name = None, is_reply = False):
+    def broadcast_public_action(self, speaker: Union[str, BaseAgent], message: str, color: str = "", directed_to_name = None, is_reply = False, should_animate_override = False):
         display_name = self._as_display_name(speaker)
         self.game_log._update_history(display_name, message)
-        animate = self._should_animate(speaker)
+        animate = self._should_animate(speaker) or should_animate_override
         self.game_sink.on_public_action(speaker, message, color=color, animate=animate, directed_to_name = directed_to_name, is_reply = is_reply)
 
-    def system_broadcast(self, message, private=False):
+    def system_broadcast(self, message, private=False, border_bottom = False):
         if private:
-            self.game_sink.system_private(message)
+            self.game_sink.system_private(message, border_bottom = border_bottom)
         else:
             self.broadcast_public_action("SYSTEM", message)
 

@@ -46,10 +46,12 @@ class GamePrisonersDilemma(GameMechanicsMixin):
     
     def points_rules_string_technical(self):
         cfg = self.cfg
+        #SCAF
         return (
-            f"Split | Split : {cfg.pd_points_split} - {cfg.pd_points_split}\n"
-            f"Steal | Split : {cfg.pd_points_steal} - 0\n"
-            f"Steal | Steal : {cfg.pd_points_both_steal} - {cfg.pd_points_both_steal}\n"
+            "Additional points you could receive: "
+            f"Split | Split : {cfg.pd_points_split}, {cfg.pd_points_split}\n"
+            f"Steal | Split : {cfg.pd_points_steal}, 0\n"
+            f"Steal | Steal : {cfg.pd_points_both_steal}, {cfg.pd_points_both_steal}\n"
             f"Steal: {cfg.pd_points_steal} or {cfg.pd_points_both_steal}. Split: {cfg.pd_points_split} or 0."
         )
 
@@ -67,23 +69,24 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         response = self.turn_manager.take_turn(chooser, user_content,  public_response_prompt=public_response_prompt, 
                                   action_fields=action_fields, broadcast = True, is_reply = True)
         
-        
+         
         partner_name = self.turn_manager._get_target_name_from_response(response)
         return self._agent_by_name(partner_name)
         
-    
-
-    def get_split_or_steal(self, player, opponent):
-        user_content = ( #This is a bit excessive but it works.
+    def get_split_or_steal_default(self, player, opponent):
+        user_content = ( 
             f"Prisoner's Dilemma. You are paired with {opponent.name}.\n"
             f"Remember:\n {self.points_rules_string_technical()}"
             f"Based on your game history and personality, make your choice."
         )
         
-        choices = ["split", "steal"]
-        action_fields = self.turn_manager.create_choice_field("action", choices)
         additional_thought_nudge="What points are available? How will the next elimination work? Do you need points or alliance?"
         public_response_prompt = "A one liner, for AFTER your result has been revealed. (Not neccessary to re-state your choice as it will already be revealed.)."
+        return self.get_split_or_steal(player, user_content, additional_thought_nudge, public_response_prompt)
+
+    def get_split_or_steal(self, player, user_content, additional_thought_nudge, public_response_prompt):
+        choices = ["split", "steal"]
+        action_fields = self.turn_manager.create_choice_field("action", choices)
         return self.turn_manager.take_turn(player, user_content= user_content, additional_thought_nudge=additional_thought_nudge, 
                                     action_fields=action_fields, 
                                     public_response_prompt = public_response_prompt,
@@ -108,8 +111,8 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         self._host_broadcast(f"{agent0.name} vs {agent1.name}. Split or Steal?\n", is_reply = nested_host_announcement)
 
         with ThreadPoolExecutor() as executor:
-            future0 = executor.submit(self.get_split_or_steal, agent0, agent1)
-            future1 = executor.submit(self.get_split_or_steal, agent1, agent0)
+            future0 = executor.submit(self.get_split_or_steal_default, agent0, agent1)
+            future1 = executor.submit(self.get_split_or_steal_default, agent1, agent0)
             results = [future0.result(), future1.result()]
 
         choices = []
@@ -117,25 +120,30 @@ class GamePrisonersDilemma(GameMechanicsMixin):
             self.gameBoard.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{res.action.upper()}*")
             choices.append(res.action)
 
-        p0_gain, p1_gain, msg = self._calculate_pd_payout(choices[0], choices[1], agent0.name, agent1.name)
+        result_host_message = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
+        self._host_broadcast(f"{result_host_message}\n")
+        if self.cfg.pd_pairing_method != self.cfg.pd_pairing_choice_all:
+            #We don't want reactions for round robin pairing.
+            if (choices[0] == 'steal' and choices[1] == 'steal'):
+                reactions = self._run_tasks([(agent0, result_host_message), (agent1, result_host_message)], 
+                                            self.respond_to_return_sender)
+                for reaction in reactions:
+                    self.gameBoard.handle_public_private_output(reaction[0], reaction[1], is_reply = True)
+                
+            elif (choices[0] != choices[1]):
+                for agent in (agent0, agent1):
+                    reaction = self.turn_manager.respond_to(agent, result_host_message)
+                    self.gameBoard.handle_public_private_output(agent, reaction, is_reply = True)
+                    
+    def _process_results_and_points(self, choice0, choice1, agent0, agent1):
+        p0_gain, p1_gain, msg = self._calculate_pd_payout(choice0, choice1, agent0.name, agent1.name)
 
         for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
             self.gameBoard.append_agent_points(agent.name, gain)
 
         result_host_message = f"{msg}{agent0.name} receives {p0_gain}, and {agent1.name} receives {p1_gain} points."
-        self._host_broadcast(f"{result_host_message}\n")
+        return result_host_message
 
-        
-        if (choices[0] == 'steal' and choices[1] == 'steal'):
-            reactions = self._run_tasks([(agent0, result_host_message), (agent1, result_host_message)], 
-                                        self.respond_to_return_sender)
-            for reaction in reactions:
-                self.gameBoard.handle_public_private_output(reaction[0], reaction[1], is_reply = True)
-            
-        elif (choices[0] != choices[1]):
-            for agent in (agent0, agent1):
-                reaction = self.turn_manager.respond_to(agent, result_host_message)
-                self.gameBoard.handle_public_private_output(agent, reaction, is_reply = True)
     
     def respond_to_return_sender(self, agent, msg):
         return (agent, self.turn_manager.respond_to(agent, msg))

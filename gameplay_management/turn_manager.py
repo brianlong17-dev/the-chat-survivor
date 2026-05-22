@@ -42,24 +42,6 @@ class TurnManager:
             public_response=(Optional[str], Field(default=None, description=updated_response_desc))
         )
 
-    def _create_response_model(self,
-                               player,
-                               model_name: str = "DynamicTurnModel",
-                               public_response_prompt = None,
-                               private_thoughts_prompt = None,
-                               additional_thought_nudge = None,
-                               action_fields = None,
-                               game_logic_fields = None):
-        return DynamicModelFactory.create_model_(
-            player,
-            model_name,
-            public_response_prompt=public_response_prompt,
-            private_thoughts_prompt=private_thoughts_prompt,
-            additional_thought_nudge=additional_thought_nudge,
-            action_fields=action_fields,
-            game_logic_fields=game_logic_fields
-        )
-
     # --- Field Builders ---
 
     def create_choice_field(self, field_name, choices, field_description = None):
@@ -90,6 +72,7 @@ class TurnManager:
                   additional_thought_nudge: str = None,
                   action_fields = None,
                   game_logic_fields = None,
+                  round_specific_strategy = None,
                   instruction_override = None,
                   optional: bool = False,
                   broadcast: bool = False,
@@ -107,14 +90,15 @@ class TurnManager:
             )
             game_logic_fields = {**(game_logic_fields or {}), **speak_silent_field}
 
-        model = self._create_response_model(
+        model = DynamicModelFactory.create_model_(
             player,
             model_name,
             public_response_prompt=public_response_prompt,
             private_thoughts_prompt=private_thoughts_prompt,
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
-            game_logic_fields=game_logic_fields
+            game_logic_fields=game_logic_fields,
+            round_specific_strategy=round_specific_strategy
         )
 
         if optional:
@@ -131,9 +115,9 @@ class TurnManager:
 
         return result
 
-    def respond_to(self, player: Debater, text_to_respond_to: str, public_response_prompt: str = None,
+    def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,
                    private_thoughts_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False):
-        return self.take_turn(player, text_to_respond_to, #TODO rename as turn prompt
+        return self.take_turn(player, turn_prompt, #TODO rename as turn prompt
                               public_response_prompt=public_response_prompt,
                               private_thoughts_prompt=private_thoughts_prompt,
                               instruction_override=instruction_override,
@@ -148,22 +132,24 @@ class TurnManager:
                               broadcast = broadcast)
 
     def _ask_directed_question(self, player, possible_target_names, user_content,
-                               public_response_prompt, additional_thought_nudge = None):
+                               public_response_prompt, additional_thought_nudge = None, is_reply = False):
         #Maybe depreciate - 
         target_field_description = "Who your question/statement is directed to. " 
         return self._targeted_turn(player, possible_target_names, target_field_description, user_content,
-                               public_response_prompt, additional_thought_nudge, broadcast = True, include_target_name = True)
+                               public_response_prompt, additional_thought_nudge, broadcast = True, include_target_name = True,
+                               is_reply = is_reply)
         
     def _targeted_turn(self, player, possible_target_names, target_field_description, user_content,
                                public_response_prompt, additional_thought_nudge = None, broadcast = False, 
-                               include_target_name = False):
+                               include_target_name = False, is_reply = False):
         action_fields = self._choose_name_field(possible_target_names, target_field_description)
         return self.take_turn(player, user_content,
                               public_response_prompt=public_response_prompt,
                               additional_thought_nudge=additional_thought_nudge,
                               action_fields=action_fields,
                               broadcast=broadcast,
-                              include_target_name = include_target_name)
+                              include_target_name = include_target_name,
+                              is_reply = is_reply)
 
     def _basic_turn(self, agent, user_content_prompt, public_response_prompt,
                     private_thoughts_prompt = None, optional = False):

@@ -35,6 +35,8 @@ class Debater(BaseAgent):
         self.game_over = False
         self.initialising = False
         self.optional_response_buffer = 0
+        self.round_specific_strategy = ""
+        
         #todo : implement temperature
     
     # --- 1. CONFIGURATION (The Map) ---
@@ -46,7 +48,8 @@ class Debater(BaseAgent):
             "updated_game_strategy": "game_strategy",
             "position_assessment": "position_assessment",
             "lifeLesson": "life_lessons",
-            "speaking_style": "speaking_style"
+            "speaking_style": "speaking_style",
+            "round_specific_strategy": "round_specific_strategy"
         }
         
     def logic_fields(self):
@@ -56,7 +59,12 @@ class Debater(BaseAgent):
             return {
                 "position_assessment": (str, Field(description=PromptLibrary.desc_agent_position_assessment))
             }
-    
+            
+    def round_specific_strategy_name(self):
+        return 'round_specific_strategy'
+    def clear_round_specific_strategy(self):
+        self.round_specific_strategy=""
+        
     def internal_thinking_fields(self):
         fields = {}
         if not self.game_over:
@@ -72,25 +80,11 @@ class Debater(BaseAgent):
     
     def _system_prompt(self, gameBoard):
         return SystemPrompt.render(self)
-        
-        
-    
-    def system_prompt_init(self):
-        
-        return ("This is not a performance. You are generating the specific, concrete "
-        "details of your own life — the memories and backstory that will ground "
-        "everything you say and do from this point forward."
-
-        "Answer each question as if you are genuinely remembering real things. "
-        "Be specific. Commit to details. Vague answers are wrong answers. "
-
-        "These become your permanent memory. ")
-
       
     def process_turn_cognitive_fields(self, turn):
 
-        simple_personality_fields = self.cognitive_fields()
-        for field_name in simple_personality_fields:
+        personality_field_names = list(self.cognitive_fields()) + [self.round_specific_strategy_name()]
+        for field_name in personality_field_names:
             value = getattr(turn, field_name, None)
             if self._check_if_empty(value):
                 continue
@@ -232,6 +226,12 @@ class Debater(BaseAgent):
         self.phase_summaries_brief[phase_number] = response.brief_summary
         
     def _process_life_lesson_compression(self, response):
+        new_lesson = getattr(response, 'lifeLesson', None)
         if hasattr(response, "compressed_life_lessons") and response.compressed_life_lessons:
             self.life_lessons.clear()
             self.life_lessons.extend(response.compressed_life_lessons)
+        if new_lesson:
+            self.life_lessons.append(new_lesson)
+
+    
+    

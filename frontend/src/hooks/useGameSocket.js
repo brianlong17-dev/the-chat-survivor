@@ -12,7 +12,7 @@ function isAnimatableEvent(evt, animateText) {
 export function useGameSocket(autoRun, animateText) {
   const [status, setStatus] = useState('idle')
   const [events, setEvents] = useState([])
-  const [scores, setScores] = useState({})
+  const [scores, setScores] = useState(null)
   const [evicted, setEvicted] = useState([])
   const [inputRequest, setInputRequest] = useState(null)
   const [awaitingNext, setAwaitingNext] = useState(false)
@@ -122,7 +122,7 @@ export function useGameSocket(autoRun, animateText) {
     if (wsRef.current) return
     setStatus('connecting')
     setEvents([])
-    setScores({})
+    setScores(null)
     setEvicted([])
     setFeedMarkers([])
     setSegmentTitles([])
@@ -151,8 +151,8 @@ export function useGameSocket(autoRun, animateText) {
     connect(WS_URL, { type: 'start', names, human_name: humanName, levelId })
   }, [connect])
 
-  const startDemo = useCallback(({ demoId, humanName = null } = {}) => {
-    connect(WS_DEMO_URL, { type: 'start_demo', demo_id: demoId, human_name: humanName })
+  const startDemo = useCallback(({ demoId, humanName = null, fixtureChoice = null } = {}) => {
+    connect(WS_DEMO_URL, { type: 'start_demo', demo_id: demoId, human_name: humanName, fixture_choice: fixtureChoice })
   }, [connect])
 
   const submitInput = useCallback((value) => {
