@@ -53,13 +53,17 @@ class PhaseRecipe(BaseModel):
         return "\nUPCOMING GAME RULES:\n" + "\n".join(rules) + "\n"
 
     def phase_intro_string(self, phase_number, num_players, cfg):
-        #this should not be here
+        #this needs to move to the cfg file sadly enough. #TODO
+        return None
+        if num_players == 2:
+            #not true for PD finale
+            return f"Two players remain. Only one player will remain at the end of this phase. "
+        else:
+            return None
+        #When we bring back immunities, we can look at this again
         phase_description = f"🚨 WELCOME PLAYERS, TO PHASE {phase_number} 🚨. "
 
-        #TODO this is temp
-
-        if num_players == 2:
-            phase_description += f"Two players remain. Only one player will remain at the end of this phase. "
+        
 
         #--------------------
 

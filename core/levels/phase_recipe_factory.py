@@ -81,7 +81,8 @@ class PhaseRecipeFactory:
         return cls.make_phase(1, game, vote_discussion, vote, 0, immunity, config_mutations)     
     
     @classmethod 
-    def game_intro(cls):
+    def human_only_game_intro(cls):
+        return ""
         topicString = (f"Welcome to the arena... You were brought here to discover the best among you. You are all chosen because of your particular characteristics... "
                    "Charisma... uniqueness... nerve... talent. You will play among yourselves to earn points. "
                    "But the person choosing the winner... will be you. "

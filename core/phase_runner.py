@@ -52,23 +52,25 @@ class PhaseRunner:
                                     len(self.agent_names()), cfg)
         system_phase_summary = self.current_recipe.phase_summary_string(cfg)
         round_names = [r.display_name(cfg) for r in self.current_recipe.rounds]
-
-        self.game_board.host_broadcast(host_intro)
-        self.game_board.system_broadcast(system_phase_summary, private = True)
+        if host_intro:
+            self.game_board.host_broadcast(host_intro)
+        self.game_board.system_broadcast(system_phase_summary, private = True, border_bottom=True)
         self.game_board.game_sink.on_phase_rounds(round_names)
         
     def _introduce_game(self):
-        host_intro = self.simulation_engine.phase_factory.game_intro()
-        self.game_board.game_sink.on_game_intro(host_intro)
+        host_intro_human_only = self.simulation_engine.phase_factory.human_only_game_intro()
+        if host_intro_human_only:
+            self.game_board.game_sink.on_game_intro(host_intro_human_only) 
         
     def run_round(self, round, immunity_types):
         self.current_round_index += 1
         self.game_board.newRound()
         self.game_board.game_sink.on_phase_round_index(self.current_round_index - 1)
-        if self.game_board.phase_number == 1 and self.current_round_index == 1:
-            self._introduce_game()
         if self.current_round_index == 1:
             self._introduce_phase()
+            
+        if self.game_board.phase_number == 1 and self.current_round_index == 1:
+            self._introduce_game()
             
         if round.is_vote():
             self.run_vote_round_with_immunity_types(round, immunity_types)
