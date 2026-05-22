@@ -65,7 +65,7 @@ class TurnManager:
 
     # --- Turn Execution ---
 
-    def take_turn(self, player, user_content, *,
+    def take_turn(self, player, turn_prompt, *,
                   model_name: str = "DynamicTurnModel",
                   public_response_prompt: str = None,
                   private_thoughts_prompt: str = None,
@@ -102,9 +102,9 @@ class TurnManager:
         )
 
         if optional:
-            result = self._basic_turn_optional(model, player, user_content)
+            result = self._basic_turn_optional(model, player, turn_prompt)
         else:
-            result = player.take_turn_standard(user_content, self.gameBoard, model, instruction_override=instruction_override)
+            result = player.take_turn_standard(turn_prompt, self.gameBoard, model, instruction_override=instruction_override)
 
         #TODO modified broadcasts need to live outside
         if broadcast and result and result.public_response:
@@ -117,7 +117,7 @@ class TurnManager:
 
     def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,
                    private_thoughts_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False):
-        return self.take_turn(player, turn_prompt, #TODO rename as turn prompt
+        return self.take_turn(player, turn_prompt, 
                               public_response_prompt=public_response_prompt,
                               private_thoughts_prompt=private_thoughts_prompt,
                               instruction_override=instruction_override,
@@ -131,19 +131,19 @@ class TurnManager:
                               action_fields=action_fields,
                               broadcast = broadcast)
 
-    def _ask_directed_question(self, player, possible_target_names, user_content,
+    def _ask_directed_question(self, player, possible_target_names, turn_prompt,
                                public_response_prompt, additional_thought_nudge = None, is_reply = False):
-        #Maybe depreciate - 
-        target_field_description = "Who your question/statement is directed to. " 
-        return self._targeted_turn(player, possible_target_names, target_field_description, user_content,
+        #Maybe depreciate -
+        target_field_description = "Who your question/statement is directed to. "
+        return self._targeted_turn(player, possible_target_names, target_field_description, turn_prompt,
                                public_response_prompt, additional_thought_nudge, broadcast = True, include_target_name = True,
                                is_reply = is_reply)
-        
-    def _targeted_turn(self, player, possible_target_names, target_field_description, user_content,
-                               public_response_prompt, additional_thought_nudge = None, broadcast = False, 
+
+    def _targeted_turn(self, player, possible_target_names, target_field_description, turn_prompt,
+                               public_response_prompt, additional_thought_nudge = None, broadcast = False,
                                include_target_name = False, is_reply = False):
         action_fields = self._choose_name_field(possible_target_names, target_field_description)
-        return self.take_turn(player, user_content,
+        return self.take_turn(player, turn_prompt,
                               public_response_prompt=public_response_prompt,
                               additional_thought_nudge=additional_thought_nudge,
                               action_fields=action_fields,
@@ -151,9 +151,9 @@ class TurnManager:
                               include_target_name = include_target_name,
                               is_reply = is_reply)
 
-    def _basic_turn(self, agent, user_content_prompt, public_response_prompt,
+    def _basic_turn(self, agent, turn_prompt, public_response_prompt,
                     private_thoughts_prompt = None, optional = False):
-        return self.take_turn(agent, user_content_prompt,
+        return self.take_turn(agent, turn_prompt,
                               model_name="basic_turn",
                               public_response_prompt=public_response_prompt,
                               private_thoughts_prompt=private_thoughts_prompt,
@@ -162,7 +162,7 @@ class TurnManager:
 
     # --- Optional Response Mechanics ---
 
-    def _basic_turn_optional(self, model, agent, user_content_prompt):
+    def _basic_turn_optional(self, model, agent, turn_prompt):
         agent.optional_response_buffer = round(agent.optional_response_buffer + self._buffer_amount, 2)
         if agent.optional_response_buffer < 1:
             self._low_buffer_message(agent)
@@ -172,9 +172,9 @@ class TurnManager:
         optional_response_prompt = (f"Optional turn. Your buffer auto-grows by {self._buffer_amount} every optional turn whether you speak or stay silent. "
             f"Speaking additionally costs 1 unit. Your current buffer: {agent.optional_response_buffer}. "
             f"Staying silent is free and lets the buffer accumulate for higher-value moments later.")
-        user_content_prompt += f"\n{optional_response_prompt}\n"
+        turn_prompt += f"\n{optional_response_prompt}\n"
 
-        result = agent.take_turn_standard(user_content_prompt, self.gameBoard, model)
+        result = agent.take_turn_standard(turn_prompt, self.gameBoard, model)
         if result.public_response:
             agent.optional_response_buffer = round(agent.optional_response_buffer - 1, 2)
             self.base_manager.debug_print(f"{agent.name} spends buffer - new buffer: {agent.optional_response_buffer} ")

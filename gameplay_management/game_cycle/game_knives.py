@@ -114,14 +114,14 @@ class GameKnives(CycleRound):
         )
 
         knife_str = f"You have {self._knife_string(state.held)}."
-        user_content = (
+        turn_prompt = (
             f"The lights are off. {knife_str} "
             f"For each knife, choose someone to stab or pass to keep it. "
             f"You can stab the same person multiple times. You could stab yourself. "
             f"The other players in the circle are: {self.format_list(other_names)}."
         )
 
-        result = state.agent.take_turn_standard(user_content, self.gameBoard, model)
+        result = state.agent.take_turn_standard(turn_prompt, self.gameBoard, model)
         if chatty:
             self.gameBoard.handle_public_private_output(state.agent, result)
 

@@ -149,7 +149,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
     
     def leader_chooses(self, leader, candidates):
         self._host_broadcast(f"{leader.name}, as the leader of the game, the decision falls to you. Who are you sending home? ")
-        user_content = ("The revote is tied and as the leader of the game, you have the deciding vote. "
+        turn_prompt = ("The revote is tied and as the leader of the game, you have the deciding vote. "
         "You will choose which of the candidates is eliminated. ")
         public_response_prompt = ("After your choice is revealed — explain why you chose to ELIMINATE this person from the game. "
             "If you have already stated your reasons and your vote hasn't changed, be BRIEF, and just reaffirm that your vote hasn't changed. "
@@ -157,7 +157,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
         additional_thought_nudge = ("Who do you want to send home? Will you change your vote or stick with it? ")
         response = self.turn_manager._targeted_turn(leader, self._names(candidates),
                                                    "Who do you choose to eliminate from the competition? ",
-                                                   user_content,
+                                                   turn_prompt,
                                                    public_response_prompt, additional_thought_nudge)
         return self._handle_vote_response([], leader, response)
     
@@ -165,13 +165,13 @@ class VoteBottomTwo(VoteMechanicsMixin):
     
     def _collect_vote_from_candidate(self, agent, candidates, revote = False):
         if revote:
-            user_content = ("You're up for elimination and it's a revote. You've already stated your case, "
+            turn_prompt = ("You're up for elimination and it's a revote. You've already stated your case, "
             "and seen what the others have had to say. Don't repeat your case, but you can rebut what anyone had to say in the vote. ")
             public_response_prompt = ("After your vote is revealed — if you haven't changed your vote you don't need to say anything about it. "
             "Don't repeat your case, only speak directly to individual players if you want to clap back, or change their mind. ")
             additional_thought_nudge = ("Do you think you can change anyone's mind? ")
         else:
-            user_content = ("You are up for elimination and are facing the vote. You and the other candidates vote first. "
+            turn_prompt = ("You are up for elimination and are facing the vote. You and the other candidates vote first. "
             "Reveal who you are sending home, then explain your reasoning. "
             "This is also your last chance to address the other voters before they cast their ballots. "
             )
@@ -181,17 +181,17 @@ class VoteBottomTwo(VoteMechanicsMixin):
             "and to convince the others not to vote for you?")
         return self.turn_manager._targeted_turn(agent, self._names(candidates), 
                                         "Who do you vote to eliminate from the competition? ",
-                                        user_content,
+                                        turn_prompt,
                                public_response_prompt, additional_thought_nudge)
         
     def _collect_vote_normal(self, agent, candidates, revote = False):
         if revote:
-            user_content = ("It's going to a revote. Will you change your vote? If you are changing your vote, explain why and what changed your mind. "
+            turn_prompt = ("It's going to a revote. Will you change your vote? If you are changing your vote, explain why and what changed your mind. "
             )
             public_response_prompt = ("After your vote is revealed, give your speech. If your vote hasn't changed, just a one liner response please. ")
             additional_thought_nudge = ("After hearing from everyone, do you want to change your vote? ")
         else:
-            user_content = ("You are safe and not up for elimination. Reveal your vote to the group, "
+            turn_prompt = ("You are safe and not up for elimination. Reveal your vote to the group, "
             "then deliver your speech about who you are voting for and why. "
             )
             public_response_prompt = ("After your vote is revealed — explain why you chose to vote to ELIMINATE this person from the game. "
@@ -199,6 +199,6 @@ class VoteBottomTwo(VoteMechanicsMixin):
             additional_thought_nudge = ("Who do you want to send home, and why is this the right move for your game? Will you explain yourself or just a give a quip? ")
         return self.turn_manager._targeted_turn(agent, self._names(candidates), 
                                         "Who do you vote to eliminate from the competition? ",
-                                        user_content,
+                                        turn_prompt,
                                public_response_prompt, additional_thought_nudge)
      

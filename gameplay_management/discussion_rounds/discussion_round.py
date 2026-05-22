@@ -24,9 +24,9 @@ class DiscussionRound(BaseRound):
     def run_game(self):
         for player in self.simulationEngine.agents:
             #-----------
-            user_content =  self.cfg.discussion_round_topic
+            turn_prompt =  self.cfg.discussion_round_topic
             basic_model = DynamicModelFactory.create_model_(player, "basic_turn")
-            result = player.take_turn_standard(user_content, self.gameBoard, basic_model)
+            result = player.take_turn_standard(turn_prompt, self.gameBoard, basic_model)
             #----------
             self.gameBoard.new_turn_print() #why only here... probably on any public turn?
             self._output_discussion_round_text(player, result)

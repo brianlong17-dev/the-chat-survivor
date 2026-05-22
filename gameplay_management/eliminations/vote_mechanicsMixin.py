@@ -73,14 +73,14 @@ class VoteMechanicsMixin(BaseRound):
     def vote_one_player_off(self, player, eligible_players_names):
         #If you are up for elimination - this has to double as the plea ? 
         names_str = self.format_list(eligible_players_names)
-        user_content = VotePromptLibrary.vote_one_player_user_content.format(
+        turn_prompt = VotePromptLibrary.vote_one_player_turn_prompt.format(
             eligible_player_names=names_str
         )
         name_field_prompt = VotePromptLibrary.vote_one_player_name_field_prompt
         #----------------
         action_fields = self.turn_manager._choose_name_field(eligible_players_names, name_field_prompt)
-        response_model = DynamicModelFactory.create_model_(player, model_name="vote_out_player", action_fields=action_fields, action_post_response = True) 
-        vote_result = player.take_turn_standard(user_content, self.gameBoard, response_model)
+        response_model = DynamicModelFactory.create_model_(player, model_name="vote_out_player", action_fields=action_fields, action_post_response = True)
+        vote_result = player.take_turn_standard(turn_prompt, self.gameBoard, response_model)
         #-----------------
         
         return vote_result

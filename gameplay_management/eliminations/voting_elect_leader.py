@@ -22,7 +22,7 @@ class VoteElectLeader(VoteMechanicsMixin):
 
     def _vote_for_leader(self, agent, all_names):
         eligible = all_names #[n for n in all_names if n != agent.name]
-        user_content = (
+        turn_prompt = (
             f"Vote for who you want to be the Executioner — the player who will choose who goes home. "
             f"Who do you nominate from: {', '.join(eligible)}?"
         )
@@ -30,7 +30,7 @@ class VoteElectLeader(VoteMechanicsMixin):
         additional_thought_nudge = "What does it mean to elect an executioner? What will happen to them? What power will they have? Who would your choice send home?"
         action_fields = self.turn_manager._choose_name_field(eligible, name_field_prompt)
         response_model = DynamicModelFactory.create_model_(agent, model_name="vote_for_leader", action_fields=action_fields, additional_thought_nudge = additional_thought_nudge)
-        return agent.take_turn_standard(user_content, self.gameBoard, response_model)
+        return agent.take_turn_standard(turn_prompt, self.gameBoard, response_model)
 
     def _collect_leader_votes(self, all_names: Sequence[str]):
         voting_futures = []

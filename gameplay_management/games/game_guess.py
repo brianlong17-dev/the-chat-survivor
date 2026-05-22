@@ -22,8 +22,8 @@ class GameGuess(GameMechanicsMixin):
     # Guess the Number
     # ------------------------------------------------------------------
 
-    def _get_number_guess(self, player, user_content, response_model):
-        response = player.take_turn_standard(user_content, self.gameBoard, response_model)
+    def _get_number_guess(self, player, turn_prompt, response_model):
+        response = player.take_turn_standard(turn_prompt, self.gameBoard, response_model)
         return player, response
 
     def _build_guess_the_number_result_string(self, correct, incorrect, invalid, number_range):

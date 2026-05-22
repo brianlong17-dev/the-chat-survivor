@@ -160,8 +160,8 @@ class BaseRound:
 
     def _private_host_conversation_get_response(self, player, conversation_id, public_response_prompt, instruction_override = None):
         basic_model = DynamicModelFactory.create_model_(player, "basic_turn", public_response_prompt=public_response_prompt)
-        user_content = "Respond privately to the host. "
-        result = player.take_turn_standard(user_content, self.gameBoard, basic_model, instruction_override=instruction_override)
+        turn_prompt = "Respond privately to the host. "
+        result = player.take_turn_standard(turn_prompt, self.gameBoard, basic_model, instruction_override=instruction_override)
         self.gameBoard.log_message_to_conversation(conversation_id, player.name, result.public_response)
         return result
     
@@ -176,9 +176,9 @@ class BaseRound:
             action_fields=action_fields,
             action_post_response=True #need - we're overwriting public response
         )
-        user_content = "Respond privately to each question, back and forth with the host."
+        turn_prompt = "Respond privately to each question, back and forth with the host."
         result = player.take_turn_standard(
-            user_content, self.gameBoard, basic_model,
+            turn_prompt, self.gameBoard, basic_model,
             instruction_override=instruction_override
         )
         for key, value in questions.items():

@@ -58,7 +58,7 @@ class GamePrisonersDilemma(GameMechanicsMixin):
     
     def _choose_partner(self, chooser, available_agents):
         available_agents_names = self._names(available_agents)
-        user_content = (
+        turn_prompt = (
             f"You get to choose who you want to play with from the following list: {available_agents_names}.\n"
             f"Based on your history and the current game context, who do you choose to partner up with for the next mini-game and why? "
         )
@@ -66,7 +66,7 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         public_response_prompt = (f"After your choice has been revealed what do you say? Why did you pick them, and what do you want to say to them? "
         "This is your chance to convince them to split. Keep it brief. ")
         
-        response = self.turn_manager.take_turn(chooser, user_content,  public_response_prompt=public_response_prompt, 
+        response = self.turn_manager.take_turn(chooser, turn_prompt,  public_response_prompt=public_response_prompt, 
                                   action_fields=action_fields, broadcast = True, is_reply = True)
         
          
@@ -74,7 +74,7 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         return self._agent_by_name(partner_name)
         
     def get_split_or_steal_default(self, player, opponent):
-        user_content = ( 
+        turn_prompt = ( 
             f"Prisoner's Dilemma. You are paired with {opponent.name}.\n"
             f"Remember:\n {self.points_rules_string_technical()}"
             f"Based on your game history and personality, make your choice."
@@ -82,12 +82,12 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         
         additional_thought_nudge="What points are available? How will the next elimination work? Do you need points or alliance?"
         public_response_prompt = "A one liner, for AFTER your result has been revealed. (Not neccessary to re-state your choice as it will already be revealed.)."
-        return self.get_split_or_steal(player, user_content, additional_thought_nudge, public_response_prompt)
+        return self.get_split_or_steal(player, turn_prompt, additional_thought_nudge, public_response_prompt)
 
-    def get_split_or_steal(self, player, user_content, additional_thought_nudge, public_response_prompt):
+    def get_split_or_steal(self, player, turn_prompt, additional_thought_nudge, public_response_prompt):
         choices = ["split", "steal"]
         action_fields = self.turn_manager.create_choice_field("action", choices)
-        return self.turn_manager.take_turn(player, user_content= user_content, additional_thought_nudge=additional_thought_nudge, 
+        return self.turn_manager.take_turn(player, turn_prompt= turn_prompt, additional_thought_nudge=additional_thought_nudge, 
                                     action_fields=action_fields, 
                                     public_response_prompt = public_response_prompt,
                                     broadcast = False)
@@ -159,12 +159,12 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         for agent in self.agents:
             others = self._names(self._other_agents(agent, self.agents))
             others_names = self.format_list(others)
-            user_content = (f"Each player plays each player- you will face off against both {others_names} (and they will play each other). \n"
+            turn_prompt = (f"Each player plays each player- you will face off against both {others_names} (and they will play each other). \n"
             f"BEFORE YOU PLAY- You have the opportunity to strategise- Trick a player into splitting? Really arrange to split? Turn the tables two on one? \n"
             f"Remember: {self.points_rules_string_technical()}")
             additional_thought_nudge = "Is there any advanced strategy you could try here? Or simply share pleasentries. "
             public_response_prompt = f"What will you say to {others_names}? Keep it brief, and to strategy. "
-            self.turn_manager.take_turn(agent, user_content= user_content, additional_thought_nudge=additional_thought_nudge, 
+            self.turn_manager.take_turn(agent, turn_prompt= turn_prompt, additional_thought_nudge=additional_thought_nudge, 
                                         public_response_prompt = public_response_prompt,
                                         broadcast = True,
                                         is_reply = True)

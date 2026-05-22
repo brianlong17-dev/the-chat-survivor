@@ -33,7 +33,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
         )
 
     def _get_rps_choice(self, player, opponent):
-        user_content = GamePromptLibrary.rps_game_prompt.format(
+        turn_prompt = GamePromptLibrary.rps_game_prompt.format(
             opponent_name=opponent.name,
             points_string=self._points_string(),
         )
@@ -48,7 +48,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
         )
-        return player.take_turn_standard(user_content, self.gameBoard, model)
+        return player.take_turn_standard(turn_prompt, self.gameBoard, model)
 
     def _calculate_outcome(self, choice0, choice1, name0, name1):
         cfg = self.cfg

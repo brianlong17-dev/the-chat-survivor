@@ -104,17 +104,17 @@ class Debater(BaseAgent):
             else:
                 setattr(self, target_attr_name, value)
 
-    def _get_full_user_content(self, gameBoard, user_content, instruction_override=None) :
-        return UserContent.render(self, gameBoard, user_content, instruction_override)
+    def _get_full_user_content(self, gameBoard, turn_prompt, instruction_override=None) :
+        return UserContent.render(self, gameBoard, turn_prompt, instruction_override)
 
-    def take_turn_standard(self, user_content, gameBoard, model, system_content = None, instruction_override=None):
+    def take_turn_standard(self, turn_prompt, gameBoard, model, system_content = None, instruction_override=None):
                            #, context_model = StandardContext):
         #TODO instruction_override is redudundant now
         #user_content = context_model._get_full_user_content(gameBoard, user_content, instruction_override)
         #TODO - system conent should also be generated here?
-        
-        user_content = self._get_full_user_content(gameBoard, user_content, instruction_override) 
-        turn = self.get_response(user_content, model, gameBoard, system_content) #TODO temperature
+
+        full_user_content = self._get_full_user_content(gameBoard, turn_prompt, instruction_override)
+        turn = self.get_response(full_user_content, model, gameBoard, system_content) #TODO temperature
         self.process_turn_cognitive_fields(turn)
         return turn
     

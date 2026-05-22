@@ -103,7 +103,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
             self._reunion_turn(agent, "", "Respond to the host, and the other players. ", is_reply = True)
         self.time_to_vote()
 
-    def _reunion_turn(self, agent, user_content_prompt, public_response_prompt, optional=False, private_thoughts_prompt = None, is_reply = False):
+    def _reunion_turn(self, agent, turn_prompt, public_response_prompt, optional=False, private_thoughts_prompt = None, is_reply = False):
         #TODO depreciate
         if optional:
             public_response_prompt += " Note: this is an optional turn. If you have nothing to say leave this blank. "
@@ -113,7 +113,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
             
         basic_model = DynamicModelFactory.create_model_(agent, "basic_turn", public_response_prompt=public_response_prompt, 
                                                         additional_thought_nudge=additional_thought_nudge, private_thoughts_prompt = private_thoughts_prompt )
-        result = agent.take_turn_standard(user_content_prompt, self.gameBoard, basic_model)
+        result = agent.take_turn_standard(turn_prompt, self.gameBoard, basic_model)
         
         if not result.public_response:
             self.private_system_message(agent, "You declined to say anything on this turn. ", )
@@ -189,9 +189,9 @@ class FinaleReunionRound(VoteMechanicsMixin):
 
     def _cast_jury_vote(self, juror, finalist_names, deadlock_vote=False):
         if deadlock_vote:
-            user_content = "It's a dead tie. You get to pick the winner. Who do you choose?"
+            turn_prompt = "It's a dead tie. You get to pick the winner. Who do you choose?"
         else:
-            user_content = (
+            turn_prompt = (
                 f"It is time to cast your vote. "
                 f"Vote for one of the finalists: {self.format_list(finalist_names)}. "
                 f"Who do you vote for, and why? Please include every detail of personal drama you mentioned in your pre-round conversation with the host. "
@@ -206,7 +206,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
             model_name="jury_vote",
             action_fields=action_fields
         )
-        result = juror.take_turn_standard(user_content, self.gameBoard, response_model)
+        result = juror.take_turn_standard(turn_prompt, self.gameBoard, response_model)
         self.gameBoard.handle_public_private_output(juror, result, is_reply = True)
         return result
 
@@ -318,10 +318,10 @@ class FinaleReunionRound(VoteMechanicsMixin):
                     "Or maybe you're more irate- its more of a statement. "
                     "Now is your chance to put something to one of the finalists and get a response."
                 )
-                user_content = "Direct a question or statement to one of the finalists."
+                turn_prompt = "Direct a question or statement to one of the finalists."
                 additional_thought_nudge = "What could you ask that would change your mind? What would cause the most drama? "
                 result = self.turn_manager._ask_directed_question(
-                    player, self._names(self.finalists), user_content, public_response_prompt, additional_thought_nudge, is_reply = True
+                    player, self._names(self.finalists), turn_prompt, public_response_prompt, additional_thought_nudge, is_reply = True
                 )
 
                 #--------Get some answers ------

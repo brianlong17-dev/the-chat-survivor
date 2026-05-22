@@ -25,12 +25,12 @@ class GamePerformSobStory(GameMechanicsMixin):
     # Sob Story
     # ------------------------------------------------------------------
 
-    def _get_sob_story(self, player, user_content, response_model):
-        response = player.take_turn_standard(user_content, self.gameBoard, response_model)
+    def _get_sob_story(self, player, turn_prompt, response_model):
+        response = player.take_turn_standard(turn_prompt, self.gameBoard, response_model)
         return player, response
 
-    def _get_sob_story_judgement(self, judge, user_content, response_model, run_in_parallel):
-        response = judge.take_turn_standard(user_content, self.gameBoard, response_model)
+    def _get_sob_story_judgement(self, judge, turn_prompt, response_model, run_in_parallel):
+        response = judge.take_turn_standard(turn_prompt, self.gameBoard, response_model)
         #if not parallel you can print here?f
         if not run_in_parallel:
             self.publicPrivateResponse(judge, response, delay=0)

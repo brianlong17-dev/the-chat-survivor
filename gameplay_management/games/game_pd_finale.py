@@ -26,7 +26,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         reminder =  (f"Remember:\n {self.points_rules_string_technical()}") if not is_tie else ""
             
         self.turn_manager.take_turn(player,
-            user_content="Your chance to react to the final. Say how you feel to be here, "
+            turn_prompt="Your chance to react to the final. Say how you feel to be here, "
                 "what you think of your opponent, and what case you want to make "
                 f"before the last game. Do not reveal your choice.\n{reminder}",
             additional_thought_nudge="What are you considering? What do you want them to think you'll do?",
@@ -42,7 +42,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         opponent = self._other_agents(player, self.agents)[0]
         reminder =  (f"Remember:\n {self.points_rules_string_technical()}") if not is_tie else ""
         self.turn_manager.take_turn(player,
-            user_content=f"Read {opponent.name}'s last message. "
+            turn_prompt=f"Read {opponent.name}'s last message. "
                         "This is your final response before the reveal. "
                         f"React to what they said. Do not reveal your choice.\n{reminder}",
             additional_thought_nudge="Has what they said changed anything? "
@@ -66,22 +66,22 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     
     def finale_reg_split_or_steal(self, player, tie_possible):
         tie_string = "If you end on equal points, you may share the crown. Otherwise: " if tie_possible else ""
-        user_content_post = ( f"{tie_string}" 
+        turn_prompt_post = ( f"{tie_string}" 
             f"The player with the most points wins, and the loser is evicted. "
             f"Remember:\n {self.points_rules_string_technical()}")
         opponent = self._other_agents(player, self.agents)[0]
-        user_content = (
+        turn_prompt = (
             f"The finale. You are facing {opponent.name}.\n"
             f"You have {self.gameBoard.agent_scores[player.name]} points. Your opponent has {self.gameBoard.agent_scores[opponent.name]} points. \n"
-            f"{user_content_post}"
+            f"{turn_prompt_post}"
         )
         additional_thought_nudge = "What is the outcome you want? What choice will you make? "
         public_response_prompt = "What do you say as you reveal your choice? Your final words to the audience and your opponent."
-        return self.get_split_or_steal(player, user_content, additional_thought_nudge, public_response_prompt)
+        return self.get_split_or_steal(player, turn_prompt, additional_thought_nudge, public_response_prompt)
         
     def finale_tie_split_or_steal(self, player):
         opponent = self._other_agents(player, self.agents)[0]
-        user_content = (
+        turn_prompt = (
             f"The finale. You are facing {opponent.name}.\n"
             f"SPLIT: You both share the crown as co-champions.\n"
             f"STEAL: If only you steal, you are the sole champion and they go home with nothing. If you both steal, you both lose.\n"
@@ -89,7 +89,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         )
         additional_thought_nudge = "What has your journey with this person been like? Do you trust them? Is shared glory enough, or do you want it all for yourself?"
         public_response_prompt = "What do you say as you reveal your choice? Your final words to the audience and your opponent."
-        return self.get_split_or_steal(player, user_content, additional_thought_nudge, public_response_prompt)
+        return self.get_split_or_steal(player, turn_prompt, additional_thought_nudge, public_response_prompt)
     
     
     #####################

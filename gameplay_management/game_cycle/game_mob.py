@@ -156,12 +156,12 @@ class GameMob(BaseRound):
                 "REMINDER - You are TARGETTING this person - not joining their mob. "
             )
         )
-        user_content = (
+        turn_prompt = (
             f"You can nominate yourself as a mob leader now. "
             f"Choose a target to mob, or pass to wait and join someone else's mob. "
             f"Valid targets: {self.format_list(valid_targets)}"
         )
-        result = agent.take_turn_standard(user_content, self.gameBoard, model)
+        result = agent.take_turn_standard(turn_prompt, self.gameBoard, model)
         choice = result.mob_choice.strip()
         if choice == self.PASS:
             return None

@@ -26,7 +26,7 @@ class VotePromptLibrary:
         "Who do you want to send home? In terms of allies, competition, what is your best choice?"
     )
 
-    vote_one_player_user_content = (
+    vote_one_player_turn_prompt = (
         "You must vote for one player you want to leave the competition. "
         "They player with the most votes will leave the game. "
         "Who do you vote to leave? Who do you eliminate from {eligible_player_names} and why?"

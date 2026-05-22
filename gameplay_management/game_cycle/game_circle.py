@@ -30,9 +30,9 @@ class GameCircle(CycleRound):
         model = DynamicModelFactory.create_model_(shield_holder, action_fields=action_fields, 
                                 public_response_prompt = "What do you yell at the person you've chosen!",
                                 additional_thought_nudge = "Who do you want to protect? Who is most at danger from the shooter? Would be a valuable ally? To whom do you owe a favor?")
-        user_content = (f"{gun_holder_name} has a gun and is about to shoot! You're already behind a shield. "
+        turn_prompt = (f"{gun_holder_name} has a gun and is about to shoot! You're already behind a shield. "
                         f"There's room for one more... {self.format_list(pool_names)} are all in danger- who will you call to protect? ")
-        result = shield_holder.take_turn_standard(user_content, self.gameBoard, model)
+        result = shield_holder.take_turn_standard(turn_prompt, self.gameBoard, model)
         self.gameBoard.handle_public_private_output(shield_holder, result)
         protected_name = self.turn_manager._get_target_name_from_response(result).strip()
         if protected_name in pool_names:
@@ -91,13 +91,13 @@ class GameCircle(CycleRound):
         for player in unprotected_pool:
             other_names = self.format_list([a.name for a in unprotected_pool if a != player])
             
-            user_content_prompt = (f"{gun_holder_name} has the gun and is about to shoot. "
+            turn_prompt = (f"{gun_holder_name} has the gun and is about to shoot. "
             f"{shield_holder_name} has the SHIELD. - they can only take one other person behind the shield. You, {other_names} are all in danger. "
             f"This is your only opportunity to plead to both! ")
             public_response_prompt = "Do you stay silent, and hope to be ignored? Or do you speak up and plead? Your public response to them both, and to be heard by the group. "
             private_thoughts_prompt = "Do you protect yourself? Can you remind them of alliance? What is the best strategy here? Is it better to stay silent? "
             
-            self.turn_manager._basic_turn(player, user_content_prompt, public_response_prompt, 
+            self.turn_manager._basic_turn(player, turn_prompt, public_response_prompt, 
                              private_thoughts_prompt=private_thoughts_prompt, optional = True)
        
         
