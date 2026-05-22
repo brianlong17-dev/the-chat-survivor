@@ -45,7 +45,7 @@ def create_engine(game_sink, number_of_players: int = 0, generic_players: bool =
     )
     api_client.init(client, model_name)
     game_master = GameMaster(model_name, higher_model_name=higher_model_name)
-    gameBoard = GameBoard(game_sink)
+    game_board = GameBoard(game_sink)
     generator = CharacterGenerator(game_sink, model_name, higher_model_name)
     
     if agents:
@@ -58,4 +58,4 @@ def create_engine(game_sink, number_of_players: int = 0, generic_players: bool =
         rand_names = generator.generate_random_debaters_names(number_of_players)
         agents = generator.generate_agents_from_names(rand_names, allow_rename = allow_rename)
 
-    return SimulationEngine(agents=agents, game_board=gameBoard, game_master=game_master, generator=generator, phase_factory=phase_factory)
+    return SimulationEngine(agents=agents, game_board=game_board, game_master=game_master, generator=generator, phase_factory=phase_factory)

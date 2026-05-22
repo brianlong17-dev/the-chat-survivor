@@ -21,7 +21,7 @@ class PhaseRunner:
 
     @property
     def game_board(self):
-        return self.simulation_engine.gameBoard
+        return self.simulation_engine.game_board
     
     @property
     def _cfg(self):

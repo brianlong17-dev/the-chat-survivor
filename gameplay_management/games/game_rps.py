@@ -48,7 +48,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
         )
-        return player.take_turn_standard(turn_prompt, self.gameBoard, model)
+        return player.take_turn_standard(turn_prompt, self.game_board, model)
 
     def _calculate_outcome(self, choice0, choice1, name0, name1):
         cfg = self.cfg
@@ -78,7 +78,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
 
     def _execute_pairs(self, pairs):
         for agent0, agent1 in pairs:
-            self.gameBoard.host_broadcast(f"{agent0.name} vs {agent1.name} — Rock, Paper, or Scissors?\n")
+            self.game_board.host_broadcast(f"{agent0.name} vs {agent1.name} — Rock, Paper, or Scissors?\n")
 
             with ThreadPoolExecutor() as executor:
                 future0 = executor.submit(self._get_rps_choice, agent0, agent1)
@@ -93,26 +93,26 @@ class GameRockPaperScissors(GameMechanicsMixin):
             p0_gain, p1_gain, msg = self._calculate_outcome(choices[0], choices[1], agent0.name, agent1.name)
 
             for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
-                self.gameBoard.append_agent_points(agent.name, gain)
+                self.game_board.append_agent_points(agent.name, gain)
 
-            self.gameBoard.host_broadcast(f"{msg}\n")
+            self.game_board.host_broadcast(f"{msg}\n")
 
             for agent in (agent0, agent1):
                 reaction = self.turn_manager.respond_to(agent, msg)
                 self.publicPrivateResponse(agent, reaction)
 
     def run_game(self):
-        self.gameBoard.host_broadcast(GamePromptLibrary.rps_game_intro)
+        self.game_board.host_broadcast(GamePromptLibrary.rps_game_intro)
 
         agents = list(self.simulationEngine.agents)
         pairs, leftover = self._generate_random_pairings(agents)
 
         if leftover:
             auto_pts = self.cfg.rps_odd_player_auto_points
-            self.gameBoard.host_broadcast(
+            self.game_board.host_broadcast(
                 f"{leftover.name} has no opponent this round — they automatically receive {auto_pts} points.\n\n"
             )
-            self.gameBoard.append_agent_points(leftover.name, auto_pts)
+            self.game_board.append_agent_points(leftover.name, auto_pts)
             
         #TODO new mechanism- public conversations that execute in unison, one should stay ext
 

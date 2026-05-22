@@ -27,7 +27,7 @@ class SystemPrompt:
     def player_system_prompt(cls, agent):
         #TODO maybe this should be optional- hard to say
         #I think we will make a new class - dashboard- that will have more flexibility
-        optional_response_buffer_string = cls._response_buffer_string(agent) #if gameBoard.optional_responses_in_use else ""
+        optional_response_buffer_string = cls._response_buffer_string(agent) #if game_board.optional_responses_in_use else ""
         
         # Format Life Lessons as a bulleted list (Clean Readability)
         if agent.life_lessons:

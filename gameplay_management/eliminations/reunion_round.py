@@ -63,19 +63,19 @@ class FinaleReunionRound(VoteMechanicsMixin):
         
     def _wake_up_round(self):
         self._on_segment(self._WAKEUP)
-        self.gameBoard._loading_string("Waking players up")
+        self.game_board._loading_string("Waking players up")
         agents_to_wake = [[agent] for agent in self.voting_players if not agent.is_human()]
         conversation_ids = self._run_tasks(agents_to_wake, self._wake_up_player_reunion, parallel=True)
         for conv_id in conversation_ids:
             if conv_id: #human - return None
-                self.gameBoard.close_private_conversation(conv_id)
-        self.gameBoard._end_loading()
+                self.game_board.close_private_conversation(conv_id)
+        self.game_board._end_loading()
 
     def _set_segment_titles(self, segments):
-        self.gameBoard.game_sink.on_segment_titles(segments)
+        self.game_board.game_sink.on_segment_titles(segments)
         
     def _on_segment(self, segment):
-        self.gameBoard.game_sink.on_feed_marker(segment)
+        self.game_board.game_sink.on_feed_marker(segment)
         
     def run_vote(self, immunity_players = None):
         
@@ -113,12 +113,12 @@ class FinaleReunionRound(VoteMechanicsMixin):
             
         basic_model = DynamicModelFactory.create_model_(agent, "basic_turn", public_response_prompt=public_response_prompt, 
                                                         additional_thought_nudge=additional_thought_nudge, private_thoughts_prompt = private_thoughts_prompt )
-        result = agent.take_turn_standard(turn_prompt, self.gameBoard, basic_model)
+        result = agent.take_turn_standard(turn_prompt, self.game_board, basic_model)
         
         if not result.public_response:
             self.private_system_message(agent, "You declined to say anything on this turn. ", )
         else:
-            self.gameBoard.handle_public_private_output(agent, result, is_reply = is_reply)
+            self.game_board.handle_public_private_output(agent, result, is_reply = is_reply)
 
     def _get_highlights(self, player):
         return self.simulationEngine.game_master.create_host_script(
@@ -206,8 +206,8 @@ class FinaleReunionRound(VoteMechanicsMixin):
             model_name="jury_vote",
             action_fields=action_fields
         )
-        result = juror.take_turn_standard(turn_prompt, self.gameBoard, response_model)
-        self.gameBoard.handle_public_private_output(juror, result, is_reply = True)
+        result = juror.take_turn_standard(turn_prompt, self.game_board, response_model)
+        self.game_board.handle_public_private_output(juror, result, is_reply = True)
         return result
 
     def time_to_vote(self):
@@ -287,7 +287,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
                     additional_context = player.detailed_summaries_string(), 
                     context_explanation =
                     f"This is the players history. (You should also see their private converstation with the host in the current round context)" ,
-                    game_context = self.gameBoard.context_builder.current_round_formatted(player),
+                    game_context = self.game_board.context_builder.current_round_formatted(player),
                     cot_prompts = [f"Explain {player.name}'s personal history with finalists. What sensitive moments in there could be upsetting? Include detail that you could mention when you introduce {player.name} to ask their question. "]
                 )
 

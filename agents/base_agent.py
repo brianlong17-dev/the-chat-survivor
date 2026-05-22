@@ -67,7 +67,7 @@ class BaseAgent:
         return False
 
     @abstractmethod
-    def _system_prompt(self, gameBoard):
+    def _system_prompt(self, game_board):
         raise NotImplementedError("Subclasses must implement _system_prompt!")
     
     def is_human(self):
@@ -135,9 +135,9 @@ class BaseAgent:
     # ------------------------------------------------------------------
     # Core API call
     # ------------------------------------------------------------------
-    def get_response(self, user_content: str, response_model, gameBoard):
+    def get_response(self, user_content: str, response_model, game_board):
 
-        system_content = self._system_prompt(gameBoard)
+        system_content = self._system_prompt(game_board)
 
         messages = [
             {"role": "system", "content": system_content},

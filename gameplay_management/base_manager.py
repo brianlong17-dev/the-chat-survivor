@@ -18,19 +18,19 @@ class BaseRound:
     #   Setup / Meta    #
     #####################
 
-    def __init__(self, gameBoard, simulationEngine):
-        self.gameBoard = gameBoard
+    def __init__(self, game_board, simulationEngine):
+        self.game_board = game_board
         self.simulationEngine = simulationEngine
         self._debug = True
         self.turn_manager = TurnManager(self)
 
     @property
     def game_log(self):
-        return self.gameBoard.game_log
+        return self.game_board.game_log
 
     def publicPrivateResponse(self, agent: BaseAgent, result, delay: float = 0.0, is_reply = False):
         #TODO deprecate
-        self.gameBoard.handle_public_private_output(agent, result, delay, is_reply=is_reply)
+        self.game_board.handle_public_private_output(agent, result, delay, is_reply=is_reply)
 
     @classmethod
     def is_discussion(cls):
@@ -84,7 +84,7 @@ class BaseRound:
         return random.sample(agents, k=len(agents))
     
     def _agent_score(self, agent_name):
-        return self.gameBoard.agent_scores[agent_name] 
+        return self.game_board.agent_scores[agent_name] 
 
     def get_strategic_players(self, available_agents, top_player = True, multiple = False) -> list[Debater]:
         """
@@ -93,7 +93,7 @@ class BaseRound:
         mode="bottom": Picks from the tail-enders.
         """
         agent_names = self._names(available_agents)
-        current_scores = {name: score for name, score in self.gameBoard.agent_scores.items()
+        current_scores = {name: score for name, score in self.game_board.agent_scores.items()
                         if name in agent_names}
         if not current_scores:
             return []
@@ -114,19 +114,19 @@ class BaseRound:
     #####################
 
     def _host_broadcast(self, message, delay = 0, is_reply = False):
-        self.gameBoard.host_broadcast(message, delay, is_reply=is_reply)
+        self.game_board.host_broadcast(message, delay, is_reply=is_reply)
 
     def _host_broadcast_multiple_choice(self, messages):
-        self.gameBoard.host_broadcast(random.choice(messages))
+        self.game_board.host_broadcast(random.choice(messages))
 
     def _host_current_round_history(self):
-        return self.gameBoard.context_builder.current_round_formatted(self.simulationEngine.game_master)
+        return self.game_board.context_builder.current_round_formatted(self.simulationEngine.game_master)
 
     def private_system_message(self, agent, message, silent = False):
-        admin = self.gameBoard.SYS_ADMIN
+        admin = self.game_board.SYS_ADMIN
         restricted_users = [admin, agent.name]
-        id = self.gameBoard.log_new_restricted_conversation(restricted_users, admin, message)
-        self.gameBoard.close_private_conversation(id, silent)
+        id = self.game_board.log_new_restricted_conversation(restricted_users, admin, message)
+        self.game_board.close_private_conversation(id, silent)
 
     ###########################
     #   Parallel Execution    #
@@ -152,17 +152,17 @@ class BaseRound:
 
     def _initialise_private_host_conversation(self, player, message):
         users = ["Host", player.name]
-        conversation_id = self.gameBoard.log_new_restricted_conversation(users, "Host", message)
+        conversation_id = self.game_board.log_new_restricted_conversation(users, "Host", message)
         return conversation_id
 
     def _private_host_conversation_host_message(self, conversation_id, message):
-        self.gameBoard.log_message_to_conversation(conversation_id, "Host", message)
+        self.game_board.log_message_to_conversation(conversation_id, "Host", message)
 
     def _private_host_conversation_get_response(self, player, conversation_id, public_response_prompt, instruction_override = None):
         basic_model = DynamicModelFactory.create_model_(player, "basic_turn", public_response_prompt=public_response_prompt)
         turn_prompt = "Respond privately to the host. "
-        result = player.take_turn_standard(turn_prompt, self.gameBoard, basic_model, instruction_override=instruction_override)
-        self.gameBoard.log_message_to_conversation(conversation_id, player.name, result.public_response)
+        result = player.take_turn_standard(turn_prompt, self.game_board, basic_model, instruction_override=instruction_override)
+        self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
         return result
     
     def _host_back_and_forth(self, player, questions, instruction_override=None, conversation_id = None):
@@ -178,7 +178,7 @@ class BaseRound:
         )
         turn_prompt = "Respond privately to each question, back and forth with the host."
         result = player.take_turn_standard(
-            turn_prompt, self.gameBoard, basic_model,
+            turn_prompt, self.game_board, basic_model,
             instruction_override=instruction_override
         )
         for key, value in questions.items():
@@ -187,7 +187,7 @@ class BaseRound:
                 conversation_id = self._initialise_private_host_conversation(player, value)
             else:
                 self._private_host_conversation_host_message(conversation_id, value)
-            self.gameBoard.log_message_to_conversation(conversation_id, player.name, answer)
+            self.game_board.log_message_to_conversation(conversation_id, player.name, answer)
         return conversation_id
 
 
@@ -224,7 +224,7 @@ class BaseRound:
             "voters_pending": list(voter_names),
             "is_final": False,
         }
-        self.gameBoard.game_sink.on_widget_update(self._voting_dictionary)
+        self.game_board.game_sink.on_widget_update(self._voting_dictionary)
                 
     
     def _update_voting_widget(self, voter_name, target_name, is_final=False):
@@ -245,9 +245,9 @@ class BaseRound:
             voters_done.append({"name": voter_name, "voted_for": target_name})
         # ------------------------------------------------ #
         self._voting_dictionary["is_final"] = is_final
-        self.gameBoard.game_sink.on_widget_update(self._voting_dictionary)
+        self.game_board.game_sink.on_widget_update(self._voting_dictionary)
         
     def _vote_widget_vote_finalised(self):
         self._voting_dictionary["is_final"] = True
-        self.gameBoard.game_sink.on_widget_update(self._voting_dictionary)
+        self.game_board.game_sink.on_widget_update(self._voting_dictionary)
         

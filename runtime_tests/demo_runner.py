@@ -30,7 +30,7 @@ def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination
 
     engine = create_engine(sink, agents=agents, allow_rename=False)
     if phase_number:
-        engine.gameBoard.phase_number = 11
+        engine.game_board.phase_number = 11
 
     if human_name:
         add_human(human_name, engine, is_dead=True)
@@ -39,7 +39,7 @@ def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination
     agents = {a.name: a for a in engine.agents}
 
     for name, score in finalist_scores.items():
-        engine.gameBoard.agent_scores[name] = score
+        engine.game_board.agent_scores[name] = score
         
     apply_agent_state(agents, agent_state)
     for name in elimination_order:
@@ -149,7 +149,7 @@ def run_demo_pd_finale(sink, human_name: str = None, fixture_choice: str = None)
     agents = create_agents_from_names(all_names)
     engine = create_engine(sink, agents=agents, allow_rename=False)
     if cfg["phase_number"]:
-        engine.gameBoard.phase_number = cfg["phase_number"]
+        engine.game_board.phase_number = cfg["phase_number"]
         
     if human_name:
         add_human(human_name, engine, is_dead=True)
@@ -157,7 +157,7 @@ def run_demo_pd_finale(sink, human_name: str = None, fixture_choice: str = None)
     engine.initialiseGameBoard()
     agents_by_name = {a.name: a for a in engine.agents}
     for name, score in cfg["finalist_scores"].items():
-        engine.gameBoard.agent_scores[name] = score
+        engine.game_board.agent_scores[name] = score
     apply_agent_state(agents_by_name, agent_state)
     
     for agent in list(engine.agents):

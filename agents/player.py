@@ -79,7 +79,7 @@ class Debater(BaseAgent):
     def cognitive_fields(self):
         return {**self.logic_fields(), **self.internal_thinking_fields()}
     
-    def _system_prompt(self, gameBoard):
+    def _system_prompt(self, game_board):
         return SystemPrompt.render(self)
       
     def process_turn_cognitive_fields(self, turn):
@@ -108,12 +108,12 @@ class Debater(BaseAgent):
             else:
                 setattr(self, target_attr_name, value)
 
-    def _get_full_user_content(self, gameBoard, turn_prompt, instruction_override=None) :
-        return UserContent.render(self, gameBoard, turn_prompt, instruction_override)
+    def _get_full_user_content(self, game_board, turn_prompt, instruction_override=None) :
+        return UserContent.render(self, game_board, turn_prompt, instruction_override)
 
-    def take_turn_standard(self, turn_prompt, gameBoard, model, instruction_override=None):
-        full_user_content = self._get_full_user_content(gameBoard, turn_prompt, instruction_override)
-        turn = self.get_response(full_user_content, model, gameBoard) 
+    def take_turn_standard(self, turn_prompt, game_board, model, instruction_override=None):
+        full_user_content = self._get_full_user_content(game_board, turn_prompt, instruction_override)
+        turn = self.get_response(full_user_content, model, game_board) 
         self.process_turn_cognitive_fields(turn)
         return turn
     

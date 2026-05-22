@@ -22,7 +22,7 @@ class SimulationEngine:
         self.game_master = game_master
         self.phase_factory = phase_factory
 
-        self.gameBoard = game_board
+        self.game_board = game_board
         self.generator = generator
         self.gameplay_config = GameConfig()
         self.phase_factory.initialise_game_config(self.gameplay_config)
@@ -34,14 +34,14 @@ class SimulationEngine:
         self.dead_agents = []
             
     def initialiseGameBoard(self):
-        self.gameBoard.initialize_agents(self.agents)
-        self.gameBoard.phase_runner = self.phase_runner
+        self.game_board.initialize_agents(self.agents)
+        self.game_board.phase_runner = self.phase_runner
         
     def eliminate_player(self, agent):
         agent.game_over = True
         self.agents.remove(agent)
         self.dead_agents.append(agent)
-        self.gameBoard.remove_agent_state(agent.name)
+        self.game_board.remove_agent_state(agent.name)
         
     def _select_debug_targets(self):
         debug_targets = ['Morty Smith', 'Lady Macbeth']
@@ -67,11 +67,11 @@ class SimulationEngine:
         self.run_phase_loop()
     
     def run_phase_loop(self):
-        while len(self.agents) > 1 and not self.gameBoard.game_over:
-            phase = self.phase_factory.get_phase_recipe(self.gameBoard.phase_number + 1, len(self.agents), self.gameplay_config)
+        while len(self.agents) > 1 and not self.game_board.game_over:
+            phase = self.phase_factory.get_phase_recipe(self.game_board.phase_number + 1, len(self.agents), self.gameplay_config)
             self.phase_runner.run_phase(phase)
         #------------Fin------------#
-        self.gameBoard.game_sink.on_game_over([agent.name for agent in self.agents])
+        self.game_board.game_sink.on_game_over([agent.name for agent in self.agents])
         api_client.print_summary()
         self._post_game_interview()
         

@@ -28,8 +28,8 @@ if __name__ == "__main__":
     agents = {a.name: a for a in engine.agents}
 
     # ── 4. Set scores (finalists) ──
-    engine.gameBoard.agent_scores["Avatar Aang"] = 39
-    engine.gameBoard.agent_scores["Morty Smith"] = 39
+    engine.game_board.agent_scores["Avatar Aang"] = 39
+    engine.game_board.agent_scores["Morty Smith"] = 39
 
     # ── 5. Eliminate dead agents in order (earliest eliminated first) ──
     elimination_order = [
@@ -73,8 +73,8 @@ if __name__ == "__main__":
             agent.phase_summaries_brief[int(phase_str)] = text
 
     # ── 7. Run the reunion ──
-    engine.gameBoard.new_phase()
-    engine.gameBoard.newRound()
+    engine.game_board.new_phase()
+    engine.game_board.newRound()
 
     phase = PhaseRecipe(rounds=[FinaleReunionRound])
     engine.phase_runner.run_phase(phase)

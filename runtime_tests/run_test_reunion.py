@@ -24,11 +24,11 @@ if __name__ == "__main__":
     elphie = agents["Agent Elphie"]
 
     # ── 2. Set scores ──
-    engine.gameBoard.agent_scores["Agent Alpha"] = 22
-    engine.gameBoard.agent_scores["Agent Beta"] = 18
-    engine.gameBoard.agent_scores["Agent Capa"] = 0
-    engine.gameBoard.agent_scores["Agent Delta"] = 0
-    engine.gameBoard.agent_scores["Agent Elphie"] = 0
+    engine.game_board.agent_scores["Agent Alpha"] = 22
+    engine.game_board.agent_scores["Agent Beta"] = 18
+    engine.game_board.agent_scores["Agent Capa"] = 0
+    engine.game_board.agent_scores["Agent Delta"] = 0
+    engine.game_board.agent_scores["Agent Elphie"] = 0
 
     # ── 3. Eliminate 3 agents (Capa phase 1, Delta phase 2, Elphie phase 3) ──
     for agent in [capa, delta, elphie]:
@@ -221,10 +221,10 @@ if __name__ == "__main__":
             agent.phase_summaries_brief[phase_num] = summaries["brief"]
 
     # ── 6. Set up gameboard state and run reunion ──
-    engine.gameBoard.new_phase()
-    engine.gameBoard.newRound()
+    engine.game_board.new_phase()
+    engine.game_board.newRound()
 
-    #reunion = FinaleReunionRound(engine.gameBoard, engine)
+    #reunion = FinaleReunionRound(engine.game_board, engine)
     phase = PhaseRecipe(rounds=[FinaleReunionRound])
     engine.phase_runner.run_phase(phase)
     #reunion.run_game()

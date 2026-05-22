@@ -18,8 +18,8 @@ class WildcardImmunity(ImmunityMechanicsMixin):
         "They are the wild card, and can be both a threat and an asset to the other players. They are often the most entertaining to watch, "
         "but also the most difficult to predict.")
         response = self.simulationEngine.game_master.choose_agent_based_on_parameter(
-            self.gameBoard,
-            self.gameBoard.agent_names(),
+            self.game_board,
+            self.game_board.agent_names(),
             parameter,
         )
         winner = self._agent_by_name(response.target_name)
@@ -30,7 +30,7 @@ class WildcardImmunity(ImmunityMechanicsMixin):
                        f"The producers say: '{response.public_reason}' \n"
                        f"Well done, {response.target_name}!")
         
-        self.gameBoard.host_broadcast(host_string)
+        self.game_board.host_broadcast(host_string)
         
         winner_response = self.turn_manager.respond_to(winner, host_string)
         self.publicPrivateResponse(winner, winner_response)
@@ -40,7 +40,7 @@ class WildcardImmunity(ImmunityMechanicsMixin):
     def get_wildcard_player_random_trait(self) -> list[str]:
         traits = ["chaotic", "kind", "vengeful", "calculating"]
         trait = random.choice(traits)
-        response = self.simulationEngine.game_master.choose_agent_based_on_parameter(self.gameBoard, self.gameBoard.agent_names(), trait)
+        response = self.simulationEngine.game_master.choose_agent_based_on_parameter(self.game_board, self.game_board.agent_names(), trait)
         print(response)
         return [response.target_name]
     

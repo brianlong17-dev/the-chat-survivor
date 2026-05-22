@@ -18,8 +18,8 @@ class TurnManager:
         self.optional_responses_in_use = False
 
     @property
-    def gameBoard(self):
-        return self.base_manager.gameBoard
+    def game_board(self):
+        return self.base_manager.game_board
 
     # --- Model Creation ---
     
@@ -104,14 +104,14 @@ class TurnManager:
         if optional:
             result = self._basic_turn_optional(model, player, turn_prompt)
         else:
-            result = player.take_turn_standard(turn_prompt, self.gameBoard, model, instruction_override=instruction_override)
+            result = player.take_turn_standard(turn_prompt, self.game_board, model, instruction_override=instruction_override)
 
         #TODO modified broadcasts need to live outside
         if broadcast and result and result.public_response:
             directed_to_name = self._get_target_name_from_response(result) if include_target_name else None
             #this needs to go out of here. 
             directed_to_name = None if directed_to_name == 'Group' else directed_to_name
-            self.gameBoard.handle_public_private_output(player, result, directed_to_name = directed_to_name, is_reply = is_reply)
+            self.game_board.handle_public_private_output(player, result, directed_to_name = directed_to_name, is_reply = is_reply)
 
         return result
 
@@ -174,7 +174,7 @@ class TurnManager:
             f"Staying silent is free and lets the buffer accumulate for higher-value moments later.")
         turn_prompt += f"\n{optional_response_prompt}\n"
 
-        result = agent.take_turn_standard(turn_prompt, self.gameBoard, model)
+        result = agent.take_turn_standard(turn_prompt, self.game_board, model)
         if result.public_response:
             agent.optional_response_buffer = round(agent.optional_response_buffer - 1, 2)
             self.base_manager.debug_print(f"{agent.name} spends buffer - new buffer: {agent.optional_response_buffer} ")

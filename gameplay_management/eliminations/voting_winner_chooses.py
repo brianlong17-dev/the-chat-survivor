@@ -34,12 +34,12 @@ class VoteWinnerChooses(VoteMechanicsMixin):
         leading_player= self.get_strategic_players(self.simulationEngine.agents, top_player = True)[0]
         immunity_players = self._validate_immunity(immunity_players)
         up_for_elimination = [
-            name for name in self.gameBoard.agent_names()
+            name for name in self.game_board.agent_names()
             if name != leading_player.name and name not in immunity_players
         ]
         
         if not up_for_elimination:
-            self.gameBoard.host_broadcast("No players qualify for elimination! Everyone is safe")
+            self.game_board.host_broadcast("No players qualify for elimination! Everyone is safe")
             return
             
                 
@@ -48,12 +48,12 @@ class VoteWinnerChooses(VoteMechanicsMixin):
             other_agent_names=", ".join(up_for_elimination),
         )
 
-        self.gameBoard.host_broadcast(leading_player_message)
+        self.game_board.host_broadcast(leading_player_message)
         
         
         model = self._get_winner_chooses_model(leading_player, up_for_elimination)
         context_msg = VotePromptLibrary.winner_chooses_context_msg
-        response = leading_player.take_turn_standard(context_msg, self.gameBoard, model)
+        response = leading_player.take_turn_standard(context_msg, self.game_board, model)
         #-------------
         
         self.publicPrivateResponse(leading_player, response)

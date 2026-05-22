@@ -79,7 +79,7 @@ def setup_game_from_fixture(
     engine = create_engine(sink, agents=agents, allow_rename=False)
 
     if phase_number is not None:
-        engine.gameBoard.phase_number = phase_number
+        engine.game_board.phase_number = phase_number
 
     if human_name:
         add_human(human_name, engine, is_dead=human_is_dead)
@@ -88,10 +88,10 @@ def setup_game_from_fixture(
     agents_by_name = {a.name: a for a in engine.agents}
 
     for name, score in scores.items():
-        engine.gameBoard.agent_scores[name] = score
+        engine.game_board.agent_scores[name] = score
 
     if human_name and human_name not in scores:
-        engine.gameBoard.agent_scores[human_name] = 0
+        engine.game_board.agent_scores[human_name] = 0
 
     apply_agent_state(agents_by_name, agent_state)
 

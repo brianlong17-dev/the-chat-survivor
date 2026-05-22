@@ -23,7 +23,7 @@ class GameGuess(GameMechanicsMixin):
     # ------------------------------------------------------------------
 
     def _get_number_guess(self, player, turn_prompt, response_model):
-        response = player.take_turn_standard(turn_prompt, self.gameBoard, response_model)
+        response = player.take_turn_standard(turn_prompt, self.game_board, response_model)
         return player, response
 
     def _build_guess_the_number_result_string(self, correct, incorrect, invalid, number_range):
@@ -52,7 +52,7 @@ class GameGuess(GameMechanicsMixin):
     def run_game_guess_the_number(self): #just none while i set up
 
         # --- Config -----------------------------------------------------------
-        #number_range = self.gameBoard.phase_factory.number_range_for_guessing
+        #number_range = self.game_board.phase_factory.number_range_for_guessing
         #TODO  get this from the phaseFactory
         
         number_range = self.cfg.guess_number_range #phase_factory.guess_number_range
@@ -65,7 +65,7 @@ class GameGuess(GameMechanicsMixin):
             f"I'm thinking of a number between 1 and {number_range}.\n"
             f"Guess correctly and you'll win {points_for_correct} points!"
         )
-        self.gameBoard.host_broadcast(host_intro)
+        self.game_board.host_broadcast(host_intro)
 
         # --- Build the response model (same for everyone) ---------------------
         valid_choices = list(range(1, number_range + 1))
@@ -121,17 +121,17 @@ class GameGuess(GameMechanicsMixin):
                 incorrect.append((player, guess))
 
         # --- Reveal and award points ------------------------------------------
-        self.gameBoard.host_broadcast(
+        self.game_board.host_broadcast(
             f"🎲 The number was... **{winning_number}**!"
         )
 
         result_string = self._build_guess_the_number_result_string(
             correct, incorrect, invalid, points_for_correct
         )
-        self.gameBoard.host_broadcast(result_string)
+        self.game_board.host_broadcast(result_string)
 
         for player in correct:
-            self.gameBoard.append_agent_points(player.name, points_for_correct)
+            self.game_board.append_agent_points(player.name, points_for_correct)
 
         #DELAY
         # --- Reactions (optional but consistent with PD pattern) --------------

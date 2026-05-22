@@ -77,24 +77,24 @@ class IntroRound(BaseRound):
             qa = self.default_questionnaire()
             
         users = ["Host", player.name]
-        conversation_id = self.gameBoard.log_new_restricted_conversation(users, "Host", welcome_message)
+        conversation_id = self.game_board.log_new_restricted_conversation(users, "Host", welcome_message)
         turn_prompt = "Continue the conversation. "
         public_response_prompt = "This is your message of response to the host. "
         basic_model = DynamicModelFactory.create_model_(player, "basic_turn",
                                                         public_response_prompt = public_response_prompt )
-        result = player.take_turn_standard(turn_prompt, self.gameBoard, basic_model)
-        self.gameBoard.log_message_to_conversation(conversation_id, player.name, result.public_response)
+        result = player.take_turn_standard(turn_prompt, self.game_board, basic_model)
+        self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
         self._host_back_and_forth(player, qa, conversation_id = conversation_id)
         player.initialising = False
-        self.gameBoard.system_broadcast(f"{player.name} has entered the chat.", private = True)
+        self.game_board.system_broadcast(f"{player.name} has entered the chat.", private = True)
         return conversation_id
             
 
     def run_game(self):
-        self.gameBoard._loading_string("Preparing our players")
+        self.game_board._loading_string("Preparing our players")
         conversation_ids = self._run_tasks([[agent] for agent in self._shuffled_agents() if not agent.is_human()], 
                                            self._wake_up_player_i, parallel = True)
         for conv_id in conversation_ids:
-            self.gameBoard.close_private_conversation(conv_id)
-        self.gameBoard._end_loading()
+            self.game_board.close_private_conversation(conv_id)
+        self.game_board._end_loading()
         #shoot one message

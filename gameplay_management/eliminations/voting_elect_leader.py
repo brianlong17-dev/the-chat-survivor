@@ -30,7 +30,7 @@ class VoteElectLeader(VoteMechanicsMixin):
         additional_thought_nudge = "What does it mean to elect an executioner? What will happen to them? What power will they have? Who would your choice send home?"
         action_fields = self.turn_manager._choose_name_field(eligible, name_field_prompt)
         response_model = DynamicModelFactory.create_model_(agent, model_name="vote_for_leader", action_fields=action_fields, additional_thought_nudge = additional_thought_nudge)
-        return agent.take_turn_standard(turn_prompt, self.gameBoard, response_model)
+        return agent.take_turn_standard(turn_prompt, self.game_board, response_model)
 
     def _collect_leader_votes(self, all_names: Sequence[str]):
         voting_futures = []
@@ -57,7 +57,7 @@ class VoteElectLeader(VoteMechanicsMixin):
 
         # --- Step 1: Each player votes for a leader (anyone except themselves) ---
         host_message = "TIME TO ELECT THE EXECUTIONER. Each player will vote for who they want to carry the power to send someone home."
-        self.gameBoard.host_broadcast(host_message)
+        self.game_board.host_broadcast(host_message)
 
         # Collect votes — everyone is eligible to be elected leader (including immune players)
         votes = self._collect_leader_votes(all_names)
@@ -70,7 +70,7 @@ class VoteElectLeader(VoteMechanicsMixin):
 
         # --- Step 3: Leader reacts ---
         leader = next(a for a in self.simulationEngine.agents if a.name == leader_name)
-        self.gameBoard.host_broadcast(
+        self.game_board.host_broadcast(
             f"The votes are in... {leader_name}, you have been elected Executioner. "
             f"With great power comes great vengeance. Who will you be sending home today, and why?"
         )
@@ -82,19 +82,19 @@ class VoteElectLeader(VoteMechanicsMixin):
         response_model = DynamicModelFactory.create_model_(leader, model_name="elect_leader_choice", action_fields=action_fields)
         leader_response = leader.take_turn_standard(
             f"You have been elected Executioner. Choose who to eliminate from: {', '.join(players_up_for_elimination)}",
-            self.gameBoard, response_model
+            self.game_board, response_model
         )
         self.publicPrivateResponse(leader, leader_response)
 
         # --- Step 4: Reveal and eliminate ---
         victim_name = self.turn_manager._get_target_name_from_response(leader_response)
         if not victim_name or victim_name not in players_up_for_elimination:
-            self.gameBoard.host_broadcast(f"⚡ {leader_name} has made an invalid choice of... {victim_name}.")
+            self.game_board.host_broadcast(f"⚡ {leader_name} has made an invalid choice of... {victim_name}.")
             victim_name = random.choice(players_up_for_elimination)
-            self.gameBoard.host_broadcast(f"⚡Instead, {victim_name} will be sent home.")
+            self.game_board.host_broadcast(f"⚡Instead, {victim_name} will be sent home.")
         else:
-            self.gameBoard.host_broadcast(f"⚡ {leader_name} has made their choice... {victim_name} will be going home.")
+            self.game_board.host_broadcast(f"⚡ {leader_name} has made their choice... {victim_name} will be going home.")
         #perfect opportunity to run thru the model to make a joke or pun
         self.eliminate_player_by_name(victim_name)
-        self.gameBoard.host_broadcast(f"⚡ {leader_name}, thank you for your service. Your time as executioner has come to an end... unless a re-election?")
+        self.game_board.host_broadcast(f"⚡ {leader_name}, thank you for your service. Your time as executioner has come to an end... unless a re-election?")
         

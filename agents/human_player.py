@@ -18,8 +18,8 @@ class Human(Debater):
     def is_human(self):
         return True
     
-    def get_response(self, user_content: str, response_model, gameBoard, system_content: str = None):
-        system_content = system_content or self._system_prompt(gameBoard)
+    def get_response(self, user_content: str, response_model, game_board, system_content: str = None):
+        system_content = system_content or self._system_prompt(game_board)
         if self.is_testing:
             print(f"[GAME STATE]:\n{system_content}")
             print(f"[PROMPT]:\n{user_content}")
@@ -27,37 +27,37 @@ class Human(Debater):
 
         fields = response_model.model_fields
         while True:
-            answers = self._collect_answers(fields, gameBoard)
+            answers = self._collect_answers(fields, game_board)
             try:
                 return response_model(**answers)
             except ValidationError as e:
-                self._handle_validation_error(e, gameBoard.game_sink)
+                self._handle_validation_error(e, game_board.game_sink)
 
     def process_turn_cognitive_fields(self, turn):
         pass 
     
-    def _collect_answers(self, fields: dict, gameBoard) -> dict:
+    def _collect_answers(self, fields: dict, game_board) -> dict:
         answers = {}
         for field_name, field_info in fields.items():
             if field_name == "private_thoughts":
                 answers[field_name] = ""
                 continue
-            answers[field_name] = self._prompt_field(field_name, field_info, gameBoard)
+            answers[field_name] = self._prompt_field(field_name, field_info, game_board)
         return answers
 
-    def _prompt_field(self, field_name: str, field_info, gameBoard) -> str:
+    def _prompt_field(self, field_name: str, field_info, game_board) -> str:
         description = field_info.description or f"Enter value for {field_name}"
         annotation = field_info.annotation
         if get_origin(annotation) is Literal:
             choices = [str(a) for a in get_args(annotation)]
-            return gameBoard.game_sink.get_user_input_multiple_choice(field_name, description, choices)
-        return gameBoard.game_sink.get_user_input_simple(field_name, description)
+            return game_board.game_sink.get_user_input_multiple_choice(field_name, description, choices)
+        return game_board.game_sink.get_user_input_simple(field_name, description)
 
-    def _handle_validation_error(self, e: ValidationError, gameBoard):
-        gameBoard.game_sink.system_private("❌ FORMAT ERROR: The game engine rejected your input.")
+    def _handle_validation_error(self, e: ValidationError, game_board):
+        game_board.game_sink.system_private("❌ FORMAT ERROR: The game engine rejected your input.")
         for error in e.errors():
-            gameBoard.game_sink.system_private(f" - Field '{error['loc'][0]}': {error['msg']}")
-        gameBoard.game_sink.system_private("Let's try that again...\n")
+            game_board.game_sink.system_private(f" - Field '{error['loc'][0]}': {error['msg']}")
+        game_board.game_sink.system_private("Let's try that again...\n")
 
     
     def summarise_phase(self, game_board):

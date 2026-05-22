@@ -4,8 +4,8 @@ import random
 
 
 class ImmunityMechanicsMixin(BaseRound):
-    def __init__(self, gameBoard, simulationEngine):
-        super().__init__(gameBoard, simulationEngine) 
+    def __init__(self, game_board, simulationEngine):
+        super().__init__(game_board, simulationEngine) 
     
     
     @classmethod

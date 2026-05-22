@@ -121,9 +121,9 @@ class GameKnives(CycleRound):
             f"The other players in the circle are: {self.format_list(other_names)}."
         )
 
-        result = state.agent.take_turn_standard(turn_prompt, self.gameBoard, model)
+        result = state.agent.take_turn_standard(turn_prompt, self.game_board, model)
         if chatty:
-            self.gameBoard.handle_public_private_output(state.agent, result)
+            self.game_board.handle_public_private_output(state.agent, result)
 
         targets = []
         
@@ -170,7 +170,7 @@ class GameKnives(CycleRound):
         announcement = (f"With {self._knife_string(count)} in their back: "
         f"It is with great sadness we announce the death of {self.format_list(dead_names)}. ")
 
-        self.gameBoard.host_broadcast(announcement)
+        self.game_board.host_broadcast(announcement)
         for name in dead_names:
             self.private_system_message(self._agent_by_name(name), f"{name} - you haven't been eliminated from the game! You're only finished up in the minigame. Well done! ", silent = True)
 
@@ -185,13 +185,13 @@ class GameKnives(CycleRound):
         if count == 0:
             return
         runners_up = [p for p in survivors if p.stabs == count]
-        self.gameBoard.host_broadcast(
+        self.game_board.host_broadcast(
             f"{count} bonus point{'s' if count > 1 else ''} for being the most stabbed survivor"
             f" go to: {self.format_list([p.name for p in runners_up])}",
             delay=1
         )
         for p in runners_up:
-            self.gameBoard.append_agent_points(p.name, count)
+            self.game_board.append_agent_points(p.name, count)
 
         for p in runners_up:
             self.turn_manager._basic_turn(p.agent, f"You were stabbed {count} times, but survived. How do you feel? What do you have to say? Do you have any suspects? ",
@@ -264,7 +264,7 @@ class GameKnives(CycleRound):
             else "You receive a point for every round you survive. "
         )
 
-        self.gameBoard.host_broadcast(
+        self.game_board.host_broadcast(
             "Welcome to KNIVES! You each have one knife. When the lights go out, "
             "you can stab someone... or pass and keep your knife for later. "
             "When the lights come up, the player with the most knives in their back dies. Ties? Both die. "
@@ -275,7 +275,7 @@ class GameKnives(CycleRound):
         )
         
         if self.SECRET_NOTES:
-            self.gameBoard.host_broadcast("When the lights go out, you also have the opportunity to pass a note to another player- signed or anonymous. ")
+            self.game_board.host_broadcast("When the lights go out, you also have the opportunity to pass a note to another player- signed or anonymous. ")
 
         round_number = 0
         while len(players) > 1:
@@ -292,10 +292,10 @@ class GameKnives(CycleRound):
     def _play_round(self, players, round_number):
         """Run one round. Returns the surviving players, or None if the game ends."""
         #input("continue? ")  # TEMP: manual step-through
-        self.gameBoard.host_broadcast(self._knives_count_string(players), delay = 1)
+        self.game_board.host_broadcast(self._knives_count_string(players), delay = 1)
         if self.optional_responses_in_use:
             self._optional_pitch(players)
-        self.gameBoard.host_broadcast(f"Round {round_number}. Ready? Lights out...!", delay = 1)
+        self.game_board.host_broadcast(f"Round {round_number}. Ready? Lights out...!", delay = 1)
 
         self._collect_stabs(players)
         self._reveal_stabs_privately(players)
@@ -312,12 +312,12 @@ class GameKnives(CycleRound):
         # All die simultaneously → either a quiet round or everyone wins
         if not survivors:
             if max_stabs == 0:
-                self.gameBoard.host_broadcast(f"No stabs in the dark... we continue. ")
+                self.game_board.host_broadcast(f"No stabs in the dark... we continue. ")
                 #"I think each player should get to say something here lol theyre conspiring. "
                 return players
 
             survivor_names = self.format_list([p.name for p in players])
-            self.gameBoard.host_broadcast(
+            self.game_board.host_broadcast(
                 f"Incredible... {survivor_names} — you all go down together. "
                 f"Each with {self._knife_string(max_stabs)} in their back."
             )
@@ -331,9 +331,9 @@ class GameKnives(CycleRound):
             self._runner_up_bonus(sorted_players)
         else:
             # ── Award survival point ──
-            self.gameBoard.host_broadcast(f"{self.format_list([p.name for p in survivors])} each get a point for surviving." )
+            self.game_board.host_broadcast(f"{self.format_list([p.name for p in survivors])} each get a point for surviving." )
             for p in survivors:
-                self.gameBoard.append_agent_points(p.name, 1)
+                self.game_board.append_agent_points(p.name, 1)
 
         # ── Pool the dead's knives (held + lodged-in-back) for redistribution ──
         pool_size = sum(p.held + p.stabs for p in dead)
@@ -341,12 +341,12 @@ class GameKnives(CycleRound):
         # ── Sole survivor — bonus and game ends ──
         if len(survivors) == 1:
             sole = survivors[0]
-            self.gameBoard.host_broadcast(f"Our last survivor! {sole.name} receives a bonus of {self.SOLE_SURVIVOR_BONUS} points! ")
-            self.gameBoard.append_agent_points(sole.name, self.SOLE_SURVIVOR_BONUS)
+            self.game_board.host_broadcast(f"Our last survivor! {sole.name} receives a bonus of {self.SOLE_SURVIVOR_BONUS} points! ")
+            self.game_board.append_agent_points(sole.name, self.SOLE_SURVIVOR_BONUS)
             return None
 
         # ── Survivors gain back-knives ──
-        self.gameBoard.host_broadcast(f"Redistributing the {self._knife_string(pool_size)} found on {self.format_list([p.name for p in dead])}...\n\n", delay = 1)
+        self.game_board.host_broadcast(f"Redistributing the {self._knife_string(pool_size)} found on {self.format_list([p.name for p in dead])}...\n\n", delay = 1)
         for p in survivors:
             p.held += p.stabs
 

@@ -16,16 +16,16 @@ class GameMaster(BaseAgent):
         self.name = "Host"
     
     
-    def _system_prompt(self, gameBoard):
+    def _system_prompt(self, game_board):
         #TODO spruce up with the other one
         #Used in the wildcard selection
         return ( f"You oversee this game. You help to make the information manageable for the LLMs playing."
                 f"PAST SUMARRIES: {"\n".join(self.round_summaries)} "
                  f"#########################"
-                 f"Current round: {gameBoard.context_builder.current_round_formatted(self)}")
+                 f"Current round: {game_board.context_builder.current_round_formatted(self)}")
     
     
-    def choose_agent_based_on_parameter(self, gameBoard, allowed_names, parameter: str):
+    def choose_agent_based_on_parameter(self, game_board, allowed_names, parameter: str):
         #TODO
         if parameter == "chaotic":
             parameter = ("The most CHAOTIC player is the one that has the most unpredictable actions, and causes the most disruption to the other players. "
@@ -37,10 +37,10 @@ class GameMaster(BaseAgent):
         fields = {"target_name" : choice_definition, "public_reason" : public_reason}
         response_model = create_model("choose_agent_based_on_parameter", __base__=BaseResponse, **fields)
         user_content = (f"You need to choose a single player that best represents this parameter: '{parameter}'.")
-        return self.get_response(user_content, response_model, gameBoard)
+        return self.get_response(user_content, response_model, game_board)
         #---------------
     
-    def summariseRound(self, gameBoard):
+    def summariseRound(self, game_board):
         turn = api_client.create(
             response_model=SummariseRoundComplex,
             messages=[
@@ -48,7 +48,7 @@ class GameMaster(BaseAgent):
                 {"role": "user", "content": f"PAST SUMARRIES: {"\n".join(self.round_summaries)} "
                  f"#########################"
                  f"#########################"
-                 f"Summarise the following round: {gameBoard.context_builder.current_round_formatted(self)} Scores:  {gameBoard.agent_scores}"}
+                 f"Summarise the following round: {game_board.context_builder.current_round_formatted(self)} Scores:  {game_board.agent_scores}"}
             ]
         )
         self.round_summaries.append(turn.round_summary)

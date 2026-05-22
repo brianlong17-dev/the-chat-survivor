@@ -110,9 +110,9 @@ class GameMob(BaseRound):
         self._host_broadcast(f"No one stepped up — {agent.name}, you've been drafted as a mob leader!")
         result = agent.take_turn_standard(
             f"You've been forced into leadership. You must choose a target: {self.format_list(valid_targets)}",
-            self.gameBoard, model
+            self.game_board, model
         )
-        self.gameBoard.handle_public_private_output(agent, result)
+        self.game_board.handle_public_private_output(agent, result)
         choice = result.mob_choice.strip()
         if choice in valid_targets:
             return Mob(agent, choice, [])
@@ -161,13 +161,13 @@ class GameMob(BaseRound):
             f"Choose a target to mob, or pass to wait and join someone else's mob. "
             f"Valid targets: {self.format_list(valid_targets)}"
         )
-        result = agent.take_turn_standard(turn_prompt, self.gameBoard, model)
+        result = agent.take_turn_standard(turn_prompt, self.game_board, model)
         choice = result.mob_choice.strip()
         if choice == self.PASS:
             return None
         
         elif choice in valid_targets:
-            self.gameBoard.handle_public_private_output(agent, result)
+            self.game_board.handle_public_private_output(agent, result)
             return Mob(agent, choice, [])
         else:
             self.private_system_message(agent, f"Invalid target choice '{choice}' — your nomination has been ignored.")
@@ -180,7 +180,7 @@ class GameMob(BaseRound):
             self._handle_mob_choice_response(follower, result)
 
     def _handle_mob_choice_response(self, follower, result):
-        self.gameBoard.handle_public_private_output(follower, result, delay = 1)
+        self.game_board.handle_public_private_output(follower, result, delay = 1)
         choice = result.mob_choice.strip()
         chosen_mob = next((m for m in self.mobs if self._mob_label(m, target_label='targetting') == choice), None)
         if not chosen_mob:
@@ -210,7 +210,7 @@ class GameMob(BaseRound):
             prompt = prompt + rejoining_prompt
         result = follower.take_turn_standard(
             prompt,
-            self.gameBoard, model
+            self.game_board, model
         )
         return follower, result
 
@@ -242,9 +242,9 @@ class GameMob(BaseRound):
                 output_string += f"{winner.leader.name} had the most followers — they take control of the mob. "
             else:
                 # Tiebreak by points
-                tied.sort(key=lambda m: self.gameBoard.agent_scores[m.leader.name], reverse=True)
-                top_points = self.gameBoard.agent_scores[tied[0].leader.name]
-                points_tied = [m for m in tied if self.gameBoard.agent_scores[m.leader.name] == top_points]
+                tied.sort(key=lambda m: self.game_board.agent_scores[m.leader.name], reverse=True)
+                top_points = self.game_board.agent_scores[tied[0].leader.name]
+                points_tied = [m for m in tied if self.game_board.agent_scores[m.leader.name] == top_points]
 
                 if len(points_tied) == 1:
                     winner = points_tied[0]
@@ -270,8 +270,8 @@ class GameMob(BaseRound):
         self.mobs = new_mobs
 
     def _split_points(self, mob):
-        points_to_take = self.gameBoard.agent_scores[mob.target]
-        self.gameBoard.append_agent_points(mob.target, -points_to_take)
+        points_to_take = self.game_board.agent_scores[mob.target]
+        self.game_board.append_agent_points(mob.target, -points_to_take)
         total_shares = len(mob.followers) + 2
         share = points_to_take // total_shares
         if share < 1:
@@ -280,9 +280,9 @@ class GameMob(BaseRound):
                 f"{mob.target} didn't have enough points to go around — "
                 f"each mob member earns 1 point, and {mob.leader.name} earns 2 as leader."
             )
-        self.gameBoard.append_agent_points(mob.leader.name, share * 2)
+        self.game_board.append_agent_points(mob.leader.name, share * 2)
         for follower in mob.followers:
-            self.gameBoard.append_agent_points(follower.name, share)
+            self.game_board.append_agent_points(follower.name, share)
         follower_names = self.format_list([f.name for f in mob.followers]) if mob.followers else "no followers"
         self._host_broadcast(
             f"{mob.target} loses {points_to_take} points. "
@@ -359,8 +359,8 @@ class GameMob(BaseRound):
                 )
             else:
                 # tiebreak by leader points
-                score_a = self.gameBoard.agent_scores[mob_a.leader.name]
-                score_b = self.gameBoard.agent_scores[mob_b.leader.name]
+                score_a = self.game_board.agent_scores[mob_a.leader.name]
+                score_b = self.game_board.agent_scores[mob_b.leader.name]
                 if score_a != score_b:
                     winner, loser = (mob_a, mob_b) if score_a > score_b else (mob_b, mob_a)
                     self._host_broadcast(
@@ -420,7 +420,7 @@ class GameMob(BaseRound):
         )
         result = player.take_turn_standard(
             f"The mobs as they stand:\n{self._mobs_string(self.mobs)}\nYou are currently in {self._mob_label(current_mob)}. Will you stay or switch?",
-            self.gameBoard, model
+            self.game_board, model
         )
         choice = result.mob_choice.strip()
         chosen_mob = next((m for m in other_mobs if self._mob_label(m) == choice), None)
@@ -432,8 +432,8 @@ class GameMob(BaseRound):
         current_mob.followers.remove(player)
         chosen_mob.followers.append(player)
         if get_a_point:
-            self.gameBoard.append_agent_points(player.name, self.RECONSIDER_POINTS)
-        self.gameBoard.handle_public_private_output(player, result)
+            self.game_board.append_agent_points(player.name, self.RECONSIDER_POINTS)
+        self.game_board.handle_public_private_output(player, result)
         self._host_broadcast(f"{player.name} switches to {self._mob_label(chosen_mob)}!")
         
         

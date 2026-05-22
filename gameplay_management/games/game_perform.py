@@ -26,11 +26,11 @@ class GamePerformSobStory(GameMechanicsMixin):
     # ------------------------------------------------------------------
 
     def _get_sob_story(self, player, turn_prompt, response_model):
-        response = player.take_turn_standard(turn_prompt, self.gameBoard, response_model)
+        response = player.take_turn_standard(turn_prompt, self.game_board, response_model)
         return player, response
 
     def _get_sob_story_judgement(self, judge, turn_prompt, response_model, run_in_parallel):
-        response = judge.take_turn_standard(turn_prompt, self.gameBoard, response_model)
+        response = judge.take_turn_standard(turn_prompt, self.game_board, response_model)
         #if not parallel you can print here?f
         if not run_in_parallel:
             self.publicPrivateResponse(judge, response, delay=0)
@@ -142,7 +142,7 @@ class GamePerformSobStory(GameMechanicsMixin):
 
     def _broadcast_story(self, performer, story_response, delay=1):
         # Announce performer and publish their story
-        self.gameBoard.host_broadcast(
+        self.game_board.host_broadcast(
             f"🎤 {performer.name} takes the stage..."
         )
         self.publicPrivateResponse(performer, story_response, delay)
@@ -150,7 +150,7 @@ class GamePerformSobStory(GameMechanicsMixin):
     def run_game_sob_story(self):
         # --- Host intro -------------------------------------------------------
         host_intro = GamePromptLibrary.sob_story_host_intro
-        self.gameBoard.host_broadcast(host_intro)
+        self.game_board.host_broadcast(host_intro)
         agents = self._shuffled_agents()
         run_in_parallel = True
 
@@ -183,8 +183,8 @@ class GamePerformSobStory(GameMechanicsMixin):
 
             # Host reads the score summary and awards points
             summary, average = self._build_score_summary(performer.name, scores)
-            self.gameBoard.host_broadcast(summary)
-            self.gameBoard.append_agent_points(performer.name, average)
+            self.game_board.host_broadcast(summary)
+            self.game_board.append_agent_points(performer.name, average)
             round_scores[performer.name] = average
             performer_score_response = self.turn_manager.respond_to(performer, summary)
             self.publicPrivateResponse(performer, performer_score_response)
@@ -194,9 +194,9 @@ class GamePerformSobStory(GameMechanicsMixin):
             f"{name}: {score}" for name, score in round_scores.items()
         )
         overall_str = ",  ".join(
-            f"{name}: {score}" for name, score in self.gameBoard.agent_scores.items()
+            f"{name}: {score}" for name, score in self.game_board.agent_scores.items()
         )
-        self.gameBoard.host_broadcast(
+        self.game_board.host_broadcast(
             f"🎭 SOB STORY results — {round_summary_str}\n"
             f"🏆 Overall standings — {overall_str}\n"
         )

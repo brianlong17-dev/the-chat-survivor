@@ -114,7 +114,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
         vote_counts = Counter(name for name in votes if name and name != victim_name)
         survivors_rewarded = {name: count * points_per_survived_vote for name, count in vote_counts.items()}
         for name, pts in survivors_rewarded.items():
-            self.gameBoard.append_agent_points(name, pts)
+            self.game_board.append_agent_points(name, pts)
 
         if survivors_rewarded:
             reward_str = ", ".join([f"{name} (+{pts})" for name, pts in survivors_rewarded.items()])

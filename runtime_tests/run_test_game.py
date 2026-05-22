@@ -57,9 +57,9 @@ if __name__ == "__main__":
         "Buffy Summers":    10,
     }
     for name, score in scores.items():
-        engine.gameBoard.agent_scores[name] = score
+        engine.game_board.agent_scores[name] = score
         if add_human:
-             engine.gameBoard.agent_scores[human.name] = 9
+             engine.game_board.agent_scores[human.name] = 9
 
     # ── 5. Apply saved state ──
     for name, state in agent_state.items():
@@ -92,8 +92,8 @@ if __name__ == "__main__":
         engine.gameplay_config.cycle_use_context_compression = False
         
         
-    engine.gameBoard.new_phase()
-    engine.gameBoard.newRound()
+    engine.game_board.new_phase()
+    engine.game_board.newRound()
     rounds = 0
     cfg = engine.gameplay_config
     cfg.pd_pairing_method = cfg.pd_pairing_choice_random

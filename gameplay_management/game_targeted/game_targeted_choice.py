@@ -27,11 +27,11 @@ class GameTargetedChoice(GameMechanicsMixin):
         return cleaned or None
     
     def run_targeted_round(self, game_intro, player_intro, game_instruction, logic_callback, response_model_callback, validate_name=True):
-        self.gameBoard.host_broadcast(game_intro)
+        self.game_board.host_broadcast(game_intro)
         available_agents = self._shuffled_agents()
         
         for player in available_agents:
-            self.gameBoard.host_broadcast(player_intro.format(player_name=player.name))
+            self.game_board.host_broadcast(player_intro.format(player_name=player.name))
             
             #---Generate model, check if error----#
             response_model = response_model_callback(player)
@@ -42,7 +42,7 @@ class GameTargetedChoice(GameMechanicsMixin):
                             
                 
             else:
-                response = player.take_turn_standard(game_instruction, self.gameBoard, response_model)
+                response = player.take_turn_standard(game_instruction, self.game_board, response_model)
                 self.publicPrivateResponse(player, response, is_reply = True)
                 
                 target_name = self.turn_manager._get_target_name_from_response(response)
@@ -58,8 +58,8 @@ class GameTargetedChoice(GameMechanicsMixin):
                     # Execute the specific logic (Give vs Steal vs Sacrifice)
                     result_host_string, player_for_reaction = logic_callback(player, target_agent, response)
                     
-            self.gameBoard.host_broadcast(result_host_string, is_reply = True)
+            self.game_board.host_broadcast(result_host_string, is_reply = True)
             reaction = self.turn_manager.respond_to(player_for_reaction, result_host_string, is_reply = True)
             self.publicPrivateResponse(player_for_reaction, reaction, is_reply = True)
-            self.gameBoard.system_broadcast(self.gameBoard.agent_scores, private = True)
+            self.game_board.system_broadcast(self.game_board.agent_scores, private = True)
    

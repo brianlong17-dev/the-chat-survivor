@@ -74,7 +74,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         opponent = self._other_agents(player, self.agents)[0]
         turn_prompt = (
             f"The finale. You are facing {opponent.name}.\n"
-            f"You have {self.gameBoard.agent_scores[player.name]} points. Your opponent has {self.gameBoard.agent_scores[opponent.name]} points. \n{self.sfx}"
+            f"You have {self.game_board.agent_scores[player.name]} points. Your opponent has {self.game_board.agent_scores[opponent.name]} points. \n{self.sfx}"
             f"{turn_prompt_post}"
         )
         additional_thought_nudge = "What is the outcome you want? What choice will you make? "
@@ -108,7 +108,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             if False:
                 choice = 'steal'
                 
-            self.gameBoard.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{choice.upper()}*")
+            self.game_board.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{choice.upper()}*")
             agent.clear_round_specific_strategy()
             choices.append(choice)
         return choices
@@ -129,7 +129,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             self._result_react(agent, 
             "You are a co-champion. You both split. You won together! This is your final turn to say everything you have left to say, and to celebrate your win! ",
             "How does it feel? What do you say to your co-champion and to everyone watching? LETS MAKE IT BIG !!! WOOHOO!!!")
-        self.gameBoard.game_over = True
+        self.game_board.game_over = True
         
     def _double_loss(self):
         self._host_broadcast("After everything- neither player wins. Was it greed? Was it spite? Will we ever really know? Did you both just hate the other more than you loved yourself? ")
@@ -196,7 +196,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         
     def _eliminate_player(self, loser):
         host_message = VotePromptLibrary.elimination_host_msg.format(victim_name=loser.name)
-        self.gameBoard.host_broadcast(host_message)
+        self.game_board.host_broadcast(host_message)
         self.simulationEngine.eliminate_player(loser)
         
     def _evict_and_crown(self, winner, loser):
@@ -212,7 +212,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     def run_game(self):
         if False: #self._agent_by_name("Finn"):
             self._host_broadcast("Jake was able to send points from home ! Lumpy Space Princess gets 6 points! ")
-            self.gameBoard.append_agent_points("Lumpy Space Princess", 6)
+            self.game_board.append_agent_points("Lumpy Space Princess", 6)
         
         agent0 = self.agents[0]
         agent1 = self.agents[1]

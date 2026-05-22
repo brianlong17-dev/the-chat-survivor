@@ -7,8 +7,8 @@ from prompts.votePrompts import VotePromptLibrary
     
    
 class VoteMechanicsMixin(BaseRound):
-    def __init__(self, gameBoard, simulationEngine):
-        super().__init__(gameBoard, simulationEngine) 
+    def __init__(self, game_board, simulationEngine):
+        super().__init__(game_board, simulationEngine) 
     
     ###############
     #   Helper    #
@@ -24,7 +24,7 @@ class VoteMechanicsMixin(BaseRound):
         if victim:
             victim.game_over = True
             host_message = VotePromptLibrary.elimination_host_msg.format(victim_name=victim.name)
-            self.gameBoard.host_broadcast(host_message)
+            self.game_board.host_broadcast(host_message)
             final_words_prompt = PromptLibrary.final_words_prompt()
             self.simulationEngine.eliminate_player(victim)
             final_words_result = self.turn_manager.respond_to(victim, final_words_prompt)
@@ -42,7 +42,7 @@ class VoteMechanicsMixin(BaseRound):
         immunity_players = list(dict.fromkeys(immunity_players))
         if len(self.simulationEngine.agents) == len(immunity_players):
             host_message = VotePromptLibrary.immunity_all_players_reset
-            self.gameBoard.host_broadcast(host_message)
+            self.game_board.host_broadcast(host_message)
             immunity_players = []
         return immunity_players
        
@@ -80,7 +80,7 @@ class VoteMechanicsMixin(BaseRound):
         #----------------
         action_fields = self.turn_manager._choose_name_field(eligible_players_names, name_field_prompt)
         response_model = DynamicModelFactory.create_model_(player, model_name="vote_out_player", action_fields=action_fields, action_post_response = True)
-        vote_result = player.take_turn_standard(turn_prompt, self.gameBoard, response_model)
+        vote_result = player.take_turn_standard(turn_prompt, self.game_board, response_model)
         #-----------------
         
         return vote_result
@@ -88,7 +88,7 @@ class VoteMechanicsMixin(BaseRound):
     def _handle_vote_response(self, votes, agent, vote_response):
         actual_vote = self.turn_manager._get_target_name_from_response(vote_response)
         votes.append(actual_vote)
-        self.gameBoard.handle_public_private_output(agent, vote_response, is_reply = True, delay = 2, pre_string = f"*{actual_vote.upper()}*")
+        self.game_board.handle_public_private_output(agent, vote_response, is_reply = True, delay = 2, pre_string = f"*{actual_vote.upper()}*")
         self._update_voting_widget(agent.name, actual_vote or "—")
         return actual_vote #used in leader_chooses
         
@@ -110,7 +110,7 @@ class VoteMechanicsMixin(BaseRound):
     def process_vote_rounds(self, players_up_for_elimination: Sequence[str], revote_count: int = 0, initial_votes = None):
         
         if revote_count > 3: #this should be done manually?
-            self.gameBoard.host_broadcast(VotePromptLibrary.voting_round_random_elimination_msg)
+            self.game_board.host_broadcast(VotePromptLibrary.voting_round_random_elimination_msg)
             self._vote_widget_vote_finalised()
             return random.choice(players_up_for_elimination), initial_votes
             #easy to replace this later, with better choice...
@@ -121,10 +121,10 @@ class VoteMechanicsMixin(BaseRound):
         vote_counts = Counter(votes)
         tally_str = ", ".join([f"{name}: {count} votes" for name, count in vote_counts.items()])
         host_message = VotePromptLibrary.voting_tally_msg.format(tally=tally_str)
-        self.gameBoard.host_broadcast(host_message)
+        self.game_board.host_broadcast(host_message)
 
         if not vote_counts:
-            self.gameBoard.host_broadcast(VotePromptLibrary.voting_round_no_valid_votes_msg)
+            self.game_board.host_broadcast(VotePromptLibrary.voting_round_no_valid_votes_msg)
             self._vote_widget_vote_finalised()
             return random.choice(players_up_for_elimination), voting_results
         
@@ -140,7 +140,7 @@ class VoteMechanicsMixin(BaseRound):
                 deadlock_string = VotePromptLibrary.voting_round_complete_deadlock_msg.format(
                     max_votes=max_votes
                 )
-            self.gameBoard.host_broadcast(deadlock_string)
+            self.game_board.host_broadcast(deadlock_string)
             return self.process_vote_rounds(players_with_most_votes, (revote_count + 1), voting_results)
         else:
             self._vote_widget_vote_finalised()
@@ -155,13 +155,13 @@ class VoteMechanicsMixin(BaseRound):
             targeted_player = self.turn_manager._get_target_name_from_response(vote_obj)
             targeted_player = targeted_player.strip() if targeted_player else ""
             if targeted_player and targeted_player != victim_name:
-                self.gameBoard.append_agent_points(targeted_player, points_per_survived_vote)
+                self.game_board.append_agent_points(targeted_player, points_per_survived_vote)
                 survivors_rewarded[targeted_player] = survivors_rewarded.get(targeted_player, 0) + points_per_survived_vote
 
         if survivors_rewarded:
             reward_str = ", ".join([f"{name} (+{pts})" for name, pts in survivors_rewarded.items()])
 
-            self.gameBoard.host_broadcast(
+            self.game_board.host_broadcast(
                 f"🛡️ BULLET DODGER BONUS! The following players took heat but survived the vote. "
                 f"They receive points for every vote they survived: {reward_str}"
             )

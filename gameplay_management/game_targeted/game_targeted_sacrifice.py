@@ -33,11 +33,11 @@ class GameTargetedChoiceSacrifice(GameTargetedChoice):
         )
         
         def sacrifice_points_model(player):
-            my_score = self.gameBoard.get_agent_score(player.name) 
+            my_score = self.game_board.get_agent_score(player.name) 
             if my_score <= 0:
                 error_response = (f"{player.name} has no points, so has no choice but to sit this one out.")
                 return self.get_error_model(error_response)
-            targets = [name for name in self.gameBoard.agent_names() if name != player.name]
+            targets = [name for name in self.game_board.agent_names() if name != player.name]
             targets.append("Pass") 
             action_fields = self.turn_manager._choose_name_field(targets, "Choose a player to attack, or 'Pass'.")
             spend_field_desc = (
@@ -51,7 +51,7 @@ class GameTargetedChoiceSacrifice(GameTargetedChoice):
             )
 
             # Nudge: Show the scoreboard 
-            scores_str = ", ".join([f"{k}: {v}" for k,v in self.gameBoard.agent_scores.items()])
+            scores_str = ", ".join([f"{k}: {v}" for k,v in self.game_board.agent_scores.items()])
             nudge = (
                 f"Reminder- attacking a player with no points has no effect. Current scores: {scores_str}. "
             )
@@ -85,8 +85,8 @@ class GameTargetedChoiceSacrifice(GameTargetedChoice):
                 )
             
             # Handle Valid Attack
-            player_score = self.gameBoard.get_agent_score(player.name)
-            victim_score = self.gameBoard.get_agent_score(target_agent.name)
+            player_score = self.game_board.get_agent_score(player.name)
+            victim_score = self.game_board.get_agent_score(target_agent.name)
             actual_spend = max(0, min(spent, player_score)) 
             damage = min(victim_score, actual_spend) #capped at the actual damange (they love to attack someone with no points)
             
@@ -96,8 +96,8 @@ class GameTargetedChoiceSacrifice(GameTargetedChoice):
                 return (f"{target_agent.name} has no points, so the attack does nothing. Perhaps just to make a point?", player)
                 
             # 2. Execute the Trade
-            self.gameBoard.append_agent_points(player.name, -actual_spend) 
-            self.gameBoard.append_agent_points(target_agent.name, -damage)
+            self.game_board.append_agent_points(player.name, -actual_spend) 
+            self.game_board.append_agent_points(target_agent.name, -damage)
             
             result_host_string = (
                 f"BRUTAL! {player.name} sacrifices {actual_spend} of their own points... "

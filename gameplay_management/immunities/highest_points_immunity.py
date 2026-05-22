@@ -23,9 +23,9 @@ class HighestPointsImmunity(ImmunityMechanicsMixin):
 
     def _highest_points_immunity(self, only_one: bool = False) -> list[str]:
         host_string = ""
-        max_points = max(self.gameBoard.agent_scores.values())
+        max_points = max(self.game_board.agent_scores.values())
         highest_players = [
-            name for name, points in self.gameBoard.agent_scores.items() if points == max_points
+            name for name, points in self.game_board.agent_scores.items() if points == max_points
         ]
         
         
@@ -40,7 +40,7 @@ class HighestPointsImmunity(ImmunityMechanicsMixin):
             names_string = self.format_list(list(highest_players))
             host_string = f"The players with the highest points, and therefore immune from the following vote are: {names_string}. Congrats!"
         
-        self.gameBoard.host_broadcast(host_string)
+        self.game_board.host_broadcast(host_string)
         if len(highest_players) <= 2:
             for agent_name in highest_players:
                 winner = self._agent_by_name(agent_name)

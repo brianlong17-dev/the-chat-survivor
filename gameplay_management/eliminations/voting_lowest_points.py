@@ -28,7 +28,7 @@ class VoteLowestPoints(VoteMechanicsMixin):
         host_string = f"🚨🚨🚨 The time... has come. "
         host_string += VoteLowestPoints.rules_description_detailed(self)
         
-        self.gameBoard.host_broadcast(host_string)
-        self.gameBoard.host_broadcast(f"The player with the lowest score and will therefore, be removed from the competition is... {player.name}")
+        self.game_board.host_broadcast(host_string)
+        self.game_board.host_broadcast(f"The player with the lowest score and will therefore, be removed from the competition is... {player.name}")
         self.eliminate_player_by_name(player.name)
    

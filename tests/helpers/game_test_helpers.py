@@ -79,7 +79,7 @@ class TestSimulation:
         self.agents = list(agents)
         self.dead_agents = []
         self.gameplay_config = gameplay_config or GameConfig()
-        self.gameBoard = None
+        self.game_board = None
         self.game_manager = None
 
     def eliminate_player(self, agent):
@@ -88,7 +88,7 @@ class TestSimulation:
 
 
 def attach_test_runtime(board, simulation, game_manager, game_master=None):
-    simulation.gameBoard = board
+    simulation.game_board = board
     simulation.game_manager = game_manager
     simulation.game_master = game_master or NoopGameMaster()
     board.phase_runner = PhaseRunner(simulation)

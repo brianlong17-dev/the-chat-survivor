@@ -28,7 +28,7 @@ class GameTargetedChoiceSteal(GameTargetedChoice):
         thought_nudge = (f"If you try to steal from someone with 0 points, you essentially pass.")
         
         def steal_points_model(player):
-            other_agent_names = [name for name in self.gameBoard.agent_names() if name != player.name]
+            other_agent_names = [name for name in self.game_board.agent_names() if name != player.name]
             action_fields = self.turn_manager._choose_name_field(other_agent_names, game_instruction)
             return DynamicModelFactory.create_model_(
                 agent=player, 
@@ -37,7 +37,7 @@ class GameTargetedChoiceSteal(GameTargetedChoice):
                 additional_thought_nudge=thought_nudge
             )
         def steal_points_logic(player, target_agent, _response):
-            current_victim_points = self.gameBoard.get_agent_score(target_agent.name)
+            current_victim_points = self.game_board.get_agent_score(target_agent.name)
             actual_steal = min(points_amount, max(0, current_victim_points))
             
             if actual_steal <= 0:
@@ -55,8 +55,8 @@ class GameTargetedChoiceSteal(GameTargetedChoice):
                 player_for_reaction = target_agent
             
             # Update the board
-            self.gameBoard.append_agent_points(player.name, actual_steal)
-            self.gameBoard.append_agent_points(target_agent.name, -actual_steal)
+            self.game_board.append_agent_points(player.name, actual_steal)
+            self.game_board.append_agent_points(target_agent.name, -actual_steal)
             return result_host_string, player_for_reaction
         self.run_targeted_round(game_intro, player_intro, game_instruction, steal_points_logic, steal_points_model)
       

@@ -31,18 +31,18 @@ class InterviewRound(BaseRound):
             print(f"Now speaking to {player.name} \n")
             question = input("Host: ").strip()
             if not conversation_id:
-                conversation_id = self.gameBoard.log_new_restricted_conversation(users, "Host", question)
+                conversation_id = self.game_board.log_new_restricted_conversation(users, "Host", question)
             else:
-                self.gameBoard.log_message_to_conversation(conversation_id, "Host", question)
+                self.game_board.log_message_to_conversation(conversation_id, "Host", question)
 
             public_response_prompt = "This is your public response to the host. "
             turn_prompt = "Continue the conversation. "
             basic_model = DynamicModelFactory.create_model_(player, "basic_turn", public_response_prompt=public_response_prompt)
-            result = player.take_turn_standard(turn_prompt, self.gameBoard, basic_model)
-            self.gameBoard.log_message_to_conversation(conversation_id, player.name, result.public_response)
+            result = player.take_turn_standard(turn_prompt, self.game_board, basic_model)
+            self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
             print(f"{player.name}: {result.public_response} \n")
 
-            action = self.gameBoard.game_sink.get_user_input_multiple_choice(
+            action = self.game_board.game_sink.get_user_input_multiple_choice(
                 "continue", "What would you like to do?", ["Continue conversation", "End conversation"]
             )
             should_continue = action == "Continue conversation"
@@ -53,4 +53,4 @@ class InterviewRound(BaseRound):
         for agent in self._shuffled_agents():
             conv_id = self._interview_player(agent)
             if conv_id:
-                self.gameBoard.close_private_conversation(conv_id)
+                self.game_board.close_private_conversation(conv_id)

@@ -23,10 +23,10 @@ if __name__ == "__main__":
     engine.initialiseGameBoard()
 
     for name in names:
-        engine.gameBoard.agent_scores[name] = 10
+        engine.game_board.agent_scores[name] = 10
 
-    engine.gameBoard.new_phase()
-    engine.gameBoard.newRound()
+    engine.game_board.new_phase()
+    engine.game_board.newRound()
     phase = PhaseRecipe(rounds=[GamePrisonersDilemmaFinale])
     engine.phase_runner.run_phase(phase)
     api_client.print_summary()

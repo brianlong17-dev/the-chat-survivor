@@ -31,8 +31,8 @@ if __name__ == "__main__":
     )
 
     # ── 6. Run the game ──
-    engine.gameBoard.new_phase()
-    engine.gameBoard.newRound()
+    engine.game_board.new_phase()
+    engine.game_board.newRound()
     rounds = 0
     cfg = engine.gameplay_config
     cfg.pd_pairing_method = cfg.pd_pairing_choice_all

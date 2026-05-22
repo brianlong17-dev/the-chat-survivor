@@ -117,7 +117,7 @@ class GamePrisonersDilemma(GameMechanicsMixin):
 
         choices = []
         for agent, res in zip((agent0, agent1), results):
-            self.gameBoard.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{res.action.upper()}*")
+            self.game_board.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{res.action.upper()}*")
             choices.append(res.action)
 
         result_host_message = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
@@ -128,18 +128,18 @@ class GamePrisonersDilemma(GameMechanicsMixin):
                 reactions = self._run_tasks([(agent0, result_host_message), (agent1, result_host_message)], 
                                             self.respond_to_return_sender)
                 for reaction in reactions:
-                    self.gameBoard.handle_public_private_output(reaction[0], reaction[1], is_reply = True)
+                    self.game_board.handle_public_private_output(reaction[0], reaction[1], is_reply = True)
                 
             elif (choices[0] != choices[1]):
                 for agent in (agent0, agent1):
                     reaction = self.turn_manager.respond_to(agent, result_host_message)
-                    self.gameBoard.handle_public_private_output(agent, reaction, is_reply = True)
+                    self.game_board.handle_public_private_output(agent, reaction, is_reply = True)
                     
     def _process_results_and_points(self, choice0, choice1, agent0, agent1):
         p0_gain, p1_gain, msg = self._calculate_pd_payout(choice0, choice1, agent0.name, agent1.name)
 
         for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
-            self.gameBoard.append_agent_points(agent.name, gain)
+            self.game_board.append_agent_points(agent.name, gain)
 
         result_host_message = f"{msg}{agent0.name} receives {p0_gain}, and {agent1.name} receives {p1_gain} points."
         return result_host_message
@@ -216,6 +216,6 @@ class GamePrisonersDilemma(GameMechanicsMixin):
     def _award_leftover(self, leftover):
         auto_points = self.cfg.pd_odd_player_auto_points
         self._host_broadcast(f"{leftover.name} is the odd one out this round! They automatically receive {auto_points} points.\n\n")
-        self.gameBoard.append_agent_points(leftover.name, auto_points)
+        self.game_board.append_agent_points(leftover.name, auto_points)
         
             
