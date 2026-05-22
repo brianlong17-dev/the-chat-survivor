@@ -1,4 +1,5 @@
 from core.levels.phase_recipe_factory import *
+from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 
 
 class PhaseRecipeFactoryBeginner(PhaseRecipeFactory):
@@ -64,7 +65,7 @@ class PhaseRecipeFactoryBeginner(PhaseRecipeFactory):
         
         
         if agent_number == 2:
-            rounds = [GamePrisonersDilemma, VoteLowestPoints]
+            rounds = [GamePrisonersDilemmaFinale]
             config_mutations=[("set_pd_pairing_all", [])]
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
         

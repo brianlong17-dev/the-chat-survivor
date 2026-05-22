@@ -32,7 +32,7 @@ class APIClient:
         self._lock = threading.Lock()
         self._index = 0
         self._log_path: str | None = None
-        self._mock_output = False
+        self._mock_output = True
 
     def init(self, client, model: str) -> None:
         self._client = client
@@ -41,6 +41,7 @@ class APIClient:
         
     def _mock_response(self, response_model):
         long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, \n \n sunt in culpa qui officia deserunt mollit anim id est laborum."
+        short_text = "_"
         values = {}
         for name, field_info in response_model.model_fields.items():
             annotation = field_info.annotation
@@ -55,7 +56,7 @@ class APIClient:
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
                 values[name] = self._mock_response(annotation)
             else:
-                values[name] = f"{long_text}  [{name}]"
+                values[name] = f"{short_text}  [{name}]"
         return response_model(**values)
 
     def _make_call(self, messages, api_model, response_model):

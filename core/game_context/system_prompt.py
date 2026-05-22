@@ -13,6 +13,17 @@ class SystemPrompt:
         return output
     
     @classmethod
+    def system_prompt_init(cls):
+        return ("This is not a performance. You are generating the specific, concrete "
+        "details of your own life — the memories and backstory that will ground "
+        "everything you say and do from this point forward."
+
+        "Answer each question as if you are genuinely remembering real things. "
+        "Be specific. Commit to details. Vague answers are wrong answers. "
+
+        "These become your permanent memory. ")
+    
+    @classmethod
     def player_system_prompt(cls, agent):
         #TODO maybe this should be optional- hard to say
         #I think we will make a new class - dashboard- that will have more flexibility
@@ -44,6 +55,6 @@ class SystemPrompt:
                 output_string += (f"\n\nCurrent round strategy: {agent.round_specific_strategy}\n")
 
         if agent.initialising:
-            output_string += f"\n{agent.system_prompt_init()}"
+            output_string += f"\n{cls.system_prompt_init()}"
 
         return output_string

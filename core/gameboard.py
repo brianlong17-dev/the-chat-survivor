@@ -145,7 +145,7 @@ class GameBoard:
         self.game_sink.delay(delay)
 
     def _should_animate(self, speaker):
-        is_system_speaker = speaker in ("SYSTEM", "", "HOST")
+        is_system_speaker = isinstance(speaker, str) and speaker.upper() in self.restricted_names
         is_human_speaker = hasattr(speaker, 'is_human') and speaker.is_human()
         return not (is_system_speaker or is_human_speaker)
 
