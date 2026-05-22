@@ -5,6 +5,8 @@ from prompts.votePrompts import VotePromptLibrary
 
 class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
 
+    sfx = "Respond as yourself. Do not repeat or mirror what your opponent just said."
+    
     @classmethod
     def display_name(cls, cfg):
         return "Prisoner's Dilemma - The Finale"
@@ -30,7 +32,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
                 "what you think of your opponent, and what case you want to make "
                 f"before the last game. Do not reveal your choice.\n{reminder}",
             additional_thought_nudge="What are you considering? What do you want them to think you'll do?",
-            public_response_prompt="Do you speak your mind? Do you play it coy? Do you try and trick them? Final words before the last game. ",
+            public_response_prompt=f"Do you speak your mind? Do you play it coy? Do you try and trick them? Final words before the last game. {self.sfx}",
             game_logic_fields=game_logic_fields,
             #we dont want this if 2 is running
             #round_specific_strategy="What will you do for the final split or steal? Update your strategy with this plan. ",
@@ -47,7 +49,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
                         f"React to what they said. Do not reveal your choice.\n{reminder}",
             additional_thought_nudge="Has what they said changed anything? "
                                     "What do you want them to think you'll do? Can you say something that makes them more likely to split?",
-            public_response_prompt=f"Your last word before the game. Play it however you want. {coronation_string}",
+            public_response_prompt=f"Your last word before the game. Play it however you want. {coronation_string} {self.sfx}",
             game_logic_fields={"method": (str, Field(description="How can you influence your opponent WITHOUT revealing your choice?"))},
             round_specific_strategy="What will you do for the final split or steal? Update your strategy with this plan. ",
             broadcast=True, 
@@ -72,11 +74,11 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         opponent = self._other_agents(player, self.agents)[0]
         turn_prompt = (
             f"The finale. You are facing {opponent.name}.\n"
-            f"You have {self.gameBoard.agent_scores[player.name]} points. Your opponent has {self.gameBoard.agent_scores[opponent.name]} points. \n"
+            f"You have {self.gameBoard.agent_scores[player.name]} points. Your opponent has {self.gameBoard.agent_scores[opponent.name]} points. \n{self.sfx}"
             f"{turn_prompt_post}"
         )
         additional_thought_nudge = "What is the outcome you want? What choice will you make? "
-        public_response_prompt = "What do you say as you reveal your choice? Your final words to the audience and your opponent."
+        public_response_prompt = "What do you say as you reveal your choice? From your own logic and feelings, express why you chose this."
         return self.get_split_or_steal(player, turn_prompt, additional_thought_nudge, public_response_prompt)
         
     def finale_tie_split_or_steal(self, player):
@@ -88,7 +90,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             f"Do you trust {opponent.name}? Do you share the crown, or do you go for it all?"
         )
         additional_thought_nudge = "What has your journey with this person been like? Do you trust them? Is shared glory enough, or do you want it all for yourself?"
-        public_response_prompt = "What do you say as you reveal your choice? Your final words to the audience and your opponent."
+        public_response_prompt = f"What do you say as you reveal your choice? Your final words to the audience and your opponent. {self.sfx}"
         return self.get_split_or_steal(player, turn_prompt, additional_thought_nudge, public_response_prompt)
     
     
@@ -130,7 +132,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self.gameBoard.game_over = True
         
     def _double_loss(self):
-        self._host_broadcast("After everything- neither player wins. Was it greed? Was it spite? Will we ever really know? Do you both just hate the other more than you loved yourself? ")
+        self._host_broadcast("After everything- neither player wins. Was it greed? Was it spite? Will we ever really know? Did you both just hate the other more than you loved yourself? ")
         # snapshot self.agents because _eliminate_player mutates it mid-loop
         for agent in list(self.agents):
             self._result_react(agent,
@@ -173,12 +175,12 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self._host_broadcast(f"Now to our champion, at last- what you've been playing for all along- {winner.name} is our champion! {winner_q}" )
         self._result_react(winner,
             f"You are the sole champion. Victory! This is your final turn! Lay it all on the table! YOU WIN! ",
-            f"{commentary}. Respond to host question: {winner_q}. What do you say to your vanquished competitors and to everyone watching? YOU WON!!")
+            f"{commentary}. Respond to host question: {winner_q}. What do you say to your vanquished competitors and to everyone watching? YOU WON!! {self.sfx}")
         
         self._host_broadcast(loser_question)
         self._result_react(loser, 
             f"You were beaten by {winner.name}. {commentary}. Then the host's question: {loser_question}.",
-            f"Respond to the final game and the host's question. Afterwards you can give your final thoughts and words to everyone.")
+            f"Respond to the final game and the host's question. Afterwards you can give your final thoughts and words to everyone. {self.sfx}")
         
         self._evict_and_crown(winner, loser)
     

@@ -30,6 +30,12 @@ const DEMOS = [
         description: 'Jake (16) vs Finn (13).',
         cast: ['Finn', 'Jake the Dog', 'Princess Bubblegum', 'Ice King', 'Lumpy Space Princess', 'BMO'],
       },
+      {
+        id: 'brian_jake_pre_finale',
+        label: 'Brian vs Finn',
+        description: 'Finn (17) vs Brian (15).',
+        cast: ['Finn the Human', 'Brian', 'Princess Bubblegum', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
+      },
     ],
   },
   {
@@ -48,6 +54,12 @@ const DEMOS = [
         label: 'Finn vs Jake',
         description: 'Jake (16) vs Finn (13).',
         cast: ['Finn', 'Jake the Dog', 'Princess Bubblegum', 'Ice King', 'Lumpy Space Princess', 'BMO'],
+      },
+      {
+        id: 'brian_jake_pre_finale',
+        label: 'Brian vs Finn',
+        description: 'Finn (17) vs Brian (15).',
+        cast: ['Finn the Human', 'Brian', 'Princess Bubblegum', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
       },
       {
         id: 'game_3',

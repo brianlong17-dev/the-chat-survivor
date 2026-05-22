@@ -83,6 +83,12 @@ REUNION_FIXTURES = {
         "elimination_order": ["BMO", "Lumpy Space Princess", "Ice King", "Princess Bubblegum"],
         "phase_number": 5,
     },
+    "brian_jake_pre_finale": {
+        "fixture_filename": "brian_jake_pre_finale.json",
+        "finalist_scores": {"Finn the Human": 17, "Brian": 15},
+        "elimination_order": ["Lumpy Space Princess", "BMO", "Princess Bubblegum", "Jake the Dog"],
+        "phase_number": 6,
+    },
 }
 
 
@@ -106,6 +112,11 @@ PD_FINALE_FIXTURES = {
         "fixture_filename": "adventure_time_pre_finale.json",
         "finalist_scores": {"Jake the Dog": 16, "Finn": 13},
         "phase_number": 5,
+    },
+    "brian_jake_pre_finale": {
+        "fixture_filename": "brian_jake_pre_finale.json",
+        "finalist_scores": {"Finn the Human": 17, "Brian": 15},
+        "phase_number": 6,
     },
 }
 

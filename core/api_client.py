@@ -32,7 +32,7 @@ class APIClient:
         self._lock = threading.Lock()
         self._index = 0
         self._log_path: str | None = None
-        self._mock_output = True
+        self._mock_output = False
 
     def init(self, client, model: str) -> None:
         self._client = client
