@@ -79,11 +79,7 @@ class VoteMechanicsMixin(BaseRound):
         name_field_prompt = VotePromptLibrary.vote_one_player_name_field_prompt
         #----------------
         action_fields = self.turn_manager._choose_name_field(eligible_players_names, name_field_prompt)
-        response_model = self.turn_manager._create_model(player, model_name="vote_out_player", action_fields=action_fields, action_post_response=True)
-        vote_result = player.take_turn_standard(turn_prompt, self.game_board, response_model)
-        #-----------------
-        
-        return vote_result
+        return self.turn_manager.take_turn(player, turn_prompt, model_name="vote_out_player", action_fields=action_fields, action_post_response=True)
     
     def _handle_vote_response(self, votes, agent, vote_response):
         actual_vote = self.turn_manager._get_target_name_from_response(vote_response)

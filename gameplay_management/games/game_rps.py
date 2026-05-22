@@ -42,12 +42,11 @@ class GameRockPaperScissors(GameMechanicsMixin):
             "Think carefully — what would your opponent choose? "
             "Is there a psychological edge you can exploit?"
         )
-        model = self.turn_manager._create_model(
-            player, "rps_choice",
+        return self.turn_manager.take_turn(player, turn_prompt,
+            model_name="rps_choice",
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
         )
-        return player.take_turn_standard(turn_prompt, self.game_board, model)
 
     def _calculate_outcome(self, choice0, choice1, name0, name1):
         cfg = self.cfg

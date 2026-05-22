@@ -37,8 +37,6 @@ class FinaleReunionRound(VoteMechanicsMixin):
             return None
         
         finalist_names = self.format_list(self._names(self.finalists))
-
-        
         questions = {}
         questions["public_response"] = (
             "Hey- welcome back to the game. You have been watching since your elimination. "
@@ -82,10 +80,8 @@ class FinaleReunionRound(VoteMechanicsMixin):
         self._set_segment_titles(self._SEGMENTS)
         self.voting_players = list(self.simulationEngine.dead_agents)
         self.finalists = list(self.agents)
-        
         self._initialise_voting_widget(self._names(self.finalists), self._names(self.voting_players))
                                        
-
         #- action -#
         executor = ThreadPoolExecutor()
         wake_up_future = executor.submit(self._wake_up_round)
@@ -110,10 +106,11 @@ class FinaleReunionRound(VoteMechanicsMixin):
         else:
             additional_thought_nudge = None
             
-        basic_model = self.turn_manager._create_model(agent, "basic_turn", public_response_prompt=public_response_prompt,
-                                                      additional_thought_nudge=additional_thought_nudge, private_thoughts_prompt=private_thoughts_prompt)
-        result = agent.take_turn_standard(turn_prompt, self.game_board, basic_model)
-        
+        result =  self.turn_manager.take_turn(
+            agent, turn_prompt=turn_prompt,
+            public_response_prompt=public_response_prompt,
+            additional_thought_nudge=additional_thought_nudge, private_thoughts_prompt=private_thoughts_prompt
+        )
         if not result.public_response:
             self.private_system_message(agent, "You declined to say anything on this turn. ", )
         else:
@@ -200,13 +197,8 @@ class FinaleReunionRound(VoteMechanicsMixin):
             finalist_names,
             "Vote for the finalist you believe deserves to win. "
         )
-        response_model = self.turn_manager._create_model(
-            juror,
-            model_name="jury_vote",
-            action_fields=action_fields
-        )
-        result = juror.take_turn_standard(turn_prompt, self.game_board, response_model)
-        self.game_board.handle_public_private_output(juror, result, is_reply = True)
+        result = self.turn_manager.take_turn(juror, turn_prompt, model_name="jury_vote", 
+                                             action_fields=action_fields, broadcast=True, is_reply=True)
         return result
 
     def time_to_vote(self):
@@ -255,8 +247,6 @@ class FinaleReunionRound(VoteMechanicsMixin):
             self._vote_widget_vote_finalised()
             return leaders[0]
 
-       
-        
         runner_up = self.voting_players[-1]
         self._host_broadcast(
             f"We have a tie... in this case, one additional vote will be given to our first runner up. "

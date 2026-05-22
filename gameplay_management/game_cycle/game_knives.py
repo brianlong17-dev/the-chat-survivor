@@ -102,16 +102,6 @@ class GameKnives(CycleRound):
             else ""
         )
 
-        model = self.turn_manager._create_model(
-            state.agent,
-            action_fields=action_fields,
-            public_response_prompt=public_response_prompt,
-            additional_thought_nudge=(
-                "Who is the biggest threat? Should you spread your knives or focus on one target? "
-                "Is it worth passing to save knives for later?" + secret_note_additional_thought
-            ),
-        )
-
         knife_str = f"You have {self._knife_string(state.held)}."
         turn_prompt = (
             f"The lights are off. {knife_str} "
@@ -120,7 +110,14 @@ class GameKnives(CycleRound):
             f"The other players in the circle are: {self.format_list(other_names)}."
         )
 
-        result = state.agent.take_turn_standard(turn_prompt, self.game_board, model)
+        result = self.turn_manager.take_turn(state.agent, turn_prompt,
+            action_fields=action_fields,
+            public_response_prompt=public_response_prompt,
+            additional_thought_nudge=(
+                "Who is the biggest threat? Should you spread your knives or focus on one target? "
+                "Is it worth passing to save knives for later?" + secret_note_additional_thought
+            ),
+        )
         if chatty:
             self.game_board.handle_public_private_output(state.agent, result)
 

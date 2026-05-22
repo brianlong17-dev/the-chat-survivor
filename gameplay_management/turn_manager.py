@@ -73,6 +73,7 @@ class TurnManager:
                   action_fields = None,
                   game_logic_fields = None,
                   round_specific_strategy = None,
+                  action_post_response: bool = False,
                   instruction_override = None,
                   optional: bool = False,
                   broadcast: bool = False,
@@ -98,7 +99,8 @@ class TurnManager:
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
             game_logic_fields=game_logic_fields,
-            round_specific_strategy=round_specific_strategy
+            round_specific_strategy=round_specific_strategy,
+            action_post_response=action_post_response,
         )
 
         if optional:

@@ -100,18 +100,14 @@ class GameMob(BaseRound):
             valid_targets,
             "You have been chosen as a mob leader. You must pick a target — no passing."
         )
-        model = self.turn_manager._create_model(
-            agent,
+        self._host_broadcast(f"No one stepped up — {agent.name}, you've been drafted as a mob leader!")
+        result = self.turn_manager.take_turn(agent,
+            f"You've been forced into leadership. You must choose a target: {self.format_list(valid_targets)}",
             action_fields=action_fields,
             public_response_prompt="Announce your target to the group.",
-            additional_thought_nudge="You have no choice but to lead. Who do you go after?"
+            additional_thought_nudge="You have no choice but to lead. Who do you go after?",
+            broadcast = True
         )
-        self._host_broadcast(f"No one stepped up — {agent.name}, you've been drafted as a mob leader!")
-        result = agent.take_turn_standard(
-            f"You've been forced into leadership. You must choose a target: {self.format_list(valid_targets)}",
-            self.game_board, model
-        )
-        self.game_board.handle_public_private_output(agent, result)
         choice = result.mob_choice.strip()
         if choice in valid_targets:
             return Mob(agent, choice, [])
@@ -143,8 +139,12 @@ class GameMob(BaseRound):
             "If you prefer to join someone else - choose pass- you can join their mob later. ")
             
         )
-        model = self.turn_manager._create_model(
-            agent,
+        turn_prompt = (
+            f"You can nominate yourself as a mob leader now. "
+            f"Choose a target to mob, or pass to wait and join someone else's mob. "
+            f"Valid targets: {self.format_list(valid_targets)}"
+        )
+        result = self.turn_manager.take_turn(agent, turn_prompt,
             action_fields=action_fields,
             public_response_prompt=(f"If you chose to lead a mob, declare your target. If you pass, leave this null. "
                                     "Give your initial pitch as to why others should join your mob. "),
@@ -155,12 +155,6 @@ class GameMob(BaseRound):
                 "REMINDER - You are TARGETTING this person - not joining their mob. "
             )
         )
-        turn_prompt = (
-            f"You can nominate yourself as a mob leader now. "
-            f"Choose a target to mob, or pass to wait and join someone else's mob. "
-            f"Valid targets: {self.format_list(valid_targets)}"
-        )
-        result = agent.take_turn_standard(turn_prompt, self.game_board, model)
         choice = result.mob_choice.strip()
         if choice == self.PASS:
             return None
@@ -197,19 +191,14 @@ class GameMob(BaseRound):
             choices,
             "Choose which mob to join."
         )
-        model = self.turn_manager._create_model(
-            follower,
-            action_fields=action_fields,
-            public_response_prompt="What do you say as you pledge to your chosen mob?",
-            additional_thought_nudge="Who do you trust? Who do you think will win? Who is targeting your enemies?"
-        )
         prompt = f"The following mobs have been formed:\n{self._mobs_string(self.mobs)}\nChoose one to join."
         if rejoining:
             rejoining_prompt = f"Your mob was the smallest and has been disbanded. Time to choose a new tribe. \n"
             prompt = prompt + rejoining_prompt
-        result = follower.take_turn_standard(
-            prompt,
-            self.game_board, model
+        result = self.turn_manager.take_turn(follower, prompt,
+            action_fields=action_fields,
+            public_response_prompt="What do you say as you pledge to your chosen mob?",
+            additional_thought_nudge="Who do you trust? Who do you think will win? Who is targeting your enemies?"
         )
         return follower, result
 
@@ -411,15 +400,11 @@ class GameMob(BaseRound):
             if get_a_point else
             "Stay silent and leave this blank unless you are switching. Silence means you stay."
         )
-        model = self.turn_manager._create_model(
-            player,
+        result = self.turn_manager.take_turn(player,
+            f"The mobs as they stand:\n{self._mobs_string(self.mobs)}\nYou are currently in {self._mob_label(current_mob)}. Will you stay or switch?",
             action_fields=action_fields,
             public_response_prompt="If you are switching, say something as you cross the floor. Otherwise leave this null.",
             additional_thought_nudge=nudge
-        )
-        result = player.take_turn_standard(
-            f"The mobs as they stand:\n{self._mobs_string(self.mobs)}\nYou are currently in {self._mob_label(current_mob)}. Will you stay or switch?",
-            self.game_board, model
         )
         choice = result.mob_choice.strip()
         chosen_mob = next((m for m in other_mobs if self._mob_label(m) == choice), None)

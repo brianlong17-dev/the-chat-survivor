@@ -77,11 +77,9 @@ class IntroRound(BaseRound):
             
         users = ["Host", player.name]
         conversation_id = self.game_board.log_new_restricted_conversation(users, "Host", welcome_message)
-        turn_prompt = "Continue the conversation. "
-        public_response_prompt = "This is your message of response to the host. "
-        basic_model = self.turn_manager._create_model(player, "basic_turn",
-                                                      public_response_prompt=public_response_prompt)
-        result = player.take_turn_standard(turn_prompt, self.game_board, basic_model)
+        result = self.turn_manager.take_turn(player, "Continue the conversation. ",
+            model_name="basic_turn",
+            public_response_prompt="This is your message of response to the host. ")
         self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
         self._host_back_and_forth(player, qa, conversation_id = conversation_id)
         player.initialising = False

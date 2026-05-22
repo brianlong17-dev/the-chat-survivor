@@ -84,6 +84,7 @@ class GameGuess(GameMechanicsMixin):
         futures = []
         with ThreadPoolExecutor() as executor:
             for agent in self.simulationEngine.agents:
+                #TODO this will all refactor into take_turn
                 response_model = self.turn_manager._create_model(
                     agent,
                     model_name="GuessTheNumber",

@@ -59,7 +59,9 @@ class BaseRound:
     def human_player(self):
         return next((agent for agent in self.agents if agent.is_human()), None)
        
-    def _other_agents(self, agent, agents):
+    def _other_agents(self, agent, agents = None):
+        if agents is None:
+            agents = self.agents
         return [a for a in agents if a != agent]
     
     def dead_agents(self):
@@ -158,9 +160,10 @@ class BaseRound:
         self.game_board.log_message_to_conversation(conversation_id, "Host", message)
 
     def _private_host_conversation_get_response(self, player, conversation_id, public_response_prompt, instruction_override = None):
-        basic_model = self.turn_manager._create_model(player, "basic_turn", public_response_prompt=public_response_prompt)
-        turn_prompt = "Respond privately to the host. "
-        result = player.take_turn_standard(turn_prompt, self.game_board, basic_model, instruction_override=instruction_override)
+        result = self.turn_manager.take_turn(player, "Respond privately to the host. ",
+            model_name="basic_turn",
+            public_response_prompt=public_response_prompt,
+            instruction_override=instruction_override)
         self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
         return result
     
@@ -170,15 +173,12 @@ class BaseRound:
         for key, value in questions.items():
             action_fields = action_fields | {key: (str, Field(description=value))}
 
-        basic_model = self.turn_manager._create_model(
-            player, "basic_turn",
+        result = self.turn_manager.take_turn(
+            player, "Respond privately to each question, back and forth with the host.",
+            model_name="basic_turn",
             action_fields=action_fields,
-            action_post_response=True
-        )
-        turn_prompt = "Respond privately to each question, back and forth with the host."
-        result = player.take_turn_standard(
-            turn_prompt, self.game_board, basic_model,
-            instruction_override=instruction_override
+            action_post_response=True,
+            instruction_override=instruction_override,
         )
         for key, value in questions.items():
             answer = getattr(result, key, "")

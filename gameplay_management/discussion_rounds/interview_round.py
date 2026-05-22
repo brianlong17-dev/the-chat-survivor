@@ -34,10 +34,9 @@ class InterviewRound(BaseRound):
             else:
                 self.game_board.log_message_to_conversation(conversation_id, "Host", question)
 
-            public_response_prompt = "This is your public response to the host. "
-            turn_prompt = "Continue the conversation. "
-            basic_model = self.turn_manager._create_model(player, "basic_turn", public_response_prompt=public_response_prompt)
-            result = player.take_turn_standard(turn_prompt, self.game_board, basic_model)
+            result = self.turn_manager.take_turn(player, "Continue the conversation. ",
+                model_name="basic_turn",
+                public_response_prompt="This is your public response to the host. ")
             self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
             print(f"{player.name}: {result.public_response} \n")
 

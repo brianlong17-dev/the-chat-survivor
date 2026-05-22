@@ -28,8 +28,7 @@ class VoteElectLeader(VoteMechanicsMixin):
         name_field_prompt = "The exact name of the player you nominate as Executioner."
         additional_thought_nudge = "What does it mean to elect an executioner? What will happen to them? What power will they have? Who would your choice send home?"
         action_fields = self.turn_manager._choose_name_field(eligible, name_field_prompt)
-        response_model = self.turn_manager._create_model(agent, model_name="vote_for_leader", action_fields=action_fields, additional_thought_nudge=additional_thought_nudge)
-        return agent.take_turn_standard(turn_prompt, self.game_board, response_model)
+        return self.turn_manager.take_turn(agent, turn_prompt, model_name="vote_for_leader", action_fields=action_fields, additional_thought_nudge=additional_thought_nudge)
 
     def _collect_leader_votes(self, all_names: Sequence[str]):
         voting_futures = []
@@ -78,12 +77,11 @@ class VoteElectLeader(VoteMechanicsMixin):
 
         # Leader chooses from non-immune players only
         action_fields = self.turn_manager._choose_name_field(players_up_for_elimination, "Choose who to send home.")
-        response_model = self.turn_manager._create_model(leader, model_name="elect_leader_choice", action_fields=action_fields)
-        leader_response = leader.take_turn_standard(
+        leader_response = self.turn_manager.take_turn(leader,
             f"You have been elected Executioner. Choose who to eliminate from: {', '.join(players_up_for_elimination)}",
-            self.game_board, response_model
-        )
-        self.publicPrivateResponse(leader, leader_response)
+            model_name="elect_leader_choice", 
+            action_fields=action_fields,
+            broacast=True)
 
         # --- Step 4: Reveal and eliminate ---
         victim_name = self.turn_manager._get_target_name_from_response(leader_response)
