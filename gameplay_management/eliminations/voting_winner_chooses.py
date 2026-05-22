@@ -1,7 +1,6 @@
 from typing import Optional, Sequence
 
 from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
-from models.player_models import DynamicModelFactory
 from prompts.votePrompts import VotePromptLibrary
 
 
@@ -25,7 +24,7 @@ class VoteWinnerChooses(VoteMechanicsMixin):
         
         action_fields = self.turn_manager.create_choice_field("target_name", up_for_elimination, 
                                                               field_description= choice_prompt)
-        return DynamicModelFactory.create_model_(leading_player, "leader_vote_player_off", 
+        return self.turn_manager._create_model(leading_player, "leader_vote_player_off",
                     additional_thought_nudge=additional_thought_nudge, action_fields=action_fields)
         
         

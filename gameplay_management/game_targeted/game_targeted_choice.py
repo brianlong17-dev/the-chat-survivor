@@ -1,6 +1,5 @@
 from pydantic import Field, create_model
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
-from models.player_models import DynamicModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 
 class GameTargetedChoice(GameMechanicsMixin):

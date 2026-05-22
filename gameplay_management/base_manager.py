@@ -3,7 +3,6 @@ from concurrent.futures import ThreadPoolExecutor
 import random
 from typing import Callable, Sequence
 from agents.base_agent import BaseAgent
-from models.player_models import DynamicModelFactory
 from gameplay_management.turn_manager import TurnManager
 from pydantic import Field
 
@@ -159,7 +158,7 @@ class BaseRound:
         self.game_board.log_message_to_conversation(conversation_id, "Host", message)
 
     def _private_host_conversation_get_response(self, player, conversation_id, public_response_prompt, instruction_override = None):
-        basic_model = DynamicModelFactory.create_model_(player, "basic_turn", public_response_prompt=public_response_prompt)
+        basic_model = self.turn_manager._create_model(player, "basic_turn", public_response_prompt=public_response_prompt)
         turn_prompt = "Respond privately to the host. "
         result = player.take_turn_standard(turn_prompt, self.game_board, basic_model, instruction_override=instruction_override)
         self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
@@ -171,10 +170,10 @@ class BaseRound:
         for key, value in questions.items():
             action_fields = action_fields | {key: (str, Field(description=value))}
 
-        basic_model = DynamicModelFactory.create_model_(
+        basic_model = self.turn_manager._create_model(
             player, "basic_turn",
             action_fields=action_fields,
-            action_post_response=True #need - we're overwriting public response
+            action_post_response=True
         )
         turn_prompt = "Respond privately to each question, back and forth with the host."
         result = player.take_turn_standard(

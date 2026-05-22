@@ -1,6 +1,5 @@
 
 from gameplay_management.base_manager import BaseRound
-from models.player_models import DynamicModelFactory
 
 
 class InterviewRound(BaseRound):
@@ -37,7 +36,7 @@ class InterviewRound(BaseRound):
 
             public_response_prompt = "This is your public response to the host. "
             turn_prompt = "Continue the conversation. "
-            basic_model = DynamicModelFactory.create_model_(player, "basic_turn", public_response_prompt=public_response_prompt)
+            basic_model = self.turn_manager._create_model(player, "basic_turn", public_response_prompt=public_response_prompt)
             result = player.take_turn_standard(turn_prompt, self.game_board, basic_model)
             self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
             print(f"{player.name}: {result.public_response} \n")

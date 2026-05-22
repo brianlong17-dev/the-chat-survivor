@@ -3,7 +3,6 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from gameplay_management.base_manager import BaseRound
-from models.player_models import DynamicModelFactory
 
 if TYPE_CHECKING:
     from agents.player import Debater
@@ -101,7 +100,7 @@ class GameMob(BaseRound):
             valid_targets,
             "You have been chosen as a mob leader. You must pick a target — no passing."
         )
-        model = DynamicModelFactory.create_model_(
+        model = self.turn_manager._create_model(
             agent,
             action_fields=action_fields,
             public_response_prompt="Announce your target to the group.",
@@ -144,7 +143,7 @@ class GameMob(BaseRound):
             "If you prefer to join someone else - choose pass- you can join their mob later. ")
             
         )
-        model = DynamicModelFactory.create_model_(
+        model = self.turn_manager._create_model(
             agent,
             action_fields=action_fields,
             public_response_prompt=(f"If you chose to lead a mob, declare your target. If you pass, leave this null. "
@@ -198,7 +197,7 @@ class GameMob(BaseRound):
             choices,
             "Choose which mob to join."
         )
-        model = DynamicModelFactory.create_model_(
+        model = self.turn_manager._create_model(
             follower,
             action_fields=action_fields,
             public_response_prompt="What do you say as you pledge to your chosen mob?",
@@ -412,9 +411,9 @@ class GameMob(BaseRound):
             if get_a_point else
             "Stay silent and leave this blank unless you are switching. Silence means you stay."
         )
-        model = DynamicModelFactory.create_model_(
+        model = self.turn_manager._create_model(
             player,
-            action_fields=action_fields, #maybe we do need to add optional here
+            action_fields=action_fields,
             public_response_prompt="If you are switching, say something as you cross the floor. Otherwise leave this null.",
             additional_thought_nudge=nudge
         )

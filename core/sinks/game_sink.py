@@ -74,11 +74,6 @@ class GameEventSink(ABC):
         """Game master's summary of the round just completed."""
         ...
 
-    @abstractmethod
-    def on_turn_header(self, turn_number: int) -> None:
-        """Visual separator between individual turns within a round."""
-        ...
-
     # -- Speech and thought ---------------------------------------------------
 
     @abstractmethod
@@ -215,7 +210,6 @@ class NoopGameSink(GameEventSink):
     def on_phase_round_index(self, index): pass
     def on_round_start(self, round_number, scores): pass
     def on_round_summary(self, summary): pass
-    def on_turn_header(self, turn_number): pass
     def on_public_action(self, speaker, message, color="", animate=True, directed_to_name=None, is_reply=False): pass
     def on_private_thought(self, speaker, message): pass
     def on_inner_workings(self, speaker, inner_workings, override=False): pass
@@ -246,7 +240,6 @@ class CapturingGameSink(GameEventSink):
         self.phase_intros: list[dict] = []
         self.round_starts: list[dict] = []
         self.round_summaries: list[str] = []
-        self.turn_headers: list[int] = []
         self.public_actions: list[dict] = []
         self.private_thoughts: list[dict] = []
         self.system_messages: list[dict] = []
@@ -282,9 +275,6 @@ class CapturingGameSink(GameEventSink):
 
     def on_round_summary(self, summary):
         self.round_summaries.append(summary)
-
-    def on_turn_header(self, turn_number):
-        self.turn_headers.append(turn_number)
 
     def on_public_action(self, speaker, message, color="", animate=True, directed_to_name=None, is_reply=False):
         if directed_to_name:

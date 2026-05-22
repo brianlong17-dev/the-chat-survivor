@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from itertools import combinations
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
-from models.player_models import DynamicModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 
 class GamePrisonersDilemma(GameMechanicsMixin):

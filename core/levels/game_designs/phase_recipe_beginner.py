@@ -44,7 +44,7 @@ class PhaseRecipeFactoryBeginner(PhaseRecipeFactory):
         cfg.vote_bottom_two_expand_ties = True
         
         if agent_number == 6: #IntroRound, DiscussionRoundDirectedPreVote
-            rounds = [IntroRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirected , VoteBottomTwo]
+            rounds = [IntroRound,DiscussionRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirected , VoteBottomTwo]
             config_mutations=[("set_pd_pairing_random", [])]
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
         

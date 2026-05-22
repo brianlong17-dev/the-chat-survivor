@@ -1,7 +1,6 @@
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
-from models.player_models import DynamicModelFactory
 from gameplay_management.game_cycle.game_cycle import CycleRound
 
 
@@ -103,10 +102,10 @@ class GameKnives(CycleRound):
             else ""
         )
 
-        model = DynamicModelFactory.create_model_(
+        model = self.turn_manager._create_model(
             state.agent,
             action_fields=action_fields,
-            public_response_prompt = public_response_prompt,
+            public_response_prompt=public_response_prompt,
             additional_thought_nudge=(
                 "Who is the biggest threat? Should you spread your knives or focus on one target? "
                 "Is it worth passing to save knives for later?" + secret_note_additional_thought

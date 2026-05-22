@@ -4,7 +4,6 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Sequence
 
 from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
-from models.player_models import DynamicModelFactory
 
 
 class VoteElectLeader(VoteMechanicsMixin):
@@ -29,7 +28,7 @@ class VoteElectLeader(VoteMechanicsMixin):
         name_field_prompt = "The exact name of the player you nominate as Executioner."
         additional_thought_nudge = "What does it mean to elect an executioner? What will happen to them? What power will they have? Who would your choice send home?"
         action_fields = self.turn_manager._choose_name_field(eligible, name_field_prompt)
-        response_model = DynamicModelFactory.create_model_(agent, model_name="vote_for_leader", action_fields=action_fields, additional_thought_nudge = additional_thought_nudge)
+        response_model = self.turn_manager._create_model(agent, model_name="vote_for_leader", action_fields=action_fields, additional_thought_nudge=additional_thought_nudge)
         return agent.take_turn_standard(turn_prompt, self.game_board, response_model)
 
     def _collect_leader_votes(self, all_names: Sequence[str]):
@@ -79,7 +78,7 @@ class VoteElectLeader(VoteMechanicsMixin):
 
         # Leader chooses from non-immune players only
         action_fields = self.turn_manager._choose_name_field(players_up_for_elimination, "Choose who to send home.")
-        response_model = DynamicModelFactory.create_model_(leader, model_name="elect_leader_choice", action_fields=action_fields)
+        response_model = self.turn_manager._create_model(leader, model_name="elect_leader_choice", action_fields=action_fields)
         leader_response = leader.take_turn_standard(
             f"You have been elected Executioner. Choose who to eliminate from: {', '.join(players_up_for_elimination)}",
             self.game_board, response_model

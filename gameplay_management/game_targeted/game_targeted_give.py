@@ -1,5 +1,4 @@
 from gameplay_management.game_targeted.game_targeted_choice import GameTargetedChoice
-from models.player_models import DynamicModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 
 
@@ -26,7 +25,7 @@ class GameTargetedChoiceGive(GameTargetedChoice):
         def give_points_model(player):
             other_agent_names = [name for name in self.game_board.agent_names() if name != player.name]
             action_fields = self.turn_manager._choose_name_field(other_agent_names, game_instruction) 
-            return DynamicModelFactory.create_model_(player, model_name="GivePointsModel", action_fields=action_fields) 
+            return self.turn_manager._create_model(player, model_name="GivePointsModel", action_fields=action_fields)
             
         def give_points_logic(player, target_agent, _response): #response is only needed for subtraction
             result_host_string = f"Yay! {player.name} chooses {target_agent.name}! They receive {points_amount} points."

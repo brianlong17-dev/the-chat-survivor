@@ -1,7 +1,6 @@
 
 import random
 from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
-from models.player_models import DynamicModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 from pydantic import Field
 from concurrent.futures import ThreadPoolExecutor
@@ -111,8 +110,8 @@ class FinaleReunionRound(VoteMechanicsMixin):
         else:
             additional_thought_nudge = None
             
-        basic_model = DynamicModelFactory.create_model_(agent, "basic_turn", public_response_prompt=public_response_prompt, 
-                                                        additional_thought_nudge=additional_thought_nudge, private_thoughts_prompt = private_thoughts_prompt )
+        basic_model = self.turn_manager._create_model(agent, "basic_turn", public_response_prompt=public_response_prompt,
+                                                      additional_thought_nudge=additional_thought_nudge, private_thoughts_prompt=private_thoughts_prompt)
         result = agent.take_turn_standard(turn_prompt, self.game_board, basic_model)
         
         if not result.public_response:
@@ -201,7 +200,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
             finalist_names,
             "Vote for the finalist you believe deserves to win. "
         )
-        response_model = DynamicModelFactory.create_model_(
+        response_model = self.turn_manager._create_model(
             juror,
             model_name="jury_vote",
             action_fields=action_fields

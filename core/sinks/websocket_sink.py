@@ -58,9 +58,6 @@ class WebSocketSink(GameEventSink):
     def on_round_summary(self, summary: str):
         self._send({"type": "round_summary", "summary": summary})
 
-    def on_turn_header(self, turn_number: int):
-        self._send({"type": "turn_header", "turn_number": turn_number})
-
     # -- Actions --------------------------------------------------------------
 
     def on_public_action(self, speaker, message: str, color: str = "", animate: bool = True, directed_to_name=None, is_reply: bool = False):

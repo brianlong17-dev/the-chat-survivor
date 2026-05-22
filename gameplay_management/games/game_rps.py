@@ -1,6 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
-from models.player_models import DynamicModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 
 
@@ -43,7 +42,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
             "Think carefully — what would your opponent choose? "
             "Is there a psychological edge you can exploit?"
         )
-        model = DynamicModelFactory.create_model_(
+        model = self.turn_manager._create_model(
             player, "rps_choice",
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,

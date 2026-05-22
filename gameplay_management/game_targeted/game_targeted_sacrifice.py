@@ -56,8 +56,8 @@ class GameTargetedChoiceSacrifice(GameTargetedChoice):
                 f"Reminder- attacking a player with no points has no effect. Current scores: {scores_str}. "
             )
             
-            return DynamicModelFactory.create_model_(
-                agent=player,
+            return self.turn_manager._create_model(
+                player,
                 model_name="SabotageModel",
                 action_fields=action_fields,
                 additional_thought_nudge=nudge

@@ -59,11 +59,7 @@ class ConsoleGameEventSink(GameEventSink):
         ConsoleRenderer.print_public_action("SYSTEM", f"BEGIN ROUND {round_number}")
 
     def on_round_summary(self, summary: str) -> None:
-        #big question, should this be public? the round summaries should be passed to each agent anyway...
         ConsoleRenderer.print_private("SUMMARY", f"{summary}\n", color_name="YELLOW")
-
-    def on_turn_header(self, turn_number: int) -> None:
-        ConsoleRenderer.print_turn_header(turn_number)
 
     def on_public_action(self, speaker: Speaker, message: str, color: str = "",
                          animate = False, directed_to_name = None, is_reply: bool = False) -> None:

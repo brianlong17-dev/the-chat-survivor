@@ -37,7 +37,6 @@ class TestGameSink:
     def on_phase_intro(self, host_text, summary_text): pass
     def on_round_start(self, round_number, scores): pass
     def on_round_summary(self, summary): pass
-    def on_turn_header(self, turn_number): pass
     def on_public_action(self, speaker, message, color="", animate=True, directed_to_name=None, is_reply=False): pass
     def on_private_thought(self, speaker, message): pass
     def on_inner_workings(self, speaker, inner_workings, override=False): pass

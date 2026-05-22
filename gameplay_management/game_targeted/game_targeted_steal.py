@@ -30,9 +30,9 @@ class GameTargetedChoiceSteal(GameTargetedChoice):
         def steal_points_model(player):
             other_agent_names = [name for name in self.game_board.agent_names() if name != player.name]
             action_fields = self.turn_manager._choose_name_field(other_agent_names, game_instruction)
-            return DynamicModelFactory.create_model_(
-                agent=player, 
-                model_name="StealPointsModel", 
+            return self.turn_manager._create_model(
+                player,
+                model_name="StealPointsModel",
                 action_fields=action_fields,
                 additional_thought_nudge=thought_nudge
             )

@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import random
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
-from models.player_models import DynamicModelFactory
 
 
 
@@ -85,7 +84,7 @@ class GameGuess(GameMechanicsMixin):
         futures = []
         with ThreadPoolExecutor() as executor:
             for agent in self.simulationEngine.agents:
-                response_model = DynamicModelFactory.create_model_(
+                response_model = self.turn_manager._create_model(
                     agent,
                     model_name="GuessTheNumber",
                     action_fields=action_fields,

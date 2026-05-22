@@ -1,6 +1,5 @@
 import random
 from gameplay_management.game_cycle.game_cycle import CycleRound
-from models.player_models import DynamicModelFactory
 
 
 class GameCircle(CycleRound):
@@ -27,9 +26,9 @@ class GameCircle(CycleRound):
         self.game_board.host_broadcast(f"{shield_holder.name}, who do you choose! ")
         pool_names = [a.name for a in unprotected_pool] + [shield_holder.name]
         action_fields = self.turn_manager._choose_name_field([a.name for a in unprotected_pool], "Choose one player to protect behind your shield.")
-        model = DynamicModelFactory.create_model_(shield_holder, action_fields=action_fields, 
-                                public_response_prompt = "What do you yell at the person you've chosen!",
-                                additional_thought_nudge = "Who do you want to protect? Who is most at danger from the shooter? Would be a valuable ally? To whom do you owe a favor?")
+        model = self.turn_manager._create_model(shield_holder, action_fields=action_fields,
+                                public_response_prompt="What do you yell at the person you've chosen!",
+                                additional_thought_nudge="Who do you want to protect? Who is most at danger from the shooter? Would be a valuable ally? To whom do you owe a favor?")
         turn_prompt = (f"{gun_holder_name} has a gun and is about to shoot! You're already behind a shield. "
                         f"There's room for one more... {self.format_list(pool_names)} are all in danger- who will you call to protect? ")
         result = shield_holder.take_turn_standard(turn_prompt, self.game_board, model)
@@ -47,9 +46,9 @@ class GameCircle(CycleRound):
         action_fields = self.turn_manager._choose_name_field(targetable_names, "Choose who to shoot.", field_name = 'target_choice')
         if self.double_shot:
             action_fields = action_fields | self.turn_manager._choose_name_field(targetable_names, "Choose who to shoot with second bullet.", field_name = 'target_choice_2')
-        model = DynamicModelFactory.create_model_(gun_holder, action_fields=action_fields, 
-                                                  public_response_prompt = "What you say to the group AFTER the shot goes and the smoke clears. It can be a smooth one liner, or remorseful plea for forgiveness. ",
-                                                  additional_thought_nudge = "Who do you want to shoot? Whose points do you want? What will you say? Do you want to intimidate the group or make them feel sorry for you? ")
+        model = self.turn_manager._create_model(gun_holder, action_fields=action_fields,
+                                                public_response_prompt="What you say to the group AFTER the shot goes and the smoke clears. It can be a smooth one liner, or remorseful plea for forgiveness. ",
+                                                additional_thought_nudge="Who do you want to shoot? Whose points do you want? What will you say? Do you want to intimidate the group or make them feel sorry for you? ")
         other_names = self.format_list([a.name for a in unprotected_pool])
         bullet_string = "You have two bullets!" if self.double_shot else "You have one bullet!"
         result = gun_holder.take_turn_standard(f"YOU have the gun. {bullet_string} The players behind the shield are safe. {other_names} are all potential targets. ", self.game_board, model)

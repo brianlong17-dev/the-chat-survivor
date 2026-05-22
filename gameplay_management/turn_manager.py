@@ -90,7 +90,7 @@ class TurnManager:
             )
             game_logic_fields = {**(game_logic_fields or {}), **speak_silent_field}
 
-        model = DynamicModelFactory.create_model_(
+        model = self._create_model(
             player,
             model_name,
             public_response_prompt=public_response_prompt,
@@ -115,6 +115,30 @@ class TurnManager:
 
         return result
 
+    def _create_model(
+            self,
+            player,
+            model_name: str = "DynamicTurnModel",
+            public_response_prompt: str = None,
+            private_thoughts_prompt: str = None,
+            additional_thought_nudge: str = None,
+            action_fields = None,
+            game_logic_fields = None,
+            round_specific_strategy = None,
+            action_post_response: bool = False,
+        ):
+        model = DynamicModelFactory.create_model_(
+            player,
+            model_name,
+            public_response_prompt=public_response_prompt,
+            private_thoughts_prompt=private_thoughts_prompt,
+            additional_thought_nudge=additional_thought_nudge,
+            action_fields=action_fields,
+            game_logic_fields=game_logic_fields,
+            round_specific_strategy=round_specific_strategy,
+            action_post_response=action_post_response)
+        return model
+                      
     def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,
                    private_thoughts_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False):
         return self.take_turn(player, turn_prompt, 

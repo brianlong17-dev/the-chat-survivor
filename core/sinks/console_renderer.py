@@ -16,10 +16,6 @@ class ConsoleRenderer:
     }
 
     @classmethod
-    def print_turn_header(cls, turn_number: int):
-        print(f"\n\n\033[1m[TURN {turn_number}]\033[0m")
-
-    @classmethod
     def print_public_action(cls, speaker: Union[str, BaseAgent], message: str, color_name: str = ""):
         display_name, default_color = ConsoleRenderer.get_name_and_color(speaker)
         final_color = color_name or default_color

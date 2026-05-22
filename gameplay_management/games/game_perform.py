@@ -3,7 +3,6 @@ from typing import Callable
 from pydantic import Field
 
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
-from models.player_models import DynamicModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 
 
@@ -52,7 +51,7 @@ class GamePerformSobStory(GameMechanicsMixin):
         for player in agents:
             player.use_higher_model = True
             #we may have to use a different action field here- replace with public response with brief word before you go - 'here goes!'
-            response_model = DynamicModelFactory.create_model_(
+            response_model = self.turn_manager._create_model(
                 player,
                 model_name="SobStory",
                 public_response_prompt=(
@@ -103,7 +102,7 @@ class GamePerformSobStory(GameMechanicsMixin):
                 ),
             ),
         }
-        return DynamicModelFactory.create_model_(
+        return self.turn_manager._create_model(
                         player_judging,
                         model_name="SobStoryJudge",
                         game_logic_fields=game_logic_fields,

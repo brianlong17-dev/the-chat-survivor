@@ -17,7 +17,6 @@ class GameBoard:
 
         self.phase_number = 0
         self.round_number = 0
-        self.turn_number = 0
 
         self.agent_scores: dict[str, int] = {}
         self.context_builder = ContextBuilder(game_board=self, game_log=self.game_log)
@@ -81,11 +80,6 @@ class GameBoard:
 
     ####  ...... Phase, turn management .... #########
 
-    def new_turn_print(self):
-        #TODO - what is the point here- ? only on discussion turns? why?
-        self.turn_number += 1
-        self.game_sink.on_turn_header(self.turn_number)
-
     def endRound(self, round_summary):
         self.game_sink.on_round_summary(round_summary.round_summary)
         self.game_log.close_round()
@@ -93,7 +87,6 @@ class GameBoard:
     def newRound(self):
         #self.system_broadcast(self.score_string(), private = False) Probably a good idea for agents to read
         self.round_number += 1
-        self.turn_number = 0
         self.game_log.start_round(self.phase_number, self.round_number)
         self.game_sink.on_round_start(self.round_number, self.score_string())
 
