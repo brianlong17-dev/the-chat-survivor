@@ -81,7 +81,7 @@ class VoteElectLeader(VoteMechanicsMixin):
             f"You have been elected Executioner. Choose who to eliminate from: {', '.join(players_up_for_elimination)}",
             model_name="elect_leader_choice", 
             action_fields=action_fields,
-            broacast=True)
+            broadcast=True)
 
         # --- Step 4: Reveal and eliminate ---
         victim_name = self.turn_manager._get_target_name_from_response(leader_response)

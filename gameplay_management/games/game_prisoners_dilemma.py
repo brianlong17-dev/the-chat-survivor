@@ -81,9 +81,9 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         
         additional_thought_nudge="What points are available? How will the next elimination work? Do you need points or alliance?"
         public_response_prompt = "A one liner, for AFTER your result has been revealed. (Not neccessary to re-state your choice as it will already be revealed.)."
-        return self.get_split_or_steal(player, turn_prompt, additional_thought_nudge, public_response_prompt)
+        return self.get_split_or_steal(player, turn_prompt, public_response_prompt, additional_thought_nudge)
 
-    def get_split_or_steal(self, player, turn_prompt, additional_thought_nudge, public_response_prompt):
+    def get_split_or_steal(self, player, turn_prompt, public_response_prompt, additional_thought_nudge = None):
         choices = ["split", "steal"]
         action_fields = self.turn_manager.create_choice_field("action", choices)
         return self.turn_manager.take_turn(player, turn_prompt= turn_prompt, additional_thought_nudge=additional_thought_nudge, 
@@ -134,6 +134,17 @@ class GamePrisonersDilemma(GameMechanicsMixin):
                     reaction = self.turn_manager.respond_to(agent, result_host_message)
                     self.game_board.handle_public_private_output(agent, reaction, is_reply = True)
                     
+        self.game_log._push_to_game_ledger(self._game_ledger_message(agent0, agent1, choices[0], choices[1]))     
+        
+    
+    def _game_ledger_message(self, agent0, agent1, choice0, choice1 ):
+        if choice0 == choice1:
+            return f"{agent0.name} and {agent1.name}: both {choice0}. "
+        elif choice0 == 'steal':
+            return f"{agent0.name} stole from {agent1.name}. "
+        else:
+            return f"{agent1.name} stole from {agent0.name}. "
+                 
     def _process_results_and_points(self, choice0, choice1, agent0, agent1):
         p0_gain, p1_gain, msg = self._calculate_pd_payout(choice0, choice1, agent0.name, agent1.name)
 
