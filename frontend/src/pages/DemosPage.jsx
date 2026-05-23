@@ -36,6 +36,12 @@ const DEMOS = [
         description: 'Finn (17) vs Brian (15).',
         cast: ['Finn the Human', 'Brian', 'Princess Bubblegum', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
       },
+      {
+        id: 'aang_pb_pre_finale',
+        label: 'Aang vs PB',
+        description: 'Princess Bubblegum (18) vs Avatar Aang (11).',
+        cast: ['Avatar Aang', 'Princess Bubblegum', 'Finn the Human', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
+      },
     ],
   },
   {
@@ -60,6 +66,12 @@ const DEMOS = [
         label: 'Brian vs Finn',
         description: 'Finn (17) vs Brian (15).',
         cast: ['Finn the Human', 'Brian', 'Princess Bubblegum', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
+      },
+      {
+        id: 'aang_pb_pre_finale',
+        label: 'Aang vs PB',
+        description: 'Princess Bubblegum (18) vs Avatar Aang (11).',
+        cast: ['Avatar Aang', 'Princess Bubblegum', 'Finn the Human', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
       },
       {
         id: 'game_3',

@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import threading
+import traceback
 from datetime import date
 
 from dotenv import load_dotenv
@@ -20,6 +21,7 @@ app = FastAPI()
 # Feature flags — set to True to enable before publishing
 GAME_ENABLED = True
 DEMO_ENABLED = True
+DEV_MODE = os.getenv("DEV_MODE", "false").lower() in ("1", "true", "yes")
 
 _allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 _active_games = 0
@@ -189,10 +191,15 @@ async def game_ws(websocket: WebSocket):
                     engine = create_engine(sink, number_of_players=7, generic_players=False, phase_factory=phase_factory)
                 engine.run(human_player_name=human_player_name)
             except Exception as e:
-                asyncio.run_coroutine_threadsafe(
-                    websocket.send_text(json.dumps({"type": "error", "message": str(e)})),
-                    loop,
-                ).result(timeout=5)
+                traceback.print_exc()
+                try:
+                    message = f"{e}\n\n{traceback.format_exc()}" if DEV_MODE else str(e)
+                    asyncio.run_coroutine_threadsafe(
+                        websocket.send_text(json.dumps({"type": "error", "message": message})),
+                        loop,
+                    ).result(timeout=5)
+                except Exception:
+                    pass
 
         thread = threading.Thread(target=run_game, daemon=True)
         thread.start()
@@ -273,10 +280,15 @@ async def demo_ws(websocket: WebSocket):
             try:
                 runner(sink, human_name=human_name, fixture_choice=fixture_choice)
             except Exception as e:
-                asyncio.run_coroutine_threadsafe(
-                    websocket.send_text(json.dumps({"type": "error", "message": str(e)})),
-                    loop,
-                ).result(timeout=5)
+                traceback.print_exc()
+                try:
+                    message = f"{e}\n\n{traceback.format_exc()}" if DEV_MODE else str(e)
+                    asyncio.run_coroutine_threadsafe(
+                        websocket.send_text(json.dumps({"type": "error", "message": message})),
+                        loop,
+                    ).result(timeout=5)
+                except Exception:
+                    pass
 
         thread = threading.Thread(target=run_demo, daemon=True)
         thread.start()

@@ -5,6 +5,7 @@ Each function accepts a sink (any GameEventSink) and an optional human_name.
 import sys
 import os
 
+from gameplay_management.game_targeted.game_targeted_steal2 import GameTargetedChoiceSteal2
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 from tests.helpers.scripted_phase_factory import ScriptedPhaseFactory
 
@@ -89,6 +90,12 @@ REUNION_FIXTURES = {
         "elimination_order": ["Lumpy Space Princess", "BMO", "Princess Bubblegum", "Jake the Dog"],
         "phase_number": 6,
     },
+    "aang_pb_pre_finale": {
+        "fixture_filename": "aang_pb_pre_finale.json",
+        "finalist_scores": {"Avatar Aang": 11, "Princess Bubblegum": 18},
+        "elimination_order": ["BMO", "Jake the Dog", "Finn the Human", "Lumpy Space Princess"],
+        "phase_number": 5,
+    },
 }
 
 
@@ -117,6 +124,11 @@ PD_FINALE_FIXTURES = {
         "fixture_filename": "brian_jake_pre_finale.json",
         "finalist_scores": {"Finn the Human": 17, "Brian": 15},
         "phase_number": 6,
+    },
+    "aang_pb_pre_finale": {
+        "fixture_filename": "aang_pb_pre_finale.json",
+        "finalist_scores": {"Avatar Aang": 11, "Princess Bubblegum": 18},
+        "phase_number": 5,
     },
 }
 
@@ -195,7 +207,7 @@ def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
         phase_number=3,
         human_name=human_name,
         human_is_dead=True,
-        eliminate_after=3,
+        #eliminate_after=8,
     )
 
     cfg = engine.gameplay_config
@@ -208,7 +220,7 @@ def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
     while len(engine.agents) > 2:
     #while round_count < 1:
         round_count += 1
-        phase = PhaseRecipe(rounds=[GamePrisonersDilemma, DiscussionRound, VoteBottomTwo])
+        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal2, DiscussionRound, VoteBottomTwo])
         engine.phase_runner.run_phase(phase)
 
 
