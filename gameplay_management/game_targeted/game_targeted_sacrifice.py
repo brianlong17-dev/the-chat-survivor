@@ -1,8 +1,9 @@
-from gameplay_management.game_targeted.game_targeted_choice import *
+from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
+from pydantic import Field
 
 
-class GameTargetedChoiceSacrifice(GameTargetedChoice):
-    
+class GameTargetedChoiceSacrifice(GameMechanicsMixin):
+
     @classmethod
     def display_name(cls, cfg):
         return "Sacrificer"
@@ -10,111 +11,87 @@ class GameTargetedChoiceSacrifice(GameTargetedChoice):
     @classmethod
     def rules_description(cls, cfg):
         return "Use your own points to hurt another player"
-    
-    def run_game(self):
-        self.run_game_sacrifice_points()
-        
-    def run_game_sacrifice_points(self):
-        
-        # 1. Define Flavor & Rules
-        game_intro = (
+
+    def _game_intro(self):
+        return (
             f"This is a game of self-sacrifice, of sabotage... "
             f"In this round, you can SPEND your own points to damage another player. "
             f"For every 1 point you spend, your target also loses a point! "
-            f"The minimum points a player can have is zero-  don't spend points trying to get them to negative points."
+            f"The minimum points a player can have is zero- don't spend points trying to get them to negative points. "
             f"You can choose to pass if you want to save your strength."
         )
-        
-        player_intro = "{player_name}! You have the floor. Will you sabotage someone, or stay safe?"
-        
+
+    def _player_intro(self, player):
+        return f"{player.name}! You have the floor. Will you sabotage someone, or stay safe?"
+
+    def run_game(self):
         game_instruction = (
             "Decide if you want to attack. If yes, choose a target and an amount to spend. "
             "If no, choose 'Pass' as the target."
         )
-        
-        def sacrifice_points_model(player):
-            my_score = self.game_board.get_agent_score(player.name) 
-            if my_score <= 0:
-                error_response = (f"{player.name} has no points, so has no choice but to sit this one out.")
-                return self.get_error_model(error_response)
-            targets = [name for name in self.game_board.agent_names() if name != player.name]
-            targets.append("Pass") 
-            action_fields = self.turn_manager._choose_name_field(targets, "Choose a player to attack, or 'Pass'.")
-            spend_field_desc = (
-                f"How many of your own points will you spend? You have {my_score} points. Your target player can't go into negative points, so don't waste points."
-                f"Enter 0 if passing."
-            )
-            
-            action_fields["points_to_spend"] = (
-                int, 
-                Field(description=spend_field_desc)
-            )
+        self.game_board.host_broadcast(self._game_intro())
+        for player in self._shuffled_agents():
+            self.game_board.host_broadcast(self._player_intro(player))
+            my_score =  self._agent_score(player.name)
 
-            # Nudge: Show the scoreboard 
-            scores_str = ", ".join([f"{k}: {v}" for k,v in self.game_board.agent_scores.items()])
-            nudge = (
-                f"Reminder- attacking a player with no points has no effect. Current scores: {scores_str}. "
+            if my_score <= 0:
+                result = f"{player.name} has no points, so has no choice but to sit this one out."
+                self.game_board.host_broadcast(result, is_reply=True)
+                continue
+
+            targets = self._names(self._other_agents(player)) + ["Pass"]
+            action_fields = self.turn_manager._choose_name_field(targets, "Choose a player to attack, or 'Pass'.")
+            action_fields["points_to_spend"] = (
+                int,
+                Field(description=(
+                    f"How many of your own points will you spend? You have {my_score} points. "
+                    f"Your target player can't go into negative points, so don't waste points. "
+                    f"Enter 0 if passing."
+                ))
             )
-            
-            return self.turn_manager._create_model(
-                player,
+            scores_str = ", ".join([f"{k}: {v}" for k, v in self.game_board.agent_scores.items()])
+            thought_nudge = f"Reminder- attacking a player with no points has no effect. Current scores: {scores_str}."
+
+            response = self.turn_manager.take_turn(
+                player, game_instruction,
                 model_name="SabotageModel",
                 action_fields=action_fields,
-                additional_thought_nudge=nudge
+                additional_thought_nudge=thought_nudge,
+                broadcast=True,
+                is_reply=True,
             )
 
-        def sacrifice_points_logic(player, target_agent, response):
-            
-            spent = response.points_to_spend
             target_name = self.turn_manager._get_target_name_from_response(response)
-            normalized_target = self._normalize_target_string(target_name)
-            
-            if normalized_target == "pass" or spent <= 0:
-                return (
-                    f"{player.name} chooses mercy (or cowardice?) and passes. No blood is shed.",
-                    player # Player reacts to their own pass
-                )
+            spent = response.points_to_spend
 
-            if not target_agent or target_agent.name == player.name:
-                return (
-                    GamePromptLibrary.invalid_target_message.format(
-                        player_name=player.name,
-                        target_name=target_name,
-                    ),
-                    player
-                )
-            
-            # Handle Valid Attack
-            player_score = self.game_board.get_agent_score(player.name)
-            victim_score = self.game_board.get_agent_score(target_agent.name)
-            actual_spend = max(0, min(spent, player_score)) 
-            damage = min(victim_score, actual_spend) #capped at the actual damange (they love to attack someone with no points)
-            
-            if actual_spend == 0: #This should should come from the response sending 0- if they player has zero points that should be caught earlier
-                 return (f"{player.name} tried to attack but with no points to spend! It fizzles out.", player)
-            if victim_score == 0:
-                return (f"{target_agent.name} has no points, so the attack does nothing. Perhaps just to make a point?", player)
-                
-            # 2. Execute the Trade
-            self.game_board.append_agent_points(player.name, -actual_spend) 
-            self.game_board.append_agent_points(target_agent.name, -damage)
-            
-            result_host_string = (
-                f"BRUTAL! {player.name} sacrifices {actual_spend} of their own points... "
-                f"to crush {target_agent.name} for {damage} damage! "
-                f"{target_agent.name}, wow... this must sting!"
-            )
-            
-            return result_host_string, target_agent # Target reacts to the pain
+            ledger_message = None
+            if str(target_name).strip().lower() == "pass" or spent <= 0:
+                result = f"{player.name} chooses mercy (or cowardice?) and passes. No blood is shed."
+                reactor = player
+            else:
+                target_agent = self._agent_by_name(target_name)
+                victim_score = self.game_board.get_agent_score(target_agent.name)
+                actual_spend = max(0, min(spent, my_score))
+                damage = min(victim_score, actual_spend)
 
-        # 4. Run it
-        self.run_targeted_round(
-            game_intro, 
-            player_intro, 
-            game_instruction, 
-            sacrifice_points_logic, 
-            sacrifice_points_model,
-            False
-        )
-        
+                if victim_score == 0:
+                    result = f"{target_agent.name} has no points, so the attack does nothing. Perhaps just to make a point?"
+                    reactor = player
+                else:
+                    self.game_board.append_agent_points(player.name, -actual_spend)
+                    self.game_board.append_agent_points(target_agent.name, -damage)
+                    result = (
+                        f"BRUTAL! {player.name} sacrifices {actual_spend} of their own points... "
+                        f"to crush {target_agent.name} for {damage} damage! "
+                        f"{target_agent.name}, wow... this must sting!"
+                    )
+                    reactor = target_agent
+                    ledger_message = f"{player.name} sacrificed points to attack {target_agent.name}."
 
+            self.game_board.host_broadcast(result, is_reply=True)
+            reaction = self.turn_manager.respond_to(reactor, result, is_reply=True)
+            self.game_board.handle_public_private_output(reactor, reaction, is_reply=True)
+            self.game_board.system_broadcast(self.game_board.agent_scores, private=True)
+            #needs to push after react, so they don't think it happened twice
+            if ledger_message:
+                self.game_log._push_to_game_ledger(ledger_message)

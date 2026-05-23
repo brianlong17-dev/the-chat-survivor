@@ -22,7 +22,7 @@ from gameplay_management.game_cycle.game_mob import GameMob
 from gameplay_management.game_cycle.game_knives import GameKnives
 from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
-from gameplay_management.game_targeted.game_targeted_steal2 import GameTargetedChoiceSteal2
+from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
 
 # from gameplay_management.games.game_knives import GameKnives
 
@@ -103,6 +103,6 @@ if __name__ == "__main__":
     #while len(engine.agents) > 2:
     while rounds < 1:
         rounds += 1
-        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal2, VoteBottomTwo])
+        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal, VoteBottomTwo])
         engine.phase_runner.run_phase(phase)
     api_client.print_summary()

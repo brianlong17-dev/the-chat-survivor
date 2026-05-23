@@ -5,7 +5,7 @@ Each function accepts a sink (any GameEventSink) and an optional human_name.
 import sys
 import os
 
-from gameplay_management.game_targeted.game_targeted_steal2 import GameTargetedChoiceSteal2
+from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 from tests.helpers.scripted_phase_factory import ScriptedPhaseFactory
 
@@ -220,7 +220,7 @@ def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
     while len(engine.agents) > 2:
     #while round_count < 1:
         round_count += 1
-        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal2, DiscussionRound, VoteBottomTwo])
+        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal, DiscussionRound, VoteBottomTwo])
         engine.phase_runner.run_phase(phase)
 
 

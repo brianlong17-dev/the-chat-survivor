@@ -1,7 +1,7 @@
 from core.levels.phase_recipe_factory import *
 from gameplay_management.discussion_rounds.discussion_round_directed_short import DiscussionRoundDirectedShort
-from gameplay_management.game_targeted.game_targeted_give2 import GameTargetedChoiceGive2
-from gameplay_management.game_targeted.game_targeted_steal2 import GameTargetedChoiceSteal2
+from gameplay_management.game_targeted.game_targeted_give import GameTargetedChoiceGive
+from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 
 
@@ -52,12 +52,12 @@ class PhaseRecipeFactoryBeginner(PhaseRecipeFactory):
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
         
         if agent_number == 5:
-            rounds = [GameTargetedChoiceGive2, DiscussionRoundDirectedShort, VoteBottomTwo]
+            rounds = [GameTargetedChoiceGive, DiscussionRoundDirectedShort, VoteBottomTwo]
             config_mutations=[("set_directed_discussion_group_allowed", [True])]
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
         
         if agent_number == 4:
-            rounds = [GameTargetedChoiceSteal2, DiscussionRoundDirectedShort, VoteBottomTwo]
+            rounds = [GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo]
             config_mutations=[]
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
             

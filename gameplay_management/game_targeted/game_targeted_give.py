@@ -1,9 +1,9 @@
-from gameplay_management.game_targeted.game_targeted_choice import GameTargetedChoice
+from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
 from prompts.gamePrompts import GamePromptLibrary
 
 
-class GameTargetedChoiceGive(GameTargetedChoice):
-    
+class GameTargetedChoiceGive(GameMechanicsMixin):
+
     @classmethod
     def display_name(cls, cfg):
         return "Giver"
@@ -12,25 +12,40 @@ class GameTargetedChoiceGive(GameTargetedChoice):
     def rules_description(cls, cfg):
         return "Choose a player to receive points!"
     
+    def _give_game_intro(self, targeted_games_points):
+        return (f"Well, enough of the scheming, lying, conning... whatever happened to giving!? "
+        f"In this round, you will get to pick a pal. The player you pick will receive {targeted_games_points} points! "
+        f"Everyone is happy! Well... except any player with no friends! hehe")
+    
+    def _player_intro(self, player):
+        return (f"{player.name}! You're up- what player are you choosing, and why?")
+    
     def run_game(self):
-        self.run_game_give()
-     
-    def run_game_give(self):
         points_amount = GamePromptLibrary.targeted_games_points
-        game_intro = GamePromptLibrary.give_game_intro #really should this be merged with the game def.
-        player_intro = GamePromptLibrary.give_game_player_intro
-        game_instruction = f"Choose one player from to receive {points_amount} points. Explain why."
-        
-        
-        def give_points_model(player):
-            other_agent_names = [name for name in self.game_board.agent_names() if name != player.name]
-            action_fields = self.turn_manager._choose_name_field(other_agent_names, game_instruction) 
-            return self.turn_manager._create_model(player, model_name="GivePointsModel", action_fields=action_fields)
+        game_instruction = f"Choose one player to receive {points_amount} points. Explain why."
+
+        self.game_board.host_broadcast(self._give_game_intro(points_amount))
+
+        for player in self._shuffled_agents():
+            self.game_board.host_broadcast(self._player_intro(player))
+
+            other_names = self._names(self._other_agents(player))
+            action_fields = self.turn_manager._choose_name_field(other_names, game_instruction)
+
+            response = self.turn_manager.take_turn(player, game_instruction,
+                model_name="GivePointsModel", action_fields=action_fields,
+                broadcast=True,
+                is_reply=True)
+
+            target_name = self.turn_manager._get_target_name_from_response(response)
+            target_agent = self._agent_by_name(target_name)
+
+            self.game_board.append_agent_points(target_name, points_amount)
+            result = f"Yay! {player.name} chooses {target_name}! They receive {points_amount} points."
             
-        def give_points_logic(player, target_agent, _response): #response is only needed for subtraction
-            result_host_string = f"Yay! {player.name} chooses {target_agent.name}! They receive {points_amount} points."
-            self.game_board.append_agent_points(target_agent.name, points_amount)
-            return(result_host_string, target_agent)
-        
-        self.run_targeted_round(game_intro, player_intro, game_instruction, give_points_logic, give_points_model)
-   
+            self.game_board.host_broadcast(result, is_reply=True)
+            reaction = self.turn_manager.respond_to(target_agent, result, is_reply=True)
+            self.game_board.handle_public_private_output(target_agent, reaction, is_reply=True)
+            self.game_board.system_broadcast(self.game_board.agent_scores, private=True)
+            #needs to push after react, so they don't think it happened twice
+            self.game_log._push_to_game_ledger(f"{player.name} gave points to {target_name}.")

@@ -5,6 +5,7 @@ from core.game_config import GameConfig
 from core.gameboard import GameBoard
 from core.phase_runner import PhaseRunner
 from core.levels.phase_recipe import PhaseRecipe
+from core.sinks.game_sink import NoopGameSink
 from gameplay_management.game_cycle.game_knives import GameKnives
 
 
@@ -24,27 +25,12 @@ class _QueuedResponse(SimpleNamespace):
         return dict(vars(self))
 
 
-class TestGameSink:
+class TestGameSink(NoopGameSink):
     def get_user_input_simple(self, field_name, description):
         raise RuntimeError("TestGameSink cannot collect user input")
 
     def get_user_input_multiple_choice(self, field_name, description, choices):
         raise RuntimeError("TestGameSink cannot collect user input")
-
-    def on_game_intro(self, message): pass
-    def on_game_over(self, winner_names): pass
-    def on_phase_header(self, phase_number): pass
-    def on_phase_intro(self, host_text, summary_text): pass
-    def on_round_start(self, round_number, scores): pass
-    def on_round_summary(self, summary): pass
-    def on_public_action(self, speaker, message, color="", animate=True, directed_to_name=None, is_reply=False): pass
-    def on_private_thought(self, speaker, message): pass
-    def on_inner_workings(self, speaker, inner_workings, override=False): pass
-    def system_private(self, message): pass
-    def delay(self, delay): pass
-    def on_points_update(self, points): pass
-    def on_private_conversation(self, entry): pass
-    def environment_broadcast(self, message): pass
 
 
 class QueuedClient:
@@ -104,15 +90,29 @@ def make_debater(name, client, model_name="test-model"):
     )
 
 
+def _iter_round_messages(board):
+    round_entry = board.game_log.current_round
+    if round_entry is None:
+        return
+    for entry in round_entry.messageEntries:
+        for msg in entry.messages:
+            yield msg
+
+
 def host_messages(board):
-    return [entry["message"] for entry in board.currentRound if entry["speaker"] == self.HOST_NAME]
+    return [msg["message"] for msg in _iter_round_messages(board) if msg["speaker"] == GameBoard.HOST_NAME]
 
 
 def messages_for(board, speaker):
-    return [entry["message"] for entry in board.currentRound if entry["speaker"] == speaker]
+    return [msg["message"] for msg in _iter_round_messages(board) if msg["speaker"] == speaker]
 
 
-def build_targeted_choice_game(agent_specs, initial_scores=None):
+def ledger_text(board):
+    round_entry = board.game_log.current_round
+    return round_entry.game_ledger if round_entry else ""
+
+
+def build_targeted_choice_game(game_cls, agent_specs, initial_scores=None):
     clients = {name: QueuedClient(responses) for name, responses in agent_specs.items()}
     agents = [make_debater(name, clients[name]) for name in agent_specs]
 
@@ -124,10 +124,12 @@ def build_targeted_choice_game(agent_specs, initial_scores=None):
                 board.agent_scores[name] = score
 
     simulation = TestSimulation(agents)
-    from gameplay_management.unified_controller import UnifiedController
-    game = UnifiedController(board, simulation)
+    game = game_cls(board, simulation)
     attach_test_runtime(board, simulation, game)
     game._shuffled_agents = lambda: list(simulation.agents)
+    board.newRound()
+    board.phase_runner.current_recipe = PhaseRecipe(rounds=[game_cls])
+    board.phase_runner.current_round_index = 0
     return game, board, agents, clients
 
 
