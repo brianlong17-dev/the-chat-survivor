@@ -13,3 +13,4 @@ class RoundEntry:
     phase_number: int
     round_number: int
     messageEntries: list[MessageEntry]
+    game_ledger: str = ""

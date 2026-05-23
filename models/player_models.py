@@ -60,19 +60,20 @@ class DynamicModelFactory:
                 str, Field(description=f"Is everyone jumping on a repeated thought? Do you agree? If not, say so")
             )
      
-        if agent_logic_fields:
-            ordered_fields.update(agent_logic_fields)
-        # I guess this should merge with game logic fields .... i just like the thouht being different base on this
-        #TODO depreciate
         
         if additional_thought_nudge:
-            ordered_fields["logic_processing"] = (
-                str, Field(description=f"Work through the logic step-by-step: {additional_thought_nudge}")
+            ordered_fields["additional_thoughts"] = (
+                str, Field(description=f"{additional_thought_nudge}")
             )
+            
         
         if game_logic_fields:
             ordered_fields.update(game_logic_fields)
-            
+        
+        if not additional_thought_nudge and not game_logic_fields:
+            ordered_fields.update(agent_logic_fields)
+        
+        
         #......... Thoughts
         if not private_thoughts_prompt:
             base_thought = PromptLibrary.desc_basic_thought

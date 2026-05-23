@@ -75,7 +75,7 @@ class APIClient:
                         response_schema=response_model,
                         thinking_config=types.ThinkingConfig(#thinking_budget=512, 
                                                             include_thoughts=False,),
-                        temperature=1,
+                        temperature=1.4,
                         #top_p=0.99,
                         #top_k=64
                     ),

@@ -8,7 +8,7 @@ from agents.player import Debater
 from core.api_client import api_client
 
 class CharacterProfile(BaseModel):
-    persona: str = Field(description="A detailed, first-person personality description, core beliefs, and strategic outlook if thrown into a game figure.")
+    persona: str = Field(description="A detailed, first-person personality description, core beliefs, and strategic outlook if thrown into a game figure. What sensitive nuance behind this person?")
     speaking_style: str = Field(description="Their speaking style, how they talk, to preserve the character from context bleed.")
     name: Optional[str] = Field(default=None, description="If a charcter is nameless, or has non title descriptors in their name - ie Drunk Girl or BMO (adventure time). Then you may rename them: ie Tiffany or BMO, etc.")
 

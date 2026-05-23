@@ -12,6 +12,9 @@ class DiscussionRoundDirected(BaseRound):
         return cfg.discussion_round_topic
 
     def run_game(self):
+        return self.run_round(short=False)
+        
+    def run_round(self, short=False):
         ordered_agents = self._shuffled_agents()
         group_allowed = self.cfg.directed_discussion_group_allowed
 
@@ -37,7 +40,7 @@ class DiscussionRoundDirected(BaseRound):
             if chosen_agent:
                 if chosen_agent in ordered_agents:
                     ordered_agents.remove(chosen_agent)
-                    if ordered_agents:
+                    if ordered_agents and not short:
                         ordered_agents.append(chosen_agent)
                     else:
                         appendage = "This is your last turn in the discussion round. Say anything else you want to say. "

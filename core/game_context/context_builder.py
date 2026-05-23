@@ -78,7 +78,7 @@ class ContextBuilder:
             rounds = [self._round_after_id(self.game_log.current_round,
                                            self.game_log._current_round_summarisation_until)]
         else:
-            rounds = [self.game_log.current_round] + self._previous_round_entries_for_context()
+            rounds = [self.game_log.current_round] + list(reversed(self._previous_round_entries_for_context()))
             
         other_player_message_found = False
         
@@ -105,7 +105,7 @@ class ContextBuilder:
         if other_player_message_found:
             anchor_message = "\n===[This was your last message — react to what's happened since. Don't repeat above message. ]==="
         else:
-            anchor_message = "\n===[ This was your last message — it's already been said. Your turn now is a fresh action, not a reaction. Don't repeat or recap the above; respond only to what the host has just asked. ]==="
+            anchor_message = "\n===[ This was your last message — it's already been said. Your turn now is a fresh action, not a reaction. Don't repeat or recap the above; respond only to what the host says below. ]==="
             
         for entry in round.messageEntries:
             if entry.visibility_restriction is None:
@@ -129,6 +129,9 @@ class ContextBuilder:
                             output += (f"\n{message['speaker']}: {message['message']}")
                         if entry.closed:
                             output += f"\n=== END OF Private Conversation between {names} ===\n"
+        if round.game_ledger:
+            output+="\n===ROUND SUMMARY LEDGER===\n"
+            output += round.game_ledger
         return output
 
     def get_dashboard_string(self, agent: 'BaseAgent') -> str:

@@ -34,6 +34,7 @@ class Debater(BaseAgent):
         self.detailed_summary_count = 2
         self.game_over = False
         self.initialising = False
+        self.summarising = False
         self.optional_response_buffer = 0
         self.round_specific_strategy = ""
         self.most_recent_internal_thought = ""
@@ -66,14 +67,15 @@ class Debater(BaseAgent):
     def clear_round_specific_strategy(self):
         self.round_specific_strategy=""
         
+    
+            
     def internal_thinking_fields(self):
         fields = {}
         if not self.game_over:
             fields["updated_game_strategy"] = (str | None, Field(default=None, description=PromptLibrary.desc_agent_updated_game_strategy)) 
-        
         fields["updated_persona_summary"] = (str | None, Field(default=None, description=PromptLibrary.desc_persona_update))
         fields["lifeLesson"] =  (Optional[str], Field(default=None, description=PromptLibrary.desc_agent_lifeLessons))
-        fields["speaking_style"] =  (Optional[str], Field(default=None, description=PromptLibrary.desc_agent_speaking_style))
+        fields["speaking_style"] = self._speaking_style_field()
         return fields
 
     def cognitive_fields(self):
@@ -204,8 +206,9 @@ class Debater(BaseAgent):
         return response_model
         
     def summarise_phase(self, game_board):
-        #TODO this works really well with DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
+        #NOTE this works really well with DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
         #But other models will be brief - this needs to prompted to be detailed
+        self.summarising=True
         phase_number = game_board.phase_number
         prompt = ("From your perspective, write a summary of what happened in this phase. "
                   "Include all information that you think is relevant to retain, as this will be your memory of the game going forward."
@@ -223,6 +226,7 @@ class Debater(BaseAgent):
         self._process_life_lesson_compression(response)
         self.phase_summaries_detailed[phase_number] = response.public_response
         self.phase_summaries_brief[phase_number] = response.brief_summary
+        self.summarising=False
         
     def _process_life_lesson_compression(self, response):
         new_lesson = getattr(response, 'lifeLesson', None)
@@ -231,6 +235,11 @@ class Debater(BaseAgent):
             self.life_lessons.extend(response.compressed_life_lessons)
         if new_lesson:
             self.life_lessons.append(new_lesson)
-
-    
-    
+            
+    def _speaking_style_field(self):
+        if self.summarising:
+             return (str, Field(description=("Maintain current speaking style, but strip out any specific references to words or phrases or catch phrases."
+                f"Current speaking style: \n {self.speaking_style}")))
+        else:
+             return (Optional[str], Field(default=None, description=PromptLibrary.desc_agent_speaking_style))
+        

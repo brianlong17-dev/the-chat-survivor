@@ -1,4 +1,7 @@
 from core.levels.phase_recipe_factory import *
+from gameplay_management.discussion_rounds.discussion_round_directed_short import DiscussionRoundDirectedShort
+from gameplay_management.game_targeted.game_targeted_give2 import GameTargetedChoiceGive2
+from gameplay_management.game_targeted.game_targeted_steal2 import GameTargetedChoiceSteal2
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 
 
@@ -44,22 +47,22 @@ class PhaseRecipeFactoryBeginner(PhaseRecipeFactory):
         cfg.vote_bottom_two_expand_ties = True
         
         if agent_number == 6: #IntroRound, DiscussionRoundDirectedPreVote
-            rounds = [IntroRound,DiscussionRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirected , VoteBottomTwo]
+            rounds = [IntroRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirectedShort , VoteBottomTwo]
             config_mutations=[("set_pd_pairing_random", [])]
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
         
         if agent_number == 5:
-            rounds = [GameTargetedChoiceGive, DiscussionRoundDirected, VoteBottomTwo]
+            rounds = [GameTargetedChoiceGive2, DiscussionRoundDirectedShort, VoteBottomTwo]
             config_mutations=[("set_directed_discussion_group_allowed", [True])]
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
         
         if agent_number == 4:
-            rounds = [GameTargetedChoiceSteal, DiscussionRoundDirected, VoteBottomTwo]
+            rounds = [GameTargetedChoiceSteal2, DiscussionRoundDirectedShort, VoteBottomTwo]
             config_mutations=[]
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
             
         if agent_number == 3:
-            rounds = [GamePrisonersDilemma, DiscussionRoundDirected, VoteBottomTwo]
+            rounds = [GamePrisonersDilemma, DiscussionRoundDirectedShort, VoteBottomTwo]
             config_mutations=[("set_pd_pairing_all", []), ("set_directed_discussion_group_allowed", [True])]
             return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
         
