@@ -210,7 +210,7 @@ async def game_ws(websocket: WebSocket):
                 data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
                 msg = json.loads(data)
                 if msg.get("type") == "input_response":
-                    sink._input_queue.put(str(msg.get("value", ""))[:5000])
+                    sink._input_queue.put(str(msg.get("value", ""))[:1500])
                 elif msg.get("type") == "next_turn":
                     sink._step_queue.put(True)
             except asyncio.TimeoutError:
@@ -297,7 +297,7 @@ async def demo_ws(websocket: WebSocket):
                 data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
                 msg = json.loads(data)
                 if msg.get("type") == "input_response":
-                    sink._input_queue.put(str(msg.get("value", ""))[:5000])
+                    sink._input_queue.put(str(msg.get("value", ""))[:1500])
                 elif msg.get("type") == "next_turn":
                     sink._step_queue.put(True)
             except asyncio.TimeoutError:

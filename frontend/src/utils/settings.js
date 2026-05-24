@@ -1,4 +1,4 @@
-export const MAX_INPUT_CHARS = 5000
+export const MAX_INPUT_CHARS = 1500
 
 export const SETTINGS_KEY = 'game_settings'
 export const DEFAULT_SETTINGS = { showPrivate: true, autoRun: true, animateText: true, showPrivateChats: true }

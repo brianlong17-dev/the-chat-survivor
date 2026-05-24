@@ -1,3 +1,4 @@
+import re
 from collections import deque
 from pydantic import Field, ValidationError
 from agents.player import Debater
@@ -6,6 +7,17 @@ from typing import TYPE_CHECKING, Dict, Optional
 
 if TYPE_CHECKING:
     from gameplay_management import *
+
+_COLON = re.compile(r'\s*:\s*')
+_BRACKET_TAG = re.compile(r'\[(SYSTEM|ERROR|ADMIN|GAME|HOST|RULE)\]', re.IGNORECASE)
+_FENCE = re.compile(r'[-=_]{3,}')
+
+
+def _sanitize(text: str) -> str:
+    text = _COLON.sub(' - ', text)
+    text = _BRACKET_TAG.sub('', text)
+    text = _FENCE.sub('', text)
+    return text
 
 class Human(Debater):
     
@@ -51,7 +63,8 @@ class Human(Debater):
         if get_origin(annotation) is Literal:
             choices = [str(a) for a in get_args(annotation)]
             return game_board.game_sink.get_user_input_multiple_choice(field_name, description, choices)
-        return game_board.game_sink.get_user_input_simple(field_name, description)
+        response = game_board.game_sink.get_user_input_simple(field_name, description)
+        return _sanitize(response)
 
     def _handle_validation_error(self, e: ValidationError, game_board):
         game_board.game_sink.system_private("❌ FORMAT ERROR: The game engine rejected your input.")
