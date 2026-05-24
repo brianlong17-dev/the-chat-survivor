@@ -78,7 +78,8 @@ class TurnManager:
                   optional: bool = False,
                   broadcast: bool = False,
                   include_target_name = False,
-                  is_reply = False):
+                  is_reply = False,
+                  thinking = False):
         
         
         optional = optional and self.optional_responses_in_use
@@ -106,7 +107,7 @@ class TurnManager:
         if optional:
             result = self._basic_turn_optional(model, player, turn_prompt)
         else:
-            result = player.take_turn_standard(turn_prompt, self.game_board, model, instruction_override=instruction_override)
+            result = player.take_turn_standard(turn_prompt, self.game_board, model, instruction_override=instruction_override, thinking=thinking)
 
         #TODO modified broadcasts need to live outside
         if broadcast and result and result.public_response:
@@ -143,6 +144,8 @@ class TurnManager:
                       
     def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,
                    private_thoughts_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False):
+        
+        turn_prompt = f"Respond to: \n{turn_prompt}"
         return self.take_turn(player, turn_prompt, 
                               public_response_prompt=public_response_prompt,
                               private_thoughts_prompt=private_thoughts_prompt,

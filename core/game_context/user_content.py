@@ -30,8 +30,8 @@ class UserContent:
         cb = game_board.context_builder
         anchor, other_player_message_found = cb._recency_anchor(agent)
         
-        current_round = cb.current_round_formatted(agent, anchor, other_player_message_found)
-        previous_rounds = cb.previous_rounds_formatted(agent, anchor, other_player_message_found)
+        current_round = cb.current_round_formatted(agent, anchor, other_player_message_found, incl_scores=True)
+        previous_rounds = cb.previous_rounds_formatted(agent, anchor, other_player_message_found, use_game_ledger = True)
         
         if summaries:
             dash.append("=== PHASE SUMMARIES ===")

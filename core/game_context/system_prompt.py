@@ -56,7 +56,12 @@ class SystemPrompt:
 
         if agent.initialising:
             output_string += f"\n{cls.system_prompt_init()}"
-            
+        
+        brevity_prompt = ("Public responses should feel like a reaction, and less like a statement."
+        "Occasional shortness can be powerful. 'Right. Fine.' carries more weight than a paragraph of composure.")
+        if agent.brevity_jail:
+            output_string += brevity_prompt
+        
         if agent.most_recent_internal_thought:
             output_string += f"\n\nYour internal thoughts at your last turn: \n{agent.most_recent_internal_thought}"
 

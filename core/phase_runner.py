@@ -82,7 +82,39 @@ class PhaseRunner:
         
         self.game_board.endRound(round_summary)
 
-        
+    def _impose_brevity_jail(self):
+        for agent in self.simulation_engine.agents:
+            agent.brevity_jail = False
+
+        current_round = self.game_board.game_log.current_round
+        message_lengths = {}
+
+        for message_entry in current_round.messageEntries:
+            for message in message_entry.messages:
+                speaker = message["speaker"]
+                if speaker not in self.game_board.RESERVED_NAMES:
+                    if speaker not in message_lengths:
+                        message_lengths[speaker] = []
+                    message_lengths[speaker].append(len(message["message"]))
+
+        averages = {
+            speaker: sum(lengths) / len(lengths)
+            for speaker, lengths in message_lengths.items()
+        }
+
+        jail_count = self.brevity_jail_count(len(self.simulation_engine.agents))
+        top_talkers = sorted(averages, key=averages.get, reverse=True)[:jail_count]
+
+        for agent in self.simulation_engine.agents:
+            if agent.name in top_talkers:
+                agent.brevity_jail = True
+                
+    @staticmethod
+    def brevity_jail_count(player_count):
+        if player_count <= 3:
+            return 0
+        return player_count // 3
+
     def run_phase(self, recipe: 'PhaseRecipe'):
         
         self.current_round_index = 0
@@ -95,6 +127,8 @@ class PhaseRunner:
         self.game_board.new_phase()
         for round in recipe.rounds:
             self.run_round(round, recipe.immunity_types)
+            self._impose_brevity_jail()
+            
         
         
         agents = self.simulation_engine.agents + self.simulation_engine.dead_agents

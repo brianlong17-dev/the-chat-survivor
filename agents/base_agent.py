@@ -14,9 +14,11 @@ class BaseAgent:
         self.higher_model_name = higher_model_name or model_name
         self.color = color
         self.use_higher_model = False
+        self.most_recent_internal_thought = ""
         self.debug_log = False          # set to True on any agent to enable logging
         self._log_call_index = 0        # monotonic counter per agent instance
         self._log_path = None           # set on first write, reused within a run
+        self.brevity_jail = False
 
     def __repr__(self):
         return f"<{type(self).__name__} {self.name}>"
@@ -135,7 +137,7 @@ class BaseAgent:
     # ------------------------------------------------------------------
     # Core API call
     # ------------------------------------------------------------------
-    def get_response(self, user_content: str, response_model, game_board):
+    def get_response(self, user_content: str, response_model, game_board, thinking=False):
 
         system_content = self._system_prompt(game_board)
 
@@ -155,6 +157,7 @@ class BaseAgent:
             model=api_model,
             response_model=response_model,
             messages=messages,
+            thinking=thinking
         )
 
         if self.debug_log:

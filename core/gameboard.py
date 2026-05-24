@@ -24,6 +24,8 @@ class GameBoard:
         self.phase_runner = None
         
         self.game_over = False
+        self.score_changed_in_round = False
+        self.scores_at_round_start: dict[str, int] = {}
 
 
     def _human_in_restriction(self, restricted_users):
@@ -87,6 +89,8 @@ class GameBoard:
     def newRound(self):
         #self.system_broadcast(self.score_string(), private = False) Probably a good idea for agents to read
         self.round_number += 1
+        self.score_changed_in_round = False
+        self.scores_at_round_start = dict(self.agent_scores)
         self.game_log.start_round(self.phase_number, self.round_number)
         self.game_sink.on_round_start(self.round_number, self.score_string())
 
@@ -208,6 +212,7 @@ class GameBoard:
         #NOTE - this should always come AFTER a player broadcast
         #Because state updates like score are held until after the player output
         #finishes animating on web.
+        self.score_changed_in_round = True
         new_score = max(0, self.agent_scores[agent_name] + points)
         self.agent_scores[agent_name] = new_score
         self.game_sink.on_points_update(dict(self.agent_scores))

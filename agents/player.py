@@ -37,7 +37,6 @@ class Debater(BaseAgent):
         self.summarising = False
         self.optional_response_buffer = 0
         self.round_specific_strategy = ""
-        self.most_recent_internal_thought = ""
         
         #todo : implement temperature
     
@@ -113,9 +112,9 @@ class Debater(BaseAgent):
     def _get_full_user_content(self, game_board, turn_prompt, instruction_override=None) :
         return UserContent.render(self, game_board, turn_prompt, instruction_override)
 
-    def take_turn_standard(self, turn_prompt, game_board, model, instruction_override=None):
+    def take_turn_standard(self, turn_prompt, game_board, model, instruction_override=None, thinking=False):
         full_user_content = self._get_full_user_content(game_board, turn_prompt, instruction_override)
-        turn = self.get_response(full_user_content, model, game_board) 
+        turn = self.get_response(full_user_content, model, game_board, thinking) 
         self.process_turn_cognitive_fields(turn)
         return turn
     

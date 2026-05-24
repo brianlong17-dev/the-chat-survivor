@@ -17,16 +17,63 @@ class ContextBuilder:
         self.min_rounds_for_context = 0 #for 2.5, they can't handle the excessive context.
         #some settings can probably move here
 
-    def current_round_formatted(self, agent: 'BaseAgent', anchor = None, other_player_message_found = False):
+    def current_round_formatted(self, agent: 'BaseAgent', anchor = None, other_player_message_found = False, incl_scores=False):
         current_round = self.game_log.current_round
+        score_footer = None
 
+        score_header = f"{self._round_header(current_round)}\n\n"
+        if incl_scores:
+            if self.game_board.score_changed_in_round:
+                score_header += f"{self._round_score_topper_modified()}\n"
+                score_footer = f"\n{self._round_score_updated(agent)}\n"
+            else:
+                score_header +=  f"{self._round_score_topper_unchanged(agent)}\n"
+            
         if self.game_log._current_round_summarisation:
             round_to_format = self._round_after_id(current_round,
                             self.game_log._current_round_summarisation_until)
-            return self.game_log._current_round_summarisation + self._formatted_round(round_to_format, agent, anchor, other_player_message_found)
+            round_text = self.game_log._current_round_summarisation + self._formatted_round(round_to_format, agent, anchor, other_player_message_found, incl_header=False)
         else:
-            return self._formatted_round(self.game_log.current_round, agent, anchor, other_player_message_found)
+            round_text = self._formatted_round(self.game_log.current_round, agent, anchor, other_player_message_found, incl_header=False)
         
+        parts = [p for p in [score_header, round_text, score_footer] if p]
+        return "".join(parts)
+        
+    def _round_score_topper_unchanged(self, agent):
+        scores = dict(self.game_board.agent_scores)
+        header = self._scores_inline(scores, "SCORES (CURRENT)")
+        return f"{header}\n{self._score_status_string(agent, scores)}"
+
+    def _round_score_topper_modified(self):
+        scores = self.game_board.scores_at_round_start
+        return self._scores_inline(scores, "SCORES (START OF ROUND)")
+
+    def _round_score_updated(self, agent):
+        scores = dict(self.game_board.agent_scores)
+        header = self._scores_inline(scores, "SCORES (UPDATED)")
+        return f"{header}\n{self._score_status_string(agent, scores)}"
+
+    def _score_status_string(self, agent, scores=None):
+        if scores is None:
+            scores = dict(self.game_board.agent_scores)
+        if not scores:
+            return ""
+        max_score = max(scores.values())
+        leaders = [name for name, score in scores.items() if score == max_score]
+        my_score = scores.get(agent.name, 0)
+        status = ""
+        if agent.name in leaders:
+            if my_score == 0:
+                return ""
+            if len(leaders) > 1:
+                return "STATUS: Tied for 1st."
+            return "STATUS: You are winning."
+        return f"STATUS: You are {max_score - my_score} points behind the leader."
+
+    def _scores_inline(self, scores: dict, label: str) -> str:
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        inner = " | ".join(f"{name}: {score}" for name, score in sorted_scores)
+        return Dashboard.header(f"{label}: {inner}")
 
     def _round_after_id(self, round, message_id):
         round_messages = []
@@ -42,13 +89,19 @@ class ContextBuilder:
             rounds = self.game_log.completed_round_entries[-self.min_rounds_for_context:]
         return rounds
         
-    def previous_rounds_formatted(self, agent: 'BaseAgent', anchor, other_player_message_found):
+    def previous_rounds_formatted(self, agent: 'BaseAgent', anchor, other_player_message_found, use_game_ledger=False):
         rounds = self._previous_round_entries_for_context()
         if len(rounds) == 0:
             return ""
-        else:
-            rounds_string = f"=== PAST {len(rounds)} ROUNDS  ===\n"
-            rounds_string += "\n\n".join(self._formatted_round(r, agent, anchor, other_player_message_found) for r in rounds)
+        formatted = []
+        for i, r in enumerate(rounds):
+            is_recent = i == len(rounds) - 1
+            if not is_recent and r.game_ledger and use_game_ledger:
+                formatted.append(f"\n{self._round_header(r)}\n===ROUND SUMMARY LEDGER===\n{r.game_ledger}")
+            else:
+                formatted.append(self._formatted_round(r, agent, anchor, other_player_message_found))
+        rounds_string = f"=== PAST {len(rounds)} ROUNDS  ===\n"
+        rounds_string += "\n\n".join(formatted)
         return rounds_string
     
     def phase_rounds_string(self, agent: 'BaseAgent'):  # Used to make a phase to summarise
@@ -61,11 +114,7 @@ class ContextBuilder:
 
         history_blocks = []
         for i, round in enumerate(rounds):
-            block = (
-                f"{self._round_header(round)}\n"
-                f"{self._formatted_round(round, agent)}"
-            )
-            history_blocks.append(block)
+            history_blocks.append(self._formatted_round(round, agent))
         return "\n\n".join(history_blocks)
 
     def _round_header(self, round):
@@ -96,26 +145,28 @@ class ContextBuilder:
                     
         return None, False  
     
-    def _formatted_round(self, round: 'RoundEntry', agent: 'BaseAgent', anchor = None, other_player_message_found = False):
-
-        output = f"\n{self._round_header(round)}\n"
+    def _formatted_round(self, round: 'RoundEntry', agent: 'BaseAgent', anchor = None, other_player_message_found = False, incl_header=True):
+        
+        output = f"\n{self._round_header(round)}\n" if incl_header else ""
+        
         if len(round.messageEntries) == 0:
             return output + "No messages yet for round."
 
+        anchor_message = f"\n[Your internal thought]: {agent.most_recent_internal_thought}\n" if agent.most_recent_internal_thought else ""
         if other_player_message_found:
-            anchor_message = "\n===[This was your last message — react to what's happened since. Don't repeat above message. ]==="
+            anchor_message += "\n===[ ^^^ This was your last message — react to what's happened since. Don't repeat above message. ]===\n"
         else:
-            anchor_message = "\n===[ This was your last message — it's already been said. Your turn now is a fresh action, not a reaction. Don't repeat or recap the above; respond only to what the host says below. ]==="
-            
+            anchor_message += "\n===[ ^^^ This was your last message — it's already been said. Your turn now is a fresh action, not a reaction. Don't repeat or recap the above; respond only to what the host says below. ]===\n"
+
         for entry in round.messageEntries:
             if entry.visibility_restriction is None:
                 for message in entry.messages:
-                    
+
                     output += (f"\n{message['speaker']}: {message['message']}")
                     if message is anchor:
                         #TODO - this check should be more solid
                         output += anchor_message
-                    
+
             else:
                 if agent.name in entry.visibility_restriction:
                     if self.game_board.SYS_ADMIN in entry.visibility_restriction:
@@ -130,7 +181,7 @@ class ContextBuilder:
                         if entry.closed:
                             output += f"\n=== END OF Private Conversation between {names} ===\n"
         if round.game_ledger:
-            output+="\n===ROUND SUMMARY LEDGER===\n"
+            output += "\n\n===ROUND SUMMARY LEDGER===\n"
             output += round.game_ledger
         return output
 
