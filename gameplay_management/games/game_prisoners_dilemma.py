@@ -46,12 +46,11 @@ class GamePrisonersDilemma(GameMechanicsMixin):
     def points_rules_string_technical(self):
         cfg = self.cfg
         #SCAF
-        return (
-            "Additional points you could receive: "
-            f"Split | Split : {cfg.pd_points_split}, {cfg.pd_points_split}\n"
-            f"Steal | Split : {cfg.pd_points_steal}, 0\n"
-            f"Steal | Steal : {cfg.pd_points_both_steal}, {cfg.pd_points_both_steal}\n"
-            f"Steal: {cfg.pd_points_steal} or {cfg.pd_points_both_steal}. Split: {cfg.pd_points_split} or 0."
+        return ("Game points:\n"
+            f"Both Split: +{cfg.pd_points_split} | +{cfg.pd_points_split}\n"
+            f"Both steal:  +{cfg.pd_points_both_steal} | +{cfg.pd_points_both_steal}\n"
+            f"Steal | Split : {cfg.pd_points_steal} | 0\n"
+            f"Split | Steal : 0 | {cfg.pd_points_steal}\n"
         )
 
     

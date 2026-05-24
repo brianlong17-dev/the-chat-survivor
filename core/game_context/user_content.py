@@ -18,7 +18,7 @@ class UserContent:
             
         dash.append("=== YOUR TURN ===")
         if turn_instruction:
-            dash.append(f"({turn_instruction})")
+            dash.append(f"{turn_instruction}")
             
         return "\n\n".join(dash)
     

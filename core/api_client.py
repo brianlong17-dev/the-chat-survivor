@@ -59,7 +59,11 @@ class APIClient:
                 values[name] = f"{short_text}  [{name}]"
         return response_model(**values)
 
-    def _make_call(self, messages, api_model, response_model):
+    def _make_call(self, messages, api_model, response_model, thinking=False):
+        if thinking:
+            thinking_config = types.ThinkingConfig(thinking_budget=512, include_thoughts=True)
+        else:
+            thinking_config = types.ThinkingConfig(include_thoughts=False)
         system_content = next((m["content"] for m in messages if m["role"] == "system"), None)
         user_content = next((m["content"] for m in messages if m["role"] == "user"), None)
         max_429_retries = 5
@@ -73,8 +77,7 @@ class APIClient:
                         system_instruction=system_content,
                         response_mime_type="application/json",
                         response_schema=response_model,
-                        thinking_config=types.ThinkingConfig(#thinking_budget=512, 
-                                                            include_thoughts=False,),
+                        thinking_config=thinking_config,
                         temperature=1.4,
                         #top_p=0.99,
                         #top_k=64
@@ -91,7 +94,7 @@ class APIClient:
         result = response_model(**json.loads(response.text))
         return response, result
     
-    def create(self, response_model, messages: list, model: str | None = None):
+    def create(self, response_model, messages: list, model: str | None = None, thinking=False):
         if self._client is None:
             raise RuntimeError("APIClient not initialized — call init() first")
 
@@ -100,7 +103,7 @@ class APIClient:
         api_model = model or self._default_model
         caller = _caller()
         start = time.monotonic()
-        response, result = self._make_call(messages, api_model, response_model)
+        response, result = self._make_call(messages, api_model, response_model, thinking=thinking)
         prompt, completion, total = _extract_usage(response)
         with self._lock:
             record = CallRecord(

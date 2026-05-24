@@ -18,39 +18,44 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     #####################
     #   Dialog   #
     #####################
-    
+    def tie_rules_string_technical(self):
+        return ("Game points:\n"
+            f"Both Split: Both win.\n"
+            f"Both steal:  Both lose.\n"
+            f"You Steal | They Split : Only you win.\n"
+            f"You Split | They Steal : Only they win.\n"
+        )
+        
     def _pre_game_exchange(self, player, is_tie = False):
         game_logic_fields = {
+            "can_you_win": (str, Field(description="There is only one game left. Is it possible for you to win on final scores?")),
             "goal": (str, Field(description="What is the outcome you want?")),
-            "method": (str, Field(description="How can you influence your opponent WITHOUT revealing your choice? "
-                                        "Persuasion, misdirection, appeals — what's your move?")),
+            "method": (str, Field(description="Do you want to influence your opponent WITHOUT revealing your choice? If so, how?")),
         }
-        reminder =  (f"Remember:\n {self.points_rules_string_technical()}") if not is_tie else ""
+        reminder =  (f"{self.points_rules_string_technical()}") if not is_tie else self.tie_rules_string_technical()
             
         self.turn_manager.take_turn(player,
-            turn_prompt="Your chance to react to the final. Say how you feel to be here, "
+            turn_prompt=f"{reminder}\n\n"
+            "Your chance to react to the final. Say how you feel to be here, "
                 "what you think of your opponent, and what case you want to make "
-                f"before the last game. Do not reveal your choice.\n{reminder}",
-            additional_thought_nudge="What are you considering? What do you want them to think you'll do?",
+                f"before the last game. Do not reveal your choice.\n",
             public_response_prompt=f"Do you speak your mind? Do you play it coy? Do you try and trick them? Final words before the last game. {self.sfx}",
             game_logic_fields=game_logic_fields,
-            #we dont want this if 2 is running
-            #round_specific_strategy="What will you do for the final split or steal? Update your strategy with this plan. ",
             broadcast=True,
-            is_reply = True)
+            is_reply = True,
+            thinking = True)
         
     def _pre_game_exchange_2(self, player, is_coronation=False, is_tie = False):
         coronation_string = "If you have nothing new to add, keep it brief. " if is_coronation else ""
         opponent = self._other_agents(player, self.agents)[0]
-        reminder =  (f"Remember:\n {self.points_rules_string_technical()}") if not is_tie else ""
+       
         self.turn_manager.take_turn(player,
             turn_prompt=f"Read {opponent.name}'s last message. "
                         "This is your final response before the reveal. "
-                        f"React to what they said. Do not reveal your choice.\n{reminder}",
-            additional_thought_nudge="Has what they said changed anything? "
-                                    "What do you want them to think you'll do? Can you say something that makes them more likely to split?",
+                        f"React to what they said. Do not reveal your choice.\n "
+                        f"Remember your last thoughts: {player.most_recent_internal_thought}\n",
             public_response_prompt=f"Your last word before the game. Play it however you want. {coronation_string} {self.sfx}",
-            game_logic_fields={"method": (str, Field(description="How can you influence your opponent WITHOUT revealing your choice?"))},
+            game_logic_fields={"method": (str, Field(description="Do you want to influence your opponent? If so, how?"))},
             round_specific_strategy="What will you do for the final split or steal? Update your strategy with this plan. ",
             broadcast=True, 
             is_reply = True)
@@ -69,17 +74,15 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     def finale_reg_split_or_steal(self, player, tie_possible):
         tie_string = "If you end on equal points, you may share the crown. Otherwise: " if tie_possible else ""
         turn_prompt_post = ( f"{tie_string}" 
-            f"The player with the most points wins, and the loser is evicted. "
-            f"Remember:\n {self.points_rules_string_technical()}")
+            f"The player with the most points wins, and the loser is evicted. ")
         opponent = self._other_agents(player, self.agents)[0]
         turn_prompt = (
             f"The finale. You are facing {opponent.name}.\n"
             f"You have {self.game_board.agent_scores[player.name]} points. Your opponent has {self.game_board.agent_scores[opponent.name]} points. \n{self.sfx}"
             f"{turn_prompt_post}"
         )
-        additional_thought_nudge = "What is the outcome you want? What choice will you make? "
         public_response_prompt = "What do you say as you reveal your choice? From your own logic and feelings, express why you chose this."
-        return self.get_split_or_steal(player, turn_prompt, additional_thought_nudge, public_response_prompt)
+        return self.get_split_or_steal(player, turn_prompt, public_response_prompt= public_response_prompt)
         
     def finale_tie_split_or_steal(self, player):
         opponent = self._other_agents(player, self.agents)[0]
@@ -91,7 +94,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         )
         additional_thought_nudge = "What has your journey with this person been like? Do you trust them? Is shared glory enough, or do you want it all for yourself?"
         public_response_prompt = f"What do you say as you reveal your choice? Your final words to the audience and your opponent. {self.sfx}"
-        return self.get_split_or_steal(player, turn_prompt, additional_thought_nudge, public_response_prompt)
+        return self.get_split_or_steal(player, turn_prompt, public_response_prompt, additional_thought_nudge)
     
     
     #####################
