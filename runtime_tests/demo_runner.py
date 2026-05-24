@@ -12,6 +12,8 @@ from tests.helpers.scripted_phase_factory import ScriptedPhaseFactory
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from gameplay_management.discussion_rounds.discussion_round import DiscussionRound
+from gameplay_management.discussion_rounds.discussion_round_directed_short import DiscussionRoundDirectedShort
+
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
 from runtime_tests.game_setup import (
     load_fixture, apply_agent_state, create_agents_from_names,
@@ -76,7 +78,7 @@ REUNION_FIXTURES = {
         "fixture_filename": "game_agent_state_finn_LSP.json",
         "finalist_scores": {"Finn": 17, "Lumpy Space Princess": 17},
         "elimination_order": ["BMO", "Princess Bubblegum", "Ice King", "Jake the Dog"],
-        "phase_number": 5,
+        "phase_number": 4,
     },
     "adventure_time_pre_finale": {
         "fixture_filename": "adventure_time_pre_finale.json",
@@ -88,13 +90,13 @@ REUNION_FIXTURES = {
         "fixture_filename": "brian_jake_pre_finale.json",
         "finalist_scores": {"Finn the Human": 17, "Brian": 15},
         "elimination_order": ["Lumpy Space Princess", "BMO", "Princess Bubblegum", "Jake the Dog"],
-        "phase_number": 6,
+        "phase_number": 5,
     },
     "aang_pb_pre_finale": {
         "fixture_filename": "aang_pb_pre_finale.json",
         "finalist_scores": {"Avatar Aang": 11, "Princess Bubblegum": 18},
         "elimination_order": ["BMO", "Jake the Dog", "Finn the Human", "Lumpy Space Princess"],
-        "phase_number": 5,
+        "phase_number": 4,
     },
 }
 
@@ -123,7 +125,7 @@ PD_FINALE_FIXTURES = {
     "brian_jake_pre_finale": {
         "fixture_filename": "brian_jake_pre_finale.json",
         "finalist_scores": {"Finn the Human": 17, "Brian": 15},
-        "phase_number": 6,
+        "phase_number": 5,
     },
     "aang_pb_pre_finale": {
         "fixture_filename": "aang_pb_pre_finale.json",
@@ -207,7 +209,7 @@ def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
         phase_number=3,
         human_name=human_name,
         human_is_dead=True,
-        #eliminate_after=8,
+        eliminate_after=5,
     )
 
     cfg = engine.gameplay_config
@@ -217,10 +219,10 @@ def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
     cfg.pd_pairing_method = cfg.pd_pairing_choice_all
     cfg.vote_bottom_two_expand_ties = True
     round_count = 0
-    while len(engine.agents) > 2:
-    #while round_count < 1:
+    #while len(engine.agents) > 2:
+    while round_count < 1:
         round_count += 1
-        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal, DiscussionRound, VoteBottomTwo])
+        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo])
         engine.phase_runner.run_phase(phase)
 
 
