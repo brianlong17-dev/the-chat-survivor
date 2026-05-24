@@ -46,4 +46,5 @@ class DiscussionRoundDirected(BaseRound):
                         appendage = "This is your last turn in the discussion round. Say anything else you want to say. "
 
                 user_prompt = f"{player.name} last message was directed to you. Please respond directly to them. {appendage}"
-                self.turn_manager.respond_to(chosen_agent, user_prompt, public_response_prompt="Your public response. ", broadcast=True, is_reply=True)
+                self.turn_manager.respond_to(chosen_agent, user_prompt, public_response_prompt="Your public response. ", 
+                                             broadcast=True, is_reply=True, prefix_respond_to=False)

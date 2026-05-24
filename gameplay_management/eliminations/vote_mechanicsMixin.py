@@ -27,7 +27,7 @@ class VoteMechanicsMixin(BaseRound):
             self.game_board.host_broadcast(host_message)
             final_words_prompt = PromptLibrary.final_words_prompt()
             self.simulationEngine.eliminate_player(victim)
-            final_words_result = self.turn_manager.respond_to(victim, final_words_prompt)
+            final_words_result = self.turn_manager.respond_to(victim, final_words_prompt, prefix_respond_to=False)
 
             self.publicPrivateResponse(victim, final_words_result)
         else:

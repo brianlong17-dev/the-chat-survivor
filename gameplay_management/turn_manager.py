@@ -143,9 +143,11 @@ class TurnManager:
         return model
                       
     def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,
-                   private_thoughts_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False):
-        
-        turn_prompt = f"Respond to: \n{turn_prompt}"
+                   private_thoughts_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False,
+                   prefix_respond_to: bool = True):
+
+        if prefix_respond_to:
+            turn_prompt = f"Respond to: \n{turn_prompt}"
         return self.take_turn(player, turn_prompt, 
                               public_response_prompt=public_response_prompt,
                               private_thoughts_prompt=private_thoughts_prompt,
