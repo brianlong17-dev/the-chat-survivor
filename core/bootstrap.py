@@ -7,7 +7,7 @@ from agents.character_generation.characterGeneration import CharacterGenerator
 from agents.game_host import GameMaster
 from core.gameboard import GameBoard
 from core.sinks.console_sink import ConsoleGameEventSink
-from core.levels.phase_recipe_factory import PhaseRecipeFactoryDefault
+from core.levels.game_designs.game_design_default import GameDesignDefault
 from core.simulation_engine import SimulationEngine
 from core.api_client import api_client
 from agents.player import Debater
@@ -29,10 +29,10 @@ def create_engine(game_sink, number_of_players: int = 0, generic_players: bool =
                   agents = None,
                   allow_rename = True,
                   model_name=DEFAULT_MODEL_NAME, higher_model_name=DEFAULT_HIGHER_MODEL_NAME,
-                  phase_factory= None):
+                  game_design= None):
     
-    if phase_factory is None:
-        phase_factory = PhaseRecipeFactoryDefault
+    if game_design is None:
+        game_design = GameDesignDefault
         
     load_dotenv()
     #client = instructor.from_provider('google/' + model_name, api_key=os.getenv("GEMINI_API_KEY"))
@@ -58,4 +58,4 @@ def create_engine(game_sink, number_of_players: int = 0, generic_players: bool =
         rand_names = generator.generate_random_debaters_names(number_of_players)
         agents = generator.generate_agents_from_names(rand_names, allow_rename = allow_rename)
 
-    return SimulationEngine(agents=agents, game_board=game_board, game_master=game_master, generator=generator, phase_factory=phase_factory)
+    return SimulationEngine(agents=agents, game_board=game_board, game_master=game_master, generator=generator, game_design=game_design)

@@ -7,7 +7,7 @@ import os
 
 from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
-from tests.helpers.scripted_phase_factory import ScriptedPhaseFactory
+from tests.helpers.scripted_game_design import ScriptedGameDesign
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -24,7 +24,7 @@ from runtime_tests.game_setup import (
 
 def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination_order: list, human_name: str = None, phase_number=None):
     from core.bootstrap import create_engine
-    from core.levels.phase_recipe import PhaseRecipe
+    from core.levels.phase_description import PhaseDescription
     from gameplay_management.eliminations.reunion_round import FinaleReunionRound
 
     agent_state = load_fixture(fixture_filename)
@@ -51,7 +51,7 @@ def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination
 
     
 
-    phase = PhaseRecipe(rounds=[FinaleReunionRound])
+    phase = PhaseDescription(rounds=[FinaleReunionRound])
     engine.phase_runner.run_phase(phase)
 
 
@@ -152,7 +152,7 @@ def run_demo_reunion(sink, human_name: str = None, fixture_choice: str = None):
 def run_demo_pd_finale(sink, human_name: str = None, fixture_choice: str = None):
     """Prisoner's Dilemma Finale: two finalists, split-or-steal endgame."""
     from core.bootstrap import create_engine
-    from core.levels.phase_recipe import PhaseRecipe
+    from core.levels.phase_description import PhaseDescription
 
     choice = fixture_choice or "finn_lsp"
     cfg = PD_FINALE_FIXTURES.get(choice) or PD_FINALE_FIXTURES["finn_lsp"]
@@ -178,11 +178,11 @@ def run_demo_pd_finale(sink, human_name: str = None, fixture_choice: str = None)
         if agent.name not in finalist_names:
             engine.eliminate_player(agent)
             
-    phase_recipe_factory = ScriptedPhaseFactory([PhaseRecipe(rounds=[GamePrisonersDilemmaFinale])])
+    game_design = ScriptedGameDesign([PhaseDescription(rounds=[GamePrisonersDilemmaFinale])])
 
     engine.gameplay_config.pd_pairing_method = engine.gameplay_config.pd_pairing_choice_all
-    engine.phase_factory = phase_recipe_factory
-    #phase = PhaseRecipe(rounds=[GamePrisonersDilemmaFinale])
+    engine.game_design = game_design
+    #phase = PhaseDescription(rounds=[GamePrisonersDilemmaFinale])
     #engine._dev_test_phase = phase
     engine.run_phase_loop()
     #engine.phase_runner.run_phase(phase)
@@ -190,7 +190,7 @@ def run_demo_pd_finale(sink, human_name: str = None, fixture_choice: str = None)
 
 def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
     """Game Phase: 11 real players, mid-game Knives + Vote round."""
-    from core.levels.phase_recipe import PhaseRecipe
+    from core.levels.phase_description import PhaseDescription
     from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
 
     scores = {
@@ -222,7 +222,7 @@ def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
     #while len(engine.agents) > 2:
     while round_count < 1:
         round_count += 1
-        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo])
+        phase = PhaseDescription(rounds=[GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo])
         engine.phase_runner.run_phase(phase)
 
 

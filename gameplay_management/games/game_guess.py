@@ -51,10 +51,8 @@ class GameGuess(GameMechanicsMixin):
     def run_game_guess_the_number(self): #just none while i set up
 
         # --- Config -----------------------------------------------------------
-        #number_range = self.game_board.phase_factory.number_range_for_guessing
-        #TODO  get this from the phaseFactory
         
-        number_range = self.cfg.guess_number_range #phase_factory.guess_number_range
+        number_range = self.cfg.guess_number_range 
         winning_number = random.randint(1, number_range)
         points_for_correct = number_range
 

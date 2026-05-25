@@ -7,7 +7,7 @@ import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.bootstrap import create_engine, ConsoleGameEventSink
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
-from core.levels.phase_recipe import PhaseRecipe
+from core.levels.phase_description import PhaseDescription
 
 if __name__ == "__main__":
     # ── 1. Bootstrap with generic players (no character-gen API calls) ──
@@ -225,6 +225,6 @@ if __name__ == "__main__":
     engine.game_board.newRound()
 
     #reunion = FinaleReunionRound(engine.game_board, engine)
-    phase = PhaseRecipe(rounds=[FinaleReunionRound])
+    phase = PhaseDescription(rounds=[FinaleReunionRound])
     engine.phase_runner.run_phase(phase)
     #reunion.run_game()

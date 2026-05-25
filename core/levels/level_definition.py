@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Type, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from core.levels.phase_recipe_factory import PhaseRecipeFactory
+    from core.levels.game_designs.game_design import GameDesign
 
 
 @dataclass
@@ -13,5 +13,5 @@ class LevelDefinition:
     description: str
     min_players: int
     max_players: int
-    phase_recipe_factory: Type[PhaseRecipeFactory]
+    game_design: Type[GameDesign]
     locked: bool = True

@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.sinks.websocket_sink import WebSocketSink
 from runtime_tests.demo_runner import DEMO_REGISTRY
 from core.api_client import api_client
-from core.levels.level_registry import phase_factory_for_id
+from core.levels.level_registry import game_design_for_id
 
 load_dotenv()
 
@@ -180,15 +180,15 @@ async def game_ws(websocket: WebSocket):
         
         
         
-        phase_factory = phase_factory_for_id(level_id)
+        game_design = game_design_for_id(level_id)
 
         def run_game():
             try:
                 from core.bootstrap import create_engine
                 if player_names:
-                    engine = create_engine(sink, names=player_names, phase_factory=phase_factory)
+                    engine = create_engine(sink, names=player_names, game_design=game_design)
                 else:
-                    engine = create_engine(sink, number_of_players=7, generic_players=False, phase_factory=phase_factory)
+                    engine = create_engine(sink, number_of_players=7, generic_players=False, game_design=game_design)
                 engine.run(human_player_name=human_player_name)
             except Exception as e:
                 traceback.print_exc()

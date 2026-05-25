@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from gameplay_management.base_manager import BaseRound
 from gameplay_management.immunities.immunity_mechanicsMixin import ImmunityMechanicsMixin
 
-class PhaseRecipe(BaseModel):
+class PhaseDescription(BaseModel):
     rounds: List[Type[BaseRound]] = None
     immunity_types: Optional[List[Type[ImmunityMechanicsMixin]]] = None
     config_mutations: List[tuple] = []

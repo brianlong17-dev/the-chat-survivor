@@ -7,7 +7,7 @@ from gameplay_management.immunities.immunity_mechanicsMixin import ImmunityMecha
 
 if TYPE_CHECKING:
     from core.simulation_engine import SimulationEngine
-    from core.levels.phase_recipe import PhaseRecipe
+    from core.levels.phase_description import PhaseDescription
 
 
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class PhaseRunner:
     def __init__(self, simulation_engine: 'SimulationEngine'):
         self.simulation_engine = simulation_engine
-        self.current_recipe = None
+        self.current_phase_description = None
         self.current_round_index = 0
         
 
@@ -44,21 +44,21 @@ class PhaseRunner:
 
     
     def get_phase_progress_string(self):
-        return self.current_recipe.phase_progress_string(self._cfg, self.current_round_index)
+        return self.current_phase_description.phase_progress_string(self._cfg, self.current_round_index)
 
     def _introduce_phase(self):
         cfg = self._cfg
-        host_intro = self.current_recipe.phase_intro_string(self.game_board.phase_number,
+        host_intro = self.current_phase_description.phase_intro_string(self.game_board.phase_number,
                                     len(self.agent_names()), cfg)
-        system_phase_summary = self.current_recipe.phase_summary_string(cfg)
-        round_names = [r.display_name(cfg) for r in self.current_recipe.rounds]
+        system_phase_summary = self.current_phase_description.phase_summary_string(cfg)
+        round_names = [r.display_name(cfg) for r in self.current_phase_description.rounds]
         if host_intro:
             self.game_board.host_broadcast(host_intro)
         self.game_board.system_broadcast(system_phase_summary, private = True, border_bottom=True)
         self.game_board.game_sink.on_phase_rounds(round_names)
         
     def _introduce_game(self):
-        host_intro_human_only = self.simulation_engine.phase_factory.human_only_game_intro()
+        host_intro_human_only = self.simulation_engine.game_design.human_only_game_intro()
         if host_intro_human_only:
             self.game_board.game_sink.on_game_intro(host_intro_human_only) 
         
@@ -115,18 +115,18 @@ class PhaseRunner:
             return 0
         return player_count // 3
 
-    def run_phase(self, recipe: 'PhaseRecipe'):
-        
+    def run_phase(self, phase_description: 'PhaseDescription'):
+
         self.current_round_index = 0
 
         cfg = self._cfg
-        for method, args in recipe.config_mutations:
+        for method, args in phase_description.config_mutations:
             getattr(cfg, method)(*args)
 
-        self.current_recipe = recipe
+        self.current_phase_description = phase_description
         self.game_board.new_phase()
-        for round in recipe.rounds:
-            self.run_round(round, recipe.immunity_types)
+        for round in phase_description.rounds:
+            self.run_round(round, phase_description.immunity_types)
             self._impose_brevity_jail()
             
         

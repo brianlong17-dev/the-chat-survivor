@@ -1,11 +1,11 @@
-from core.levels.phase_recipe_factory import *
+from core.levels.game_designs.game_design import *
 from gameplay_management.discussion_rounds.discussion_round_directed_short import DiscussionRoundDirectedShort
 from gameplay_management.game_targeted.game_targeted_give import GameTargetedChoiceGive
 from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 
 
-class PhaseRecipeFactoryBeginner(PhaseRecipeFactory):
+class GameDesignBeginner(GameDesign):
     
     
     @classmethod
@@ -37,39 +37,34 @@ class PhaseRecipeFactoryBeginner(PhaseRecipeFactory):
         return None
     
     @classmethod
-    def get_phase_recipe(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games = True, speed=1):
-        #TODO depreciate
-        return cls.get_phase(phase_number, agent_number, cfg, voting, incl_games, speed)
-   
-
-    @classmethod
-    def get_phase(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):
+    def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games = True, speed=1):
         cfg.vote_bottom_two_expand_ties = True
         
         if agent_number == 6: #IntroRound, DiscussionRoundDirectedPreVote
             rounds = [IntroRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirectedShort , VoteBottomTwo]
-            config_mutations=[("set_pd_pairing_random", [])]
-            return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
+            cfg.set_directed_discussion_group_allowed(False)
+            cfg.set_pd_pairing_random()
+            return PhaseDescription(rounds=rounds) 
         
         if agent_number == 5:
             rounds = [GameTargetedChoiceGive, DiscussionRoundDirectedShort, VoteBottomTwo]
-            config_mutations=[("set_directed_discussion_group_allowed", [True])]
-            return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
+            cfg.set_directed_discussion_group_allowed(True)
+            return PhaseDescription(rounds=rounds)
         
         if agent_number == 4:
             rounds = [GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo]
-            config_mutations=[]
-            return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
+            return PhaseDescription(rounds=rounds)
             
         if agent_number == 3:
             rounds = [GamePrisonersDilemma, DiscussionRoundDirectedShort, VoteBottomTwo]
-            config_mutations=[("set_pd_pairing_all", []), ("set_directed_discussion_group_allowed", [True])]
-            return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
+            cfg.set_pd_pairing_all()
+            cfg.set_directed_discussion_group_allowed(True)
+            return PhaseDescription(rounds=rounds)
         
         
         if agent_number == 2:
             rounds = [GamePrisonersDilemmaFinale]
-            config_mutations=[("set_pd_pairing_all", [])]
-            return PhaseRecipe(rounds=rounds, config_mutations=config_mutations)
+            cfg.set_pd_pairing_all()
+            return PhaseDescription(rounds=rounds)
         
 

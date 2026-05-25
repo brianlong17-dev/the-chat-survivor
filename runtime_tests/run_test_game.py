@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) 
 from core.bootstrap import create_engine, ConsoleGameEventSink
 from core.api_client import api_client
-from core.levels.phase_recipe import PhaseRecipe
+from core.levels.phase_description import PhaseDescription
 from agents.human_player import Human
 from runtime_tests.hardcoded_cast import build_hardcoded_debaters
 from gameplay_management.game_cycle.game_circle import GameCircle
@@ -103,6 +103,6 @@ if __name__ == "__main__":
     #while len(engine.agents) > 2:
     while rounds < 1:
         rounds += 1
-        phase = PhaseRecipe(rounds=[GameTargetedChoiceSteal, VoteBottomTwo])
+        phase = PhaseDescription(rounds=[GameTargetedChoiceSteal, VoteBottomTwo])
         engine.phase_runner.run_phase(phase)
     api_client.print_summary()

@@ -8,7 +8,7 @@ from agents.human_player import Human
 
 if TYPE_CHECKING:
     from agents.character_generation.characterGeneration import CharacterGenerator
-    from core.levels.phase_recipe_factory import PhaseRecipeFactory
+    from core.levels.game_designs.game_design import GameDesign
     from agents.game_host import GameMaster
     from core.gameboard import GameBoard
     from agents.player import Debater
@@ -17,15 +17,15 @@ if TYPE_CHECKING:
     
 class SimulationEngine:
     def __init__(self, agents: list[Debater], game_board: GameBoard, game_master: GameMaster, generator: CharacterGenerator,
-                 phase_factory: PhaseRecipeFactory):
+                 game_design: GameDesign):
 
         self.game_master = game_master
-        self.phase_factory = phase_factory
+        self.game_design = game_design
 
         self.game_board = game_board
         self.generator = generator
         self.gameplay_config = GameConfig()
-        self.phase_factory.initialise_game_config(self.gameplay_config)
+        self.game_design.initialise_game_config(self.gameplay_config)
         self.phase_runner = PhaseRunner(self)
         
         
@@ -68,7 +68,7 @@ class SimulationEngine:
     
     def run_phase_loop(self):
         while len(self.agents) > 1 and not self.game_board.game_over:
-            phase = self.phase_factory.get_phase_recipe(self.game_board.phase_number + 1, len(self.agents), self.gameplay_config)
+            phase = self.game_design.get_phase_description(self.game_board.phase_number + 1, len(self.agents), self.gameplay_config)
             self.phase_runner.run_phase(phase)
         #------------Fin------------#
         self.game_board.game_sink.on_game_over([agent.name for agent in self.agents])

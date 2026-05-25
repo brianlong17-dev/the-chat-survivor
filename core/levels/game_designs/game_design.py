@@ -1,5 +1,5 @@
 from core.game_config import GameConfig
-from core.levels.phase_recipe import PhaseRecipe
+from core.levels.phase_description import PhaseDescription
 from gameplay_management.discussion_rounds.discussion_round import DiscussionRound
 from gameplay_management.discussion_rounds.discussion_round_directed import DiscussionRoundDirected
 from gameplay_management.eliminations.voting_elect_leader import VoteElectLeader
@@ -24,7 +24,7 @@ from gameplay_management.game_cycle.game_mob import GameMob
 
 
 
-class PhaseRecipeFactory:
+class GameDesign:
     
     @classmethod
     def initialise_game_config(cls, config):
@@ -63,22 +63,9 @@ class PhaseRecipeFactory:
         for _ in range(post_vote_discussion_rounds):
             rounds.append(DiscussionRound)
 
-        return PhaseRecipe(rounds=rounds, immunity_types=immunity_types, config_mutations=config_mutations or [])
+        return PhaseDescription(rounds=rounds, immunity_types=immunity_types, config_mutations=config_mutations or [])
         
-    
-    
-    @classmethod
-    def quick_phase(cls, game, vote, immunity=None, config_mutations=None):
-        return cls.make_phase(0, game, 0, vote, 0, immunity, config_mutations)
-
-    @classmethod
-    def chatty_phase(cls, game, vote, immunity=None, config_mutations=None):
-        return cls.make_phase(1, game, 1, vote, 1, immunity, config_mutations)
-
-    @classmethod
-    def mid_phase(cls, game, vote, immunity=None, config_mutations=None):
-        vote_discussion = 1 if vote else 0
-        return cls.make_phase(1, game, vote_discussion, vote, 0, immunity, config_mutations)     
+     
     
     @classmethod 
     def human_only_game_intro(cls):
@@ -93,54 +80,3 @@ class PhaseRecipeFactory:
         return topicString
 
 
-    
-class PhaseRecipeFactoryDefault(PhaseRecipeFactory):
-    
-    @classmethod
-    def get_phase_recipe(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games = True, speed=1):
-        return cls.get_phase_compelling(phase_number, agent_number, cfg, voting, incl_games, speed)
-    
-    @classmethod
-    def _phases(cls):
-        return [
-            None,  # phase 0 unused
-            
-            #rich foes IntroRound, DiscussionRound,
-            PhaseRecipe(rounds=[DiscussionRoundDirected, InterviewRound, DiscussionRoundDirected,  GameRockPaperScissors, VoteElectLeader]),
-            PhaseRecipe(rounds=[GameTargetedChoiceGive, VoteBottomTwo]),
-            PhaseRecipe(rounds=[GameTargetedChoiceSteal, VoteBottomTwo]),
-            PhaseRecipe(rounds=[GameCircle, DiscussionRound, VoteBottomTwo]),
-            PhaseRecipe(rounds=[GameMob]),
-            
-            
-            #we need someting here to introduce the game
-            PhaseRecipe(rounds=[GameRockPaperScissors, VoteElectLeader]),
-            #PhaseRecipe(rounds=[GameGuess, VoteElectLeader],  config_mutations=[("set_guess_range", [3])]),
-            PhaseRecipe(rounds=[GameCircle, DiscussionRound, VoteBottomTwo]),
-            PhaseRecipe(rounds=[GameCircle, DiscussionRound, VoteBottomTwo]),
-            cls.mid_phase(GameTargetedChoiceGive, VoteEachPlayer, [HighestPointsImmunity, WildcardImmunity]),
-            cls.mid_phase(GameTargetedChoiceSteal, VoteBottomTwo, []),
-            cls.mid_phase(GamePerformSobStory, VoteBottomTwo, []),
-            cls.mid_phase(GamePerformSobStory, VoteBottomTwo, []),
-            cls.mid_phase(GamePrisonersDilemma, VoteBottomTwo, [],
-                          config_mutations=[("set_pd_pairing_lowest", [])]),
-           
-        ]
-
-    @classmethod
-    def get_phase_compelling(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):
-        cfg.vote_bottom_two_expand_ties = True
-
-        if agent_number == 2:
-            return  PhaseRecipe(rounds=[FinaleReunionRound])
-        if agent_number == 3:
-            return cls.mid_phase(GamePrisonersDilemma, VoteBottomTwo, [],
-                                 config_mutations=[("set_pd_pairing_all", [])])
-
-        phases = cls._phases()
-        if phase_number < len(phases):
-            return phases[phase_number]
-        return phases[-1]
-        
-    
- 

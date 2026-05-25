@@ -13,7 +13,7 @@ import pytest
 from pydantic import BaseModel
 
 from core.gameboard import GameBoard
-from core.levels.phase_recipe import PhaseRecipe
+from core.levels.phase_description import PhaseDescription
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 from tests.helpers.game_test_helpers import (
     TestGameSink, TestSimulation, attach_test_runtime, make_debater,
@@ -76,7 +76,7 @@ def build_finale_game(scores, actions):
     game = GamePrisonersDilemmaFinale(board, simulation)
     attach_test_runtime(board, simulation, game)
     board.newRound()
-    board.phase_runner.current_recipe = PhaseRecipe(rounds=[GamePrisonersDilemmaFinale])
+    board.phase_runner.current_phase_description = PhaseDescription(rounds=[GamePrisonersDilemmaFinale])
     board.phase_runner.current_round_index = 0
     return game
 

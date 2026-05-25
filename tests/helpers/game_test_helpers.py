@@ -4,7 +4,7 @@ from agents.player import Debater
 from core.game_config import GameConfig
 from core.gameboard import GameBoard
 from core.phase_runner import PhaseRunner
-from core.levels.phase_recipe import PhaseRecipe
+from core.levels.phase_description import PhaseDescription
 from core.sinks.game_sink import NoopGameSink
 from gameplay_management.game_cycle.game_knives import GameKnives
 
@@ -128,7 +128,7 @@ def build_targeted_choice_game(game_cls, agent_specs, initial_scores=None):
     attach_test_runtime(board, simulation, game)
     game._shuffled_agents = lambda: list(simulation.agents)
     board.newRound()
-    board.phase_runner.current_recipe = PhaseRecipe(rounds=[game_cls])
+    board.phase_runner.current_phase_description = PhaseDescription(rounds=[game_cls])
     board.phase_runner.current_round_index = 0
     return game, board, agents, clients
 
@@ -208,6 +208,6 @@ def build_knives_game(agent_specs, initial_scores=None, config_overrides=None):
     attach_test_runtime(board, simulation, game)
     game._shuffled_agents = lambda: list(simulation.agents)
     board.newRound()
-    board.phase_runner.current_recipe = PhaseRecipe(rounds=[GameKnives])
+    board.phase_runner.current_phase_description = PhaseDescription(rounds=[GameKnives])
     board.phase_runner.current_round_index = 0
     return game, board, agents, clients

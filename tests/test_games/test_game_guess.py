@@ -155,9 +155,9 @@ def test_build_result_string_mixed_groups():
 
 @pytest.mark.xfail(
     strict=True,
-    reason="GameGuess still hardcodes number_range=4; future behavior should read phase_factory config.",
+    reason="GameGuess still hardcodes number_range=4; future behavior should read game_design config.",
 )
-def test_guess_reads_number_range_from_phase_factory_when_available(monkeypatch):
+def test_guess_reads_number_range_from_game_design_when_available(monkeypatch):
     game, board, _agents, _clients = build_guess_game(
         {
             "Alice": [
@@ -172,7 +172,7 @@ def test_guess_reads_number_range_from_phase_factory_when_available(monkeypatch)
     )
 
     # Future intent: game should read this value instead of a hardcoded range.
-    board.phase_factory = SimpleNamespace(number_range_for_guessing=7)
+    board.game_design = SimpleNamespace(number_range_for_guessing=7)
     monkeypatch.setattr("gameplay_management.games.game_guess.random.randint", lambda _a, _b: 7)
 
     game.run_game_guess_the_number()

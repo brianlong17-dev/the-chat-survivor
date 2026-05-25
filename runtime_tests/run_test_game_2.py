@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.bootstrap import ConsoleGameEventSink
 from core.api_client import api_client
-from core.levels.phase_recipe import PhaseRecipe
+from core.levels.phase_description import PhaseDescription
 from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 from runtime_tests.game_setup import setup_game_from_fixture
@@ -39,6 +39,6 @@ if __name__ == "__main__":
     #while len(engine.agents) > 1:
     while rounds < 1:
         rounds += 1
-        phase = PhaseRecipe(rounds=[GamePrisonersDilemmaFinale])
+        phase = PhaseDescription(rounds=[GamePrisonersDilemmaFinale])
         engine.phase_runner.run_phase(phase)
     api_client.print_summary()
