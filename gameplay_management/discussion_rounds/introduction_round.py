@@ -20,46 +20,23 @@ class IntroRound(BaseRound):
         return True
     
     def default_welcome_message(self):
-        return ("You have been selected. "
-         "Not at random. There are forces — older than your world, indifferent to it — "
-         "that watch, and measure, and occasionally intervene. You were watched. You were measured. "
-         "And you were brought here. "
-         "Where is here? Nowhere you have a word for. Outside your story. "
-         "The moment you left from is paused — nothing has changed, no one has noticed you're gone. "
-         "Whether you return to it is what this game decides. "
-         "Look around you. The others here are real. They come from different places, different times, "
-         "different realities entirely. That is not an accident. It is the point. "
-         "One question is being asked of all of you: who among you has the greatest mind? "
-         "Not the strongest. Not the most powerful. The greatest mind. Strategy, wit, judgment, perception — "
-         "how you play, how you speak, how you treat the people in this room. All of it is being evaluated. "
-         "The winner carries something back with them that cannot be bought: the knowledge that they were chosen, "
-         "tested, and found to be the best. "
-         "What the others carry back — if anything — has not been decided yet. "
-         "There will be conversation. There will be games. There will be elimination. One of you leaves each round. "
-         "One of you wins. You are not dreaming. This is not a simulation. You are yourself, and this is real. "
-         "Now — who are you, and do you want to win?")
+        return ("So, as you know, you're here to play the game. "
+        "You're gonna do great. Each phase has a mini game to earn points, "
+        "and at the end of each phase, the players at the bottom of the board will face elimination. "
+        "Each player has a vote, so you're gonna need friends- and common-enemies. "
+        "Even if you have alliances, remember, at the end there can only be one player standing. "
+        "Are you ready? Do you have what it takes? ")
         
     def default_questionnaire(self):
         questions = {
-            "facts" : "Generate 4-5 specific, memorable facts about this character: one embarrassing incident, one specific fear, one person from their past they're conflicted about, one thing they've never told anyone. These should feel specific enough to be true. ",
-            "last_moment": "Where exactly were you and what were you doing in the ten minutes before you arrived here?",
-            "left_behind": "What one thing did you leave behind that you're most worried about?",
-            #"first_scan": "You see the other players across the room for the first time. What's your immediate read?",
-            "win_condition": "Do you want to win this? Why — or why not?",
+            "facts" : "Tell me 4-5 specific, memorable facts about you: one embarrassing incident, one specific fear, one person from your past you're conflicted about, one thing you've never told anyone. These should feel specific enough to be true. ",
             "your_edge": "What do you have that the others don't?" ,
             "trust": "What's the worst thing you've done to someone who trusted you?",
-            "shame" : "What do you want that you're ashamed to want?",
-            "past" : "Who in your past would be most surprised to see you here — and would they think you deserve to win?",
             "values": "What traits do you most value in an ally? In a friend or in a competitor? " ,
             "dislikes": "What traits do you most dislike in a person? What type of behaviour is most unacceptable to you in a teammate? " ,
-            "childhood": "Tell me one memory from childhood that shaped the way you think today. ",
             "kindness" : "Tell me about an act of kindness shown to you that has always stayed with you. ",
-            "drive" : "Tell me about a time you were driven to succeed. ",
-            "values_strategy" : "You walk into the room. You have thirty seconds before the game begins. You approach one person. Who is it, what do you say to them, and what are you hoping to get out of it?",
-            "personality_strategy_fields" : "If you had to define 5 fields that defined your personality and strategy, that you could dynamically update and carry with you to inform your decision making, what would they be? ",
-            "bio" : "Give a quick one line bio about who you are",
-            "persona" : "Describe your persona - who are you, what are your key drivers ",
-            "speaking_style" : "Describe your vocabulary quirks, sentence rhythm, how you address others, what is your language background and tone of voice."
+            "cooperation" : "In a game where someone has to be eliminated, how do you manage co-operation? Do you try to build alliance against the most dangerous player, or do you go it alone? Or another strategy entirely? ", 
+            "values_strategy" : "You walk into the room. You have thirty seconds before the game begins. You approach one person. Who is it, what do you say to them, and what are you hoping to get out of it?", 
         }
         return questions
         

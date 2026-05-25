@@ -69,14 +69,10 @@ class GameDesign:
     
     @classmethod 
     def human_only_game_intro(cls):
-        return ""
-        topicString = (f"Welcome to the arena... You were brought here to discover the best among you. You are all chosen because of your particular characteristics... "
-                   "Charisma... uniqueness... nerve... talent. You will play among yourselves to earn points. "
-                   "But the person choosing the winner... will be you. "
-                   "You will compete to gain points. These points will save help you at the voting round. "
-                   "At the voting round, you will choose, who to save... or who to send home. "
-                   "We need to find the greatest among you. Your goal? IS TO WIN!"
-        )
+        topicString = ("Welcome to the arena... are you ready to play? The others are just getting ready to join. "
+                    "In this game you will compete for points- those points will determine your vulnerability to eviction. "
+                    "You will be judged by a council of your peers- players will vote for who they want to send home. "
+                    "Enjoy! Make friends! Make enemies! Make memories xo")
         return topicString
 
 
