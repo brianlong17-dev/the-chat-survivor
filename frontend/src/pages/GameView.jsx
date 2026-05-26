@@ -99,7 +99,7 @@ export default function GameView({
 
   const visibleEvents = showPrivate
     ? events
-    : events.filter(e => e.type !== 'private_thought' && e.type !== 'system_private')
+    : events.filter(e => e.type !== 'private_thought')
 
   return (
     <div className="app">

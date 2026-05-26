@@ -84,6 +84,9 @@ class ConsoleGameEventSink(GameEventSink):
         ConsoleRenderer.print_system_private(message)
         if border_bottom:
             ConsoleRenderer.print_system_private('----')
+
+    def system_public(self, message: str, border_bottom: bool = False) -> None:
+        self.system_private(message, border_bottom=border_bottom)
         
     def on_inner_workings(
         self,

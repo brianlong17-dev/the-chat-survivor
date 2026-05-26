@@ -220,6 +220,15 @@ function SystemPrivate({ message, border_bottom }) {
   )
 }
 
+function SystemPublic({ message, border_bottom }) {
+  return (
+    <div className={`msg system-public${border_bottom ? ' border-bottom' : ''}`}>
+      <span className="sys-icon">⚙</span>
+      <span className="sys-text">{message}</span>
+    </div>
+  )
+}
+
 function GameOver({ winners }) {
   let text, trophy
   if (!winners || winners.length === 0) {
@@ -356,6 +365,8 @@ export function Message({ event, colorMap, onComplete, skipRef, animateText}) {
       return <PrivateThought {...event} color={getSpeakerColor(event.speaker, colorMap)} />
     case 'system_private':
       return <SystemPrivate {...event} />
+    case 'system_public':
+      return <SystemPublic {...event} />
     case 'game_intro':
       return <PublicAction speaker="HOST" message={event.message} color="#aaa" />
     case 'game_over':

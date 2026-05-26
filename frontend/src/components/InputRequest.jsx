@@ -55,7 +55,7 @@ export default function InputRequest({ request, onSubmit, playerNames = [] }) {
 
   return (
     <div className={`input-bar ${inactive ? 'inactive' : ''}`}>
-      <div className="input-prompt">{request?.field ?? 'your turn'} — {description}</div>
+      <div className="input-prompt">{request?.field ? request.field.replace(/_/g, ' ') : 'your turn'} — {description}</div>
       {request?.choices ? (
         <div className="input-choices">
           {request.choices.map(c => (

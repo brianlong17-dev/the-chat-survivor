@@ -113,6 +113,11 @@ class GameEventSink(ABC):
         ...
 
     @abstractmethod
+    def system_public(self, message: str, border_bottom: bool = False) -> None:
+        """System output that is part of the public game record."""
+        ...
+
+    @abstractmethod
     def on_warning(self, message: str) -> None:
         """Non-fatal warning, e.g. missing state."""
         ...
@@ -214,6 +219,7 @@ class NoopGameSink(GameEventSink):
     def on_private_thought(self, speaker, message): pass
     def on_inner_workings(self, speaker, inner_workings, override=False): pass
     def system_private(self, message, border_bottom=False): pass
+    def system_public(self, message, border_bottom=False): pass
     def on_warning(self, message): pass
     def delay(self, delay): pass
     def on_points_update(self, points): pass
@@ -294,6 +300,9 @@ class CapturingGameSink(GameEventSink):
         )
 
     def system_private(self, message, border_bottom=False):
+        self.system_messages.append({"message": message})
+
+    def system_public(self, message, border_bottom=False):
         self.system_messages.append({"message": message})
 
     def on_warning(self, message):

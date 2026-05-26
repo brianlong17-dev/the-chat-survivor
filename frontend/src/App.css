@@ -317,18 +317,26 @@
 }
 
 /* System private */
-.system-private {
+.system-private,
+.system-public {
   display: flex;
   gap: 8px;
   align-items: flex-start;
   padding: 2px 0;
 }
 
-.sys-icon { color: #555; font-size: 11px; margin-top: 2px; }
+.system-private .sys-icon { color: #555; font-size: 11px; margin-top: 2px; }
+.system-public  .sys-icon { color: #888; font-size: 12px; margin-top: 2px; }
 
-.sys-text {
+.system-private .sys-text {
   font-size: 12px;
-  color: #555;
+  color: #666;
+  white-space: pre-wrap;
+}
+
+.system-public .sys-text {
+  font-size: 13px;
+  color: #888;
   white-space: pre-wrap;
 }
 

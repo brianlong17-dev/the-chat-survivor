@@ -87,6 +87,9 @@ class WebSocketSink(GameEventSink):
 
     def system_private(self, message: str, border_bottom: bool = False):
         self._send({"type": "system_private", "message": str(message), "border_bottom": border_bottom})
+        
+    def system_public(self, message: str, border_bottom: bool = False):
+        self._send({"type": "system_public", "message": str(message), "border_bottom": border_bottom})
 
     def on_points_update(self, points: dict):
         self._send({"type": "points_update", "scores": points})

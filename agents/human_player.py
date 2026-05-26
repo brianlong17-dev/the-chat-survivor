@@ -59,6 +59,8 @@ class Human(Debater):
 
     def _prompt_field(self, field_name: str, field_info, game_board) -> str:
         description = field_info.description or f"Enter value for {field_name}"
+        if field_name == 'public_response':
+            description = "Your turn:"
         annotation = field_info.annotation
         if get_origin(annotation) is Literal:
             choices = [str(a) for a in get_args(annotation)]

@@ -153,10 +153,11 @@ class GameBoard:
         self.game_sink.on_public_action(speaker, message, color=color, animate=animate, directed_to_name = directed_to_name, is_reply = is_reply)
 
     def system_broadcast(self, message, private=False, border_bottom = False):
-        if private:
-            self.game_sink.system_private(message, border_bottom = border_bottom)
+        if not private:
+            self.game_log._update_history(self.SYSTEM, message)
+            self.game_sink.system_public(message, border_bottom = border_bottom)
         else:
-            self.broadcast_public_action("SYSTEM", message)
+            self.game_sink.system_private(message, border_bottom = border_bottom)
 
     def _is_sys_host_message(self, message_entry):
         if len(message_entry.messages) == 1:
