@@ -198,7 +198,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         return max(self.agents, key=lambda a: self._agent_score(a.name))
         
     def _eliminate_player(self, loser):
-        host_message = VotePromptLibrary.elimination_host_msg.format(victim_name=loser.name)
+        host_message = VotePromptLibrary.elimination_host_msg.format(victim_name=loser.name.upper())
         self.game_board.host_broadcast(host_message)
         self.simulationEngine.eliminate_player(loser)
         

@@ -14,10 +14,6 @@ class InterviewRound(BaseRound):
         return "The host interviews each player one-on-one in a private conversation."
 
     @classmethod
-    def is_discussion(cls):
-        return False
-
-    @classmethod
     def is_private_round(cls):
         return True
 

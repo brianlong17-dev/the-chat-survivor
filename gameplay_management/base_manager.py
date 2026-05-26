@@ -4,6 +4,7 @@ import random
 from typing import Callable, Sequence
 from agents.base_agent import BaseAgent
 from gameplay_management.turn_manager import TurnManager
+from prompts.prompts import PromptLibrary
 from pydantic import Field
 
 from typing import TYPE_CHECKING
@@ -46,6 +47,23 @@ class BaseRound:
     @classmethod
     def rules_brief(cls, cfg):
         return ""
+
+    #####################
+    #   Function        #
+    #####################
+    
+    def eliminate_player_by_name(self, player_name):
+        victim = next((a for a in self.simulationEngine.agents if a.name == player_name), None)
+        if not victim:
+            print(f"NOT FOUND: {player_name}")
+            return
+        victim.game_over = True
+        self.game_board.host_broadcast(self.cfg.pre_eviction_message.format(victim_name=victim.name.upper()))
+        self.simulationEngine.eliminate_player(victim)
+        final_words_result = self.turn_manager.respond_to(victim, PromptLibrary.final_words_prompt(), prefix_respond_to=False)
+        self.publicPrivateResponse(victim, final_words_result)
+        
+        self.game_board.system_broadcast(self.cfg.post_eviction_system_message.format(victim_name=victim.name), private = False)
 
     #####################
     #   Agent Access    #

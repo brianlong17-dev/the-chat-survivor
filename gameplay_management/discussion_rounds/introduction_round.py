@@ -11,9 +11,6 @@ class IntroRound(BaseRound):
     def rules_description(cls, cfg):
         return "This is a wakeup round"
     
-    @classmethod
-    def is_discussion(cls):
-        return False
     
     @classmethod
     def is_private_round(cls):

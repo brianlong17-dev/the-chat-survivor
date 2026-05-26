@@ -31,15 +31,10 @@ class GamePromptLibrary:
     
     
     #------------------------ Rock Paper Scissors ----------------------- #
-    rps_game_intro = (
-        "✊📄✂️  ROCK PAPER SCISSORS!\n"
-        "It's the oldest game in the book — pure instinct, pure psychology.\n"
-        "You'll be paired up and make your move simultaneously. "
-        "Read your opponent, trust your gut, and may the best hand win!"
-    )
+    
 
     rps_game_prompt = (
-        "✊📄✂️  ROCK PAPER SCISSORS!\n"
+        "ROCK PAPER SCISSORS!\n"
         "You are facing {opponent_name}.\n"
         "Points on the line:\n"
         "{points_string}"

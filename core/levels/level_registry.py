@@ -2,12 +2,22 @@ from typing import List, Optional
 from core.levels.level_definition import LevelDefinition
 from core.levels.game_designs.game_design import GameDesign
 from core.levels.game_designs.game_design_beginner import GameDesignBeginner
+from core.levels.game_designs.game_design_quickstart import GameDesignQuickStart
 from gameplay_management.games.game_rps import GameRockPaperScissors
 from gameplay_management.games.game_guess import GameGuess
 from gameplay_management.eliminations.voting_elect_leader import VoteElectLeader
 
 
 AVAILABLE_LEVELS: List[LevelDefinition] = [
+    LevelDefinition(
+        id="quickstart",
+        name="Warm-Up",
+        description="Two players, one round of rock-paper-scissors, lowest score goes home.",
+        min_players=2,
+        max_players=2,
+        game_design=GameDesignQuickStart,
+        locked=False
+    ),
     LevelDefinition(
         id="beginner",
         name="First Elimination",

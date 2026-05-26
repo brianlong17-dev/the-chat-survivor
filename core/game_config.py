@@ -9,6 +9,7 @@ class GameConfig:
         self.testing_human_as_agent = False
         
         self.discussion_round_topic = "Chat and strategise"
+        self.discussion_round_loops = 1
         self.directed_discussion_group_allowed = True
         
         self.inject_host_question = True
@@ -21,6 +22,8 @@ class GameConfig:
         
         
         #....
+        self.pre_eviction_message = "A JOURNEY COMES TO AN END- THE RESULTS ARE FINAL. {victim_name} HAS BEEN EJECTED FROM THE ISLAND. 💀"
+        self.post_eviction_system_message = "{victim_name} has been removed from the island."
         
         
         # --------------------------------------------------------------

@@ -71,8 +71,12 @@ class PhaseRunner:
             
         if self.game_board.phase_number == 1 and self.current_round_index == 1:
             self._introduce_game()
-            
-        if round.is_vote():
+
+        if round.is_discussion():
+            host_intro = self.host_intros[self.discussion_round_index] if self.discussion_round_index < len(self.host_intros) else None
+            self.discussion_round_index += 1
+            round(self.game_board, self.simulation_engine).run_game(host_intro)
+        elif round.is_vote():
             self.run_vote_round_with_immunity_types(round, immunity_types)
         else:
             round(self.game_board, self.simulation_engine).run_game()
@@ -118,6 +122,8 @@ class PhaseRunner:
     def run_phase(self, phase_description: 'PhaseDescription'):
 
         self.current_round_index = 0
+        self.discussion_round_index = 0
+        self.host_intros = phase_description.discussion_round_host_intros
 
         cfg = self._cfg
         for method, args in phase_description.config_mutations:
@@ -130,13 +136,13 @@ class PhaseRunner:
             self._impose_brevity_jail()
             
         
-        
-        agents = self.simulation_engine.agents + self.simulation_engine.dead_agents
-        
-        with ThreadPoolExecutor(max_workers=min(32, len(agents))) as executor:
-            for agent in agents:
-                executor.submit(agent.summarise_phase, self.game_board)
-                
+        if phase_description.should_summarise_phase:
+            agents = self.simulation_engine.agents + self.simulation_engine.dead_agents
+            
+            with ThreadPoolExecutor(max_workers=min(32, len(agents))) as executor:
+                for agent in agents:
+                    executor.submit(agent.summarise_phase, self.game_board)
+                    
             
         self.game_board.endPhase()
   

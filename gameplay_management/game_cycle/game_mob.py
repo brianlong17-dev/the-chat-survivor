@@ -146,6 +146,7 @@ class GameMob(BaseRound):
         )
         result = self.turn_manager.take_turn(agent, turn_prompt,
             action_fields=action_fields,
+            #TODO - need to cut the input if human chooses pass
             public_response_prompt=(f"If you chose to lead a mob, declare your target. If you pass, leave this null. "
                                     "Give your initial pitch as to why others should join your mob. "),
             additional_thought_nudge=(

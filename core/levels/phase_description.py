@@ -1,14 +1,10 @@
-
-from typing import List, Optional, Type
-from pydantic import BaseModel
-
-from gameplay_management.base_manager import BaseRound
-from gameplay_management.immunities.immunity_mechanicsMixin import ImmunityMechanicsMixin
-
-class PhaseDescription(BaseModel):
-    rounds: List[Type[BaseRound]] = None
-    immunity_types: Optional[List[Type[ImmunityMechanicsMixin]]] = None
-    config_mutations: List[tuple] = []
+class PhaseDescription:
+    def __init__(self, rounds=None, immunity_types=None, config_mutations=None, should_summarise_phase=True, discussion_round_host_intros=None):
+        self.rounds = rounds
+        self.immunity_types = immunity_types
+        self.config_mutations = config_mutations or []
+        self.should_summarise_phase = should_summarise_phase
+        self.discussion_round_host_intros = discussion_round_host_intros or []
 
     def phase_summary_string(self, cfg):
         round_summary = ''

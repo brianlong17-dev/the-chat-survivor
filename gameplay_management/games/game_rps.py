@@ -19,7 +19,6 @@ class GameRockPaperScissors(GameMechanicsMixin):
     def rules_description(cls, cfg):
         cfg_ = cfg
         return (
-            f"Players are paired up and simultaneously choose Rock, Paper, or Scissors. "
             f"Win: {cfg_.rps_points_win} pts | Tie: {cfg_.rps_points_tie} pts each | Lose: 0 pts."
         )
 
@@ -53,25 +52,21 @@ class GameRockPaperScissors(GameMechanicsMixin):
         c0 = choice0.strip().lower().replace(".", "")
         c1 = choice1.strip().lower().replace(".", "")
 
-        EMOJI = {"rock": "🪨", "paper": "📄", "scissors": "✂️"}
-        e0 = EMOJI.get(c0, c0)
-        e1 = EMOJI.get(c1, c1)
-
         if c0 not in self.BEATS or c1 not in self.BEATS:
             return 0, 0, f"Someone made an invalid move! No points awarded."
 
         if c0 == c1:
             pts = cfg.rps_points_tie
-            msg = f"It's a TIE! Both {name0} and {name1} chose {e0} {c0}. Each gets {pts} points."
+            msg = f"It's a TIE! Both {name0} and {name1} chose *{c0}*. Each gets {pts} points."
             return pts, pts, msg
 
         if self.BEATS[c0] == c1:
             pts = cfg.rps_points_win
-            msg = f"{e0} {c0.upper()} beats {e1} {c1}! {name0} WINS and earns {pts} points!"
+            msg = f"*{c0.upper()}* beats {c1}! {name0} WINS and earns {pts} points!"
             return pts, 0, msg
 
         pts = cfg.rps_points_win
-        msg = f"{e1} {c1.upper()} beats {e0} {c0}! {name1} WINS and earns {pts} points!"
+        msg = f"*{c1.upper()}* beats {c0}! {name1} WINS and earns {pts} points!"
         return 0, pts, msg
 
     def _execute_pairs(self, pairs):
@@ -85,7 +80,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
 
             choices = []
             for agent, res in zip((agent0, agent1), results):
-                self.publicPrivateResponse(agent, res)
+                self.game_board.handle_public_private_output(agent, res, is_reply = True,  post_string=f"*{res.action.upper()}*")
                 choices.append(res.action.strip().lower())
 
             p0_gain, p1_gain, msg = self._calculate_outcome(choices[0], choices[1], agent0.name, agent1.name)
@@ -96,11 +91,16 @@ class GameRockPaperScissors(GameMechanicsMixin):
             self.game_board.host_broadcast(f"{msg}\n")
 
             for agent in (agent0, agent1):
-                reaction = self.turn_manager.respond_to(agent, msg)
-                self.publicPrivateResponse(agent, reaction)
+                reaction = self.turn_manager.respond_to(agent, msg, broadcast=True, is_reply=True)
 
     def run_game(self):
-        self.game_board.host_broadcast(GamePromptLibrary.rps_game_intro)
+        rps_game_intro = (
+        "*ROCK PAPER SCISSORS!*\n"
+        "It's the oldest game in the book — pure instinct, pure psychology.\n"
+        "You'll be paired up and make your move simultaneously. "
+        "Read your opponent, trust your gut, and may the best hand win!"
+    )
+        self.game_board.host_broadcast(rps_game_intro)
 
         agents = list(self.simulationEngine.agents)
         pairs, leftover = self._generate_random_pairings(agents)
@@ -111,7 +111,5 @@ class GameRockPaperScissors(GameMechanicsMixin):
                 f"{leftover.name} has no opponent this round — they automatically receive {auto_pts} points.\n\n"
             )
             self.game_board.append_agent_points(leftover.name, auto_pts)
-            
-        #TODO new mechanism- public conversations that execute in unison, one should stay ext
 
         self._execute_pairs(pairs)

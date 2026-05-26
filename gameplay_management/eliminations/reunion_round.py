@@ -22,10 +22,6 @@ class FinaleReunionRound(VoteMechanicsMixin):
         return "This is a reunion round"
 
     @classmethod
-    def is_discussion(cls):
-        return False
-
-    @classmethod
     def is_private_round(cls):
         return False
     

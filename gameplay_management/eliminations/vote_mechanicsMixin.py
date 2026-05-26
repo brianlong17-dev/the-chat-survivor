@@ -18,22 +18,6 @@ class VoteMechanicsMixin(BaseRound):
     def is_vote(cls):
         return True
     
-        
-    def eliminate_player_by_name(self, player_name):
-        victim = next((a for a in self.simulationEngine.agents if a.name == player_name), None)
-        if victim:
-            victim.game_over = True
-            host_message = VotePromptLibrary.elimination_host_msg.format(victim_name=victim.name)
-            self.game_board.host_broadcast(host_message)
-            final_words_prompt = PromptLibrary.final_words_prompt()
-            self.simulationEngine.eliminate_player(victim)
-            final_words_result = self.turn_manager.respond_to(victim, final_words_prompt, prefix_respond_to=False)
-
-            self.publicPrivateResponse(victim, final_words_result)
-        else:
-            print(f"NOT FOUND: {player_name}")
-    
-    
     
     def _validate_immunity(self, immunity_players: Optional[Sequence[str]]) -> list[str]:
         #Tosses out immunity if all players are immune? 

@@ -31,6 +31,11 @@ class GameDesign:
         config.intro_round_welcome_message = cls.intro()
         config.intro_round_QA = cls.intro_QA()
         config.phase_one_intro = cls.phase_intro()
+        
+        if cls.pre_eviction_message():
+            config.pre_eviction_message = cls.pre_eviction_message()
+        if cls.post_eviction_system_message():
+            config.post_eviction_system_message = cls.post_eviction_system_message()
 
     @classmethod
     def intro(cls):
@@ -44,6 +49,13 @@ class GameDesign:
     def phase_intro(cls):
         return None
     
+    @classmethod
+    def pre_eviction_message(cls):
+        return None #"{victim_name} will be removed."
+    
+    @classmethod
+    def post_eviction_system_message(cls):
+        return None #"{victim_name} has been removed."
     
     
     @classmethod
