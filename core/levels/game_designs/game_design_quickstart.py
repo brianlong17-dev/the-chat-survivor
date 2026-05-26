@@ -10,7 +10,7 @@ class GameDesignQuickStart(GameDesign):
     
     @classmethod
     def pre_eviction_message(cls):
-        return "A JOURNEY COMES TO AN END. THE RESULTS ARE FINAL. {victim_name} WILL NOW BE... *ELIMINATED.*"
+        return "A JOURNEY COMES TO AN END. THE RESULTS ARE FINAL. {victim_name}, IT'S TIME TO SAY... *GOODBYE.*  ☠ ☠ ☠ "
     
     @classmethod
     def post_eviction_system_message(cls):

@@ -11,8 +11,8 @@ from gameplay_management.eliminations.voting_elect_leader import VoteElectLeader
 AVAILABLE_LEVELS: List[LevelDefinition] = [
     LevelDefinition(
         id="quickstart",
-        name="Warm-Up",
-        description="Two players, one round of rock-paper-scissors, lowest score goes home.",
+        name="Quick-Start Tutorial",
+        description="An introduction to the format- Two players, Rock-Paper-Scissors, loser goes home.",
         min_players=2,
         max_players=2,
         game_design=GameDesignQuickStart,
@@ -20,19 +20,10 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
     ),
     LevelDefinition(
         id="beginner",
-        name="First Elimination",
-        description="A quick introductory game with rock-paper-scissors and one vote.",
+        name="Game One",
+        description="A six person, six phase game. The bottom two of each phase face the group vote.",
         min_players=6,
         max_players=6,
-        game_design=GameDesignBeginner,
-        locked=False
-    ),
-    LevelDefinition(
-        id="standard",
-        name="The Challenge",
-        description="Guess the number, discuss strategy, and vote. A classic format.",
-        min_players=5,
-        max_players=8,
         game_design=GameDesignBeginner,
         locked=False
     ),

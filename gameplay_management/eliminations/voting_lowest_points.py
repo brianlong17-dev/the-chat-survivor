@@ -47,7 +47,7 @@ class VoteLowestPoints(VoteMechanicsMixin):
         
         if len(lowest_players) == 1:
             evictee = lowest_players[0]
-            removal_string = (f"The player with the lowest score, and who will therefore be removed from the competition, is... {evictee.name.upper()}")
+            removal_string = (f"The player with the lowest score, and who will therefore be removed from the competition, is... {evictee.name}.")
         else:
             evictee = random.choice(lowest_players)
             removal_string = (f"We have a tie for the lowest scoring player between {self.format_list(self._names(lowest_players))}. "

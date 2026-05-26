@@ -10,7 +10,7 @@ class VotePromptLibrary:
 
     elimination_host_msg = (
         "A JOURNEY COMES TO AN END- THE RESULTS ARE FINAL. "
-        "*{victim_name}* HAS BEEN EJECTED FROM THE ISLAND. 💀 \n"
+        "*{victim_name}* HAS BEEN EJECTED FROM THE ISLAND. ☠ ☠ ☠  \n"
     )
 
     winner_chooses_host_msg = (
