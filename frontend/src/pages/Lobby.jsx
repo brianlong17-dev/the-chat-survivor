@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 
 const LOBBY_STORAGE_KEY = 'lobby_state'
+const HARD_CAP = 12
 
 export default function Lobby({ onStart }) {
   const saved = JSON.parse(localStorage.getItem(LOBBY_STORAGE_KEY) || '{}')
@@ -8,17 +9,19 @@ export default function Lobby({ onStart }) {
   const [tabs, setTabs] = useState({})
   const [activeTab, setActiveTab] = useState('')
   const [selected, setSelected] = useState(saved.selected || [])
-  const [mode, setMode] = useState(saved.mode || 'watch')
+  const [humanIndex, setHumanIndex] = useState(saved.humanIndex ?? (saved.mode === 'play' ? 0 : null))
   const [humanName, setHumanName] = useState(saved.humanName || '')
   const [customNames, setCustomNames] = useState(saved.customNames || [])
   const [customInput, setCustomInput] = useState('')
   const [gameEnabled, setGameEnabled] = useState(false)
   const [levels, setLevels] = useState([])
   const [selectedLevel, setSelectedLevel] = useState(saved.selectedLevel || null)
+  const [dragIndex, setDragIndex] = useState(null)
+  const [dragOverIndex, setDragOverIndex] = useState(null)
 
   useEffect(() => {
-    localStorage.setItem(LOBBY_STORAGE_KEY, JSON.stringify({ selected, mode, humanName, customNames, selectedLevel }))
-  }, [selected, mode, humanName, customNames, selectedLevel])
+    localStorage.setItem(LOBBY_STORAGE_KEY, JSON.stringify({ selected, humanIndex, humanName, customNames, selectedLevel }))
+  }, [selected, humanIndex, humanName, customNames, selectedLevel])
 
   useEffect(() => {
     fetch('/api/characters')
@@ -46,31 +49,73 @@ export default function Lobby({ onStart }) {
   const maxPlayers = selectedLevelObj?.max_players || 12
   const minPlayers = selectedLevelObj?.min_players || 2
 
-  const playerCountIncludingHuman = mode === 'play' ? selected.length + 1 : selected.length
-  const maxSelectableAI = maxPlayers - (mode === 'play' ? 1 : 0)
+  const clampedHumanIndex = humanIndex !== null ? Math.min(humanIndex, selected.length) : null
+  const humanShown = clampedHumanIndex !== null && humanName.trim().length > 0
+  const hardSelectableAI = HARD_CAP - (humanShown ? 1 : 0)
+
+  const displayChips = humanShown
+    ? [
+        ...selected.slice(0, clampedHumanIndex).map(name => ({ type: 'ai', name })),
+        { type: 'human', name: humanName.trim() },
+        ...selected.slice(clampedHumanIndex).map(name => ({ type: 'ai', name })),
+      ]
+    : selected.map(name => ({ type: 'ai', name }))
+
+  const activeCount = Math.min(displayChips.length, maxPlayers)
+  const inactiveCount = displayChips.length - activeCount
+  const activeAINames = displayChips
+    .map((c, i) => ({ ...c, active: i < maxPlayers }))
+    .filter(c => c.type === 'ai' && c.active)
+    .map(c => c.name)
+  const mode = humanShown && clampedHumanIndex < maxPlayers ? 'play' : 'watch'
+  const radioMode = humanIndex === null
+    ? 'watch'
+    : (humanShown && clampedHumanIndex >= maxPlayers ? 'watch' : 'play')
+  const humanNameMissing = humanIndex !== null && !humanName.trim()
+
+  const removeAI = (name) => {
+    const idx = selected.indexOf(name)
+    if (idx === -1) return
+    setSelected(selected.filter(n => n !== name))
+    if (humanIndex !== null && idx < clampedHumanIndex) {
+      setHumanIndex(humanIndex - 1)
+    }
+  }
 
   const toggle = (name) => {
     if (selected.includes(name)) {
-      setSelected(selected.filter(n => n !== name))
-    } else if (selected.length < maxSelectableAI) {
+      removeAI(name)
+    } else if (selected.length < hardSelectableAI) {
       setSelected([...selected, name])
     }
+  }
+
+  const onChipDrop = (toIndex) => {
+    if (dragIndex === null || dragIndex === toIndex) return
+    const next = [...displayChips]
+    const [moved] = next.splice(dragIndex, 1)
+    next.splice(toIndex, 0, moved)
+    const newHumanIdx = next.findIndex(c => c.type === 'human')
+    setSelected(next.filter(c => c.type === 'ai').map(c => c.name))
+    if (humanShown) setHumanIndex(newHumanIdx)
+    setDragIndex(null)
+    setDragOverIndex(null)
   }
 
   const addCustom = () => {
     const name = customInput.trim()
     if (!name || customNames.includes(name)) return
     setCustomNames([...customNames, name])
-    if (selected.length < maxSelectableAI) setSelected([...selected, name])
+    if (selected.length < hardSelectableAI) setSelected([...selected, name])
     setCustomInput('')
   }
 
   const removeCustom = (name) => {
     setCustomNames(customNames.filter(n => n !== name))
-    setSelected(selected.filter(n => n !== name))
+    removeAI(name)
   }
 
-  const canStart = gameEnabled && playerCountIncludingHuman >= minPlayers && playerCountIncludingHuman <= maxPlayers && (mode === 'watch' || humanName.trim()) && selectedLevel
+  const canStart = gameEnabled && activeCount >= minPlayers && activeCount <= maxPlayers && selectedLevel && !humanNameMissing
 
   return (
     <div className="lobby">
@@ -98,15 +143,30 @@ export default function Lobby({ onStart }) {
       </div>
 
       <div className="lobby-selected">
-        <span className="lobby-selected-label">Players ({playerCountIncludingHuman}/{maxPlayers})</span>
+        <span className="lobby-selected-label">Players ({activeCount}/{maxPlayers}{inactiveCount > 0 ? ` (+${inactiveCount} inactive)` : ''})</span>
         <div className="lobby-chips">
-          {selected.map(name => (
-            <span key={name} className="chip">
-              {name}
-              <button className="chip-remove" onClick={() => toggle(name)}>×</button>
-            </span>
-          ))}
-          {selected.length === 0 && <span className="lobby-hint">Select players below</span>}
+          {displayChips.map((c, i) => {
+            const isActive = i < maxPlayers
+            const isHuman = c.type === 'human'
+            return (
+              <span
+                key={isHuman ? '__human__' : c.name}
+                className={`chip chip-draggable ${!isActive ? 'inactive' : ''} ${isHuman ? 'chip-human' : ''} ${dragIndex === i ? 'dragging' : ''} ${dragIndex !== null && dragOverIndex === i && dragIndex !== i ? 'drop-target' : ''}`}
+                draggable
+                onDragStart={() => setDragIndex(i)}
+                onDragOver={(e) => { e.preventDefault(); if (dragOverIndex !== i) setDragOverIndex(i) }}
+                onDrop={() => onChipDrop(i)}
+                onDragEnd={() => { setDragIndex(null); setDragOverIndex(null) }}
+              >
+                {isHuman ? `${c.name} (you)` : c.name}
+                <button
+                  className="chip-remove"
+                  onClick={() => isHuman ? setHumanIndex(null) : toggle(c.name)}
+                >×</button>
+              </span>
+            )
+          })}
+          {displayChips.length === 0 && <span className="lobby-hint">Select players below</span>}
         </div>
       </div>
 
@@ -142,13 +202,17 @@ export default function Lobby({ onStart }) {
       )}
 
       <div className="lobby-grid">
-        {(activeTab === 'Custom' ? customNames : (tabs[activeTab] || [])).map(name => (
-          activeTab === 'Custom' ? (
+        {(activeTab === 'Custom' ? customNames : (tabs[activeTab] || [])).map(name => {
+          const isSelected = selected.includes(name)
+          const isActive = activeAINames.includes(name)
+          const selClass = isSelected ? (isActive ? 'selected' : 'selected inactive') : ''
+          const isDisabled = !isSelected && selected.length >= hardSelectableAI
+          return activeTab === 'Custom' ? (
             <span key={name} className="name-btn-wrap">
               <button
-                className={`name-btn ${selected.includes(name) ? 'selected' : ''}`}
+                className={`name-btn ${selClass}`}
                 onClick={() => toggle(name)}
-                disabled={!selected.includes(name) && selected.length >= maxSelectableAI}
+                disabled={isDisabled}
               >
                 {name}
               </button>
@@ -157,14 +221,14 @@ export default function Lobby({ onStart }) {
           ) : (
             <button
               key={name}
-              className={`name-btn ${selected.includes(name) ? 'selected' : ''}`}
+              className={`name-btn ${selClass}`}
               onClick={() => toggle(name)}
-              disabled={!selected.includes(name) && selected.length >= maxSelectableAI}
+              disabled={isDisabled}
             >
               {name}
             </button>
           )
-        ))}
+        })}
         {activeTab === 'Custom' && customNames.length === 0 && (
           <span className="lobby-hint">Add names above</span>
         )}
@@ -173,16 +237,16 @@ export default function Lobby({ onStart }) {
       <div className="lobby-footer">
         <div className="lobby-mode">
           <label className="mode-opt">
-            <input type="radio" name="mode" value="watch" checked={mode === 'watch'} onChange={() => setMode('watch')} />
+            <input type="radio" name="mode" value="watch" checked={radioMode === 'watch'} onChange={() => setHumanIndex(null)} />
             Watch only
           </label>
           <label className="mode-opt">
-            <input type="radio" name="mode" value="play" checked={mode === 'play'} onChange={() => setMode('play')} />
+            <input type="radio" name="mode" value="play" checked={radioMode === 'play'} onChange={() => setHumanIndex(0)} />
             Play as:
           </label>
-          {mode === 'play' && (
+          {humanIndex !== null && (
             <input
-              className="lobby-name-input"
+              className={`lobby-name-input ${humanNameMissing ? 'invalid' : ''}`}
               placeholder="Your name"
               value={humanName}
               onChange={e => setHumanName(e.target.value)}
@@ -194,7 +258,7 @@ export default function Lobby({ onStart }) {
           className="lobby-start-btn"
           disabled={!canStart}
           onClick={() => {
-            const startData = { names: selected, humanName: mode === 'play' ? humanName.trim() : null, levelId: selectedLevel }
+            const startData = { names: activeAINames, humanName: mode === 'play' ? humanName.trim() : null, levelId: selectedLevel }
             onStart(startData)
           }}
         >

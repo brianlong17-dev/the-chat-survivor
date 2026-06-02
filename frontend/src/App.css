@@ -1068,6 +1068,18 @@
 
 .chip-remove:hover { opacity: 1; }
 
+.chip.inactive {
+  border-color: var(--border);
+  color: var(--text-dim);
+}
+
+.chip-draggable { cursor: grab; }
+.chip-draggable:active { cursor: grabbing; }
+.chip.dragging { opacity: 0.4; }
+.chip.drop-target { box-shadow: inset 3px 0 0 0 var(--accent); }
+
+.chip.inactive .chip-remove { color: var(--text-dim); }
+
 .lobby-tabs {
   display: flex;
   gap: 0;
@@ -1129,6 +1141,12 @@
   border-color: var(--accent);
   color: var(--accent);
   background: rgba(224, 123, 84, 0.08);
+}
+
+.name-btn.selected.inactive {
+  border-color: var(--border);
+  color: var(--text-dim);
+  background: transparent;
 }
 
 .name-btn:disabled {
