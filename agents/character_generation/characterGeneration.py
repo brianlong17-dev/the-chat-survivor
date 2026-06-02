@@ -8,6 +8,7 @@ from agents.player import Debater
 from core.api_client import api_client
 
 class CharacterProfile(BaseModel):
+    who: str = Field(description="Remind yourself who this person is- normally from popular culture")
     persona: str = Field(description="A detailed, first-person personality description, core beliefs, and strategic outlook if thrown into a game figure. What sensitive nuance behind this person?")
     speaking_style: str = Field(description="Their speaking style, how they talk, to preserve the character from context bleed.")
     name: Optional[str] = Field(default=None, description="If a charcter is nameless, or has non title descriptors in their name - ie Drunk Girl or BMO (adventure time). Then you may rename them: ie Tiffany or BMO, etc.")
@@ -100,7 +101,7 @@ class CharacterGenerator:
         profile = api_client.create(
             response_model=CharacterProfile,
             messages=[
-                {"role": "system", "content": "You are generating a starting profile for an AI debate simulation player."},
+                {"role": "system", "content": "You are generating a starting profile for an AI debate simulation player. The name is typically of someone from popular culture, that it should be based on. "},
                 {"role": "user", "content": f"Create a rich, first-person persona and a physical form description for the historical figure: {character_name}. Make them highly opinionated."}
             ]
         )
