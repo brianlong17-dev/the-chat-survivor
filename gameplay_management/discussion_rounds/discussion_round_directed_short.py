@@ -7,5 +7,5 @@ class DiscussionRoundDirectedShort(DiscussionRoundDirected):
     def display_name(cls, cfg):
         return "Quick Discussion Round"
 
-    def run_game(self, host_intro=None):
-        return self.run_round(short=True, host_intro=host_intro)
+    def run_game(self):
+        return self.run_round(short=True)

@@ -1,4 +1,5 @@
 from core.levels.game_designs.game_design import *
+from gameplay_management.discussion_rounds.discussion_settings import DiscussionLoop, DiscussionRoundSettings
 
 
 class GameDesignQuickStart(GameDesign):
@@ -19,8 +20,21 @@ class GameDesignQuickStart(GameDesign):
     @classmethod
     def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):
         if agent_number == 2:
-            cfg.discussion_round_topic = "Say hello and introduce yourself! "
-            cfg.discussion_round_loops = 2
+            cfg.discussion = DiscussionRoundSettings(loops=[
+                DiscussionLoop(
+                    topic="Say hello and introduce yourself! ",
+                    host_message ="Welcome to our players! Why doesn't everyone introduce themselves? ",
+                    additional_thought_prompt="Do you recognise the other player?",
+                ),
+                DiscussionLoop(
+                    topic="Reply and continue the conversation. DO NOT REPEAT ANYTHING FROM YOUR PREVIOUS TURN. ",
+                ),
+                DiscussionLoop(
+                    topic="Reply and continue the conversation. DO NOT REPEAT ANYTHING FROM YOUR PREVIOUS TURN. ",
+                    host_message ="So what do you both make of your competitor? ",
+                ),
+            ])
+            
             rounds = [DiscussionRound, GameRockPaperScissors, VoteLowestPoints]
-            discussion_round_host_intros = ["Welcome to our players! Why doesn't everyone introduce themselves? "]
-            return PhaseDescription(rounds=rounds, discussion_round_host_intros=discussion_round_host_intros)
+            return PhaseDescription(rounds=rounds)
+

@@ -1,10 +1,9 @@
 class PhaseDescription:
-    def __init__(self, rounds=None, immunity_types=None, config_mutations=None, should_summarise_phase=True, discussion_round_host_intros=None):
+    def __init__(self, rounds=None, immunity_types=None, config_mutations=None, should_summarise_phase=True):
         self.rounds = rounds
         self.immunity_types = immunity_types
         self.config_mutations = config_mutations or []
         self.should_summarise_phase = should_summarise_phase
-        self.discussion_round_host_intros = discussion_round_host_intros or []
 
     def phase_summary_string(self, cfg):
         round_summary = ''

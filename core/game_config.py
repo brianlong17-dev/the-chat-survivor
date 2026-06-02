@@ -1,3 +1,6 @@
+from gameplay_management.discussion_rounds.discussion_settings import DiscussionRoundSettings
+
+
 class GameConfig:
     """
     Plain config holder for all mini-game values.
@@ -5,12 +8,10 @@ class GameConfig:
     """
 
     def __init__(self):
-        
+
         self.testing_human_as_agent = False
-        
-        self.discussion_round_topic = "Chat and strategise"
-        self.discussion_additional_thought_prompt = None
-        self.discussion_round_loops = 1
+
+        self.discussion = DiscussionRoundSettings()
         self.directed_discussion_group_allowed = True
         
         

@@ -9,20 +9,22 @@ class DiscussionRound(BaseRound):
 
     @classmethod
     def rules_description(cls, cfg):
-        return cfg.discussion_round_topic
-        
-    
+        return cfg.discussion.opening_topic
+
     @classmethod
     def is_discussion(cls):
         return True
-    
-    def run_game(self, host_intro=None):
-        if host_intro:
-            self._host_broadcast(host_intro)
-        turn_prompt =  self.cfg.discussion_round_topic
-        for i in range(self.cfg.discussion_round_loops):
-            prompt_helper = "DO NOT REPEAT ANYTHING FROM YOUR PREVIOUS TURN. " if i > 0 else ""
+
+    def run_game(self):
+        for loop in self.cfg.discussion.loops:
+            if loop.host_message:
+                self._host_broadcast(loop.host_message)
             for player in self.simulationEngine.agents:
-                self.turn_manager.take_turn(player, turn_prompt + prompt_helper, broadcast = True)
+                self.turn_manager.take_turn(
+                    player,
+                    loop.topic,
+                    additional_thought_nudge=loop.additional_thought_prompt,
+                    broadcast=True,
+                )
         
     
