@@ -23,6 +23,7 @@ class GameDesignBeginner(GameDesign):
             rounds = [IntroRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirectedShort , VoteBottomTwo]
             cfg.set_directed_discussion_group_allowed(False)
             cfg.set_pd_pairing_random()
+            cfg.allow_revote = False
             return PhaseDescription(rounds=rounds) 
         
         if agent_number == 5:
@@ -32,6 +33,7 @@ class GameDesignBeginner(GameDesign):
         
         if agent_number == 4:
             rounds = [GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo]
+            cfg.allow_revote = True
             return PhaseDescription(rounds=rounds)
             
         if agent_number == 3:
