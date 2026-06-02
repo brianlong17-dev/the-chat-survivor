@@ -166,6 +166,30 @@ export function useGameSocket(autoRun, animateText) {
     skipRef.current = true
   }, [])
 
+  const exitGame = useCallback(() => {
+    if (wsRef.current) {
+      try { wsRef.current.close() } catch (e) {}
+      wsRef.current = null
+    }
+    setStatus('idle')
+    setEvents([])
+    setScores(null)
+    setEvicted([])
+    setFeedMarkers([])
+    setSegmentTitles([])
+    setWidget(null)
+    setPrivateConversations([])
+    setPlayerNames([])
+    setInputRequest(null)
+    setAwaitingNext(false)
+    setPhaseRounds([])
+    setCurrentRoundIndex(0)
+    pendingQueue.current = []
+    isAnimating.current = false
+    setIsAnimatingState(false)
+    skipRef.current = false
+  }, [])
+
   const sendNext = useCallback(() => {
     if (wsRef.current) {
       wsRef.current.send(JSON.stringify({ type: 'next_turn' }))
@@ -177,7 +201,7 @@ export function useGameSocket(autoRun, animateText) {
     status, events, scores, evicted,
     inputRequest, awaitingNext, phaseRounds, currentRoundIndex, feedMarkers, segmentTitles,
     widget, privateConversations, playerNames,
-    startGame, startDemo, submitInput, sendNext, skipAnimation,
+    startGame, startDemo, submitInput, sendNext, skipAnimation, exitGame,
     onAnimationComplete, skipRef, isAnimating: isAnimatingState,
   }
 }

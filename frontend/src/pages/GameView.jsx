@@ -10,13 +10,14 @@ import PrivateChatsPanel from '../components/PrivateChatsPanel'
 export default function GameView({
   status, events, scores, evicted,
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
-  submitInput, sendNext, skipAnimation, onAnimationComplete, skipRef,
+  submitInput, sendNext, skipAnimation, exitGame, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [],
 }) {
   const { showPrivate, autoRun, animateText, showPrivateChats } = settings
 
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('feed')
   const [seenPrivateCount, setSeenPrivateCount] = useState(0)
   const settingsRef = useRef(null)
@@ -105,7 +106,7 @@ export default function GameView({
     <div className="app">
       <header className="app-header">
         <div className="header-left">
-          <h1 className="app-title">THE GAME</h1>
+          <h1 className="app-title app-title-clickable" onClick={() => setExitConfirmOpen(true)}>THE GAME</h1>
           {showPrivateChats && (
             <div className="header-tabs">
               <button className={`header-tab${activeTab === 'feed' ? ' active' : ''}`} onClick={() => setActiveTab('feed')}>
@@ -160,6 +161,19 @@ export default function GameView({
           </span>
         </div>
       </header>
+
+      {exitConfirmOpen && (
+        <div className="modal-overlay" onClick={() => setExitConfirmOpen(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div className="modal-title">Exit game?</div>
+            <div className="modal-body">Return to the lobby. The current game will end.</div>
+            <div className="modal-actions">
+              <button className="modal-btn" onClick={() => setExitConfirmOpen(false)}>Cancel</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => { setExitConfirmOpen(false); exitGame() }}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="app-body">
         <aside
