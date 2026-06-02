@@ -111,7 +111,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
                 return self.revote(tied_agents)
             else:
                 leader = self.get_strategic_players(self.agents, top_player = True, multiple = False)[0]
-                return self.leader_chooses(leader, candidates), votes
+                return self.leader_chooses(leader, tied_agents), votes
         
     def _dispense_victim_points(self, victim_name, votes):
         points_per_survived_vote = GamePromptLibrary.points_per_survived_vote
