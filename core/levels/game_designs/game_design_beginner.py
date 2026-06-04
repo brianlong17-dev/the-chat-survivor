@@ -3,13 +3,9 @@ from gameplay_management.discussion_rounds.discussion_round_directed_short impor
 from gameplay_management.game_targeted.game_targeted_give import GameTargetedChoiceGive
 from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
-
+from gameplay_management.discussion_rounds.discussion_settings import DiscussionLoop, DiscussionRoundSettings
 
 class GameDesignBeginner(GameDesign):
-    
-    
-
-    
         
     @classmethod
     def phase_intro(cls):
@@ -22,8 +18,21 @@ class GameDesignBeginner(GameDesign):
         if agent_number == 6: #IntroRound, DiscussionRoundDirectedPreVote
             rounds = [IntroRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirectedShort , VoteBottomTwo]
             cfg.set_directed_discussion_group_allowed(False)
+            cfg.pd_get_reactions = False
             cfg.set_pd_pairing_random()
             cfg.allow_revote = False
+            cfg.set_discussion_settings(
+                DiscussionRoundSettings(),
+                DiscussionRoundSettings(loops=[
+                    DiscussionLoop(
+                        host_message="Wow- what a game! How is everyone feeling after that? ",
+                        additional_thought_prompt="Do you need to react to the what happened in prisoner's dilemma?",
+                    )
+                ]),
+            )
+                
+            
+            
             return PhaseDescription(rounds=rounds) 
         
         if agent_number == 5:

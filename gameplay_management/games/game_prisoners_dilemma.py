@@ -120,7 +120,8 @@ class GamePrisonersDilemma(GameMechanicsMixin):
 
         result_host_message = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
         self._host_broadcast(f"{result_host_message}\n")
-        if self.cfg.pd_pairing_method != self.cfg.pd_pairing_choice_all:
+
+        if self.cfg.pd_get_reactions and (self.cfg.pd_pairing_method != self.cfg.pd_pairing_choice_all):
             #We don't want reactions for round robin pairing.
             if (choices[0] == 'steal' and choices[1] == 'steal'):
                 reactions = self._run_tasks([(agent0, result_host_message), (agent1, result_host_message)], 

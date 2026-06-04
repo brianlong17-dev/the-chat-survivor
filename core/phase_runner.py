@@ -119,6 +119,7 @@ class PhaseRunner:
 
         self.current_round_index = 0
         cfg = self._cfg
+        cfg.discussion_index = 0
         for method, args in phase_description.config_mutations:
             getattr(cfg, method)(*args)
 

@@ -1,4 +1,4 @@
-from gameplay_management.discussion_rounds.discussion_settings import DiscussionRoundSettings
+from gameplay_management.discussion_rounds.discussion_settings import DiscussionRoundSettings, PhaseDiscussionRoundSettings
 
 
 class GameConfig:
@@ -6,12 +6,20 @@ class GameConfig:
     Plain config holder for all mini-game values.
     Keep this as data only; behavior and strings stay in game classes.
     """
-
+    def set_discussion_settings(self, *settings):
+        self.phase_discussion_settings = PhaseDiscussionRoundSettings(settings=list(settings))
+        
+    def get_discussion_settings(self): 
+        return self.phase_discussion_settings.settings_for_index(self.discussion_index)
+        
     def __init__(self):
 
         self.testing_human_as_agent = False
+        
+        self.discussion_index = 0
 
-        self.discussion = DiscussionRoundSettings()
+        self.phase_discussion_settings = PhaseDiscussionRoundSettings()
+        
         self.directed_discussion_group_allowed = True
         
         
@@ -58,6 +66,7 @@ class GameConfig:
         self.pd_pairing_choice_random = 'random'
         self.pd_pairing_choice_lowest = 'lowest'
         self.pd_pairing_choice_all = 'all'
+        self.pd_get_reactions = True
         self.pd_pairing_method = self.pd_pairing_choice_none
 
         # --------------------------------------------------------------
