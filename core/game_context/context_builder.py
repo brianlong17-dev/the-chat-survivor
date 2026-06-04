@@ -15,6 +15,7 @@ class ContextBuilder:
         self.game_board = game_board
         self.game_log = game_log
         self.min_rounds_for_context = 0 #for 2.5, they can't handle the excessive context.
+        self._recent_rounds_in_full = 1
         #some settings can probably move here
 
     def current_round_formatted(self, agent: 'BaseAgent', anchor = None, other_player_message_found = False, incl_scores=False):
@@ -95,7 +96,7 @@ class ContextBuilder:
             return ""
         formatted = []
         for i, r in enumerate(rounds):
-            is_recent = i == len(rounds) - 1
+            is_recent = i == len(rounds) - self._recent_rounds_in_full
             if not is_recent and r.game_ledger and use_game_ledger:
                 formatted.append(f"\n{self._round_header(r)}\n===ROUND SUMMARY LEDGER===\n{r.game_ledger}")
             else:

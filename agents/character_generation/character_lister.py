@@ -18,7 +18,24 @@ class CharacterLister:
                 'Demon Twink']
     swearers = ['Rick Sanches', 'Tony Soprano', 'Logan Roy', 'Tony Montana', 'Katya Zamolodchikova', 'Lois Griffin', 'Gordon Ramsay']
     
-    goats = ['Miranda Presley', 'Lady Macbeth', 'Morty Smith', 'Avatar Aang', 'Buffy Summers', 'Gollum', 'Lady Diana', 'Detective Columbo', 'Hermione Granger',  'Catherine Earnshaw', 'Heathcliffe', 'Mr. Burns', "Donald Trump", 'Dennis Reynolds', 'Michael Scott', 'GLaDOS']
+    goats = ['Morty Smith', 'Lady Macbeth', 'Donald Trump', 'Gollum', 'Miranda Priestly',
+             'Buffy Summers',
+             'Catherine Earnshaw', 
+             'Heathcliffe',
+             'Logan Roy', 
+             'Amy March',
+             'Jo March',
+             'Hercule Poirot',
+             'Drunk Frat Girl',
+             'Avatar Aang',
+             'Jake the Dog',
+             'Lumpy Space Princess', 'Lady Diana', 'Elphaba Thrope',
+             'Professor Quirrell'
+             
+             
+             ]
+    
+    past_goats = [ 'GLaDOS',  'Hermione Granger', 'Dennis Reynolds', 'Michael Scott']
     
     politics = [
     'Hilary Clinton', 'Nancy Pelosi', 'Donald Trump', 'Margaret Thatcher', 'Lady Macbeth']

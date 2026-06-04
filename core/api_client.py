@@ -37,7 +37,7 @@ class APIClient:
         self._lock = threading.Lock()
         self._index = 0
         self._log_path: str | None = None
-        self._mock_output = True
+        self._mock_output = False
         self._client = client
         self.default_model = model
         self.higher_model = higher_model_name 
@@ -97,7 +97,8 @@ class APIClient:
                     wait = backoff * (2 ** attempt)
                     error_message = (f"server 429 rate limit — waiting {wait}s before retry {attempt + 1}/{max_429_retries - 1}")
                     print(error_message)
-                    self.sink.system_private(error_message)
+                    if attempt > 1:
+                        self.sink.system_private(error_message)
                     time.sleep(wait)
                 else:
                     raise

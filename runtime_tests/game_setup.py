@@ -61,8 +61,7 @@ def setup_game_from_fixture(
     phase_number: int = None,
     human_name: str = None,
     human_is_dead: bool = False,
-    eliminate_after: int = None,
-):
+    eliminate_after: int = None):
     """
     Load a fixture, wire up agents, set scores, and return a ready-to-run engine.
     eliminate_after: if set, eliminates all agents beyond this index after setup.
