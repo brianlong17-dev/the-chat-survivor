@@ -10,7 +10,7 @@ import PrivateChatsPanel from '../components/PrivateChatsPanel'
 export default function GameView({
   status, events, scores, evicted,
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
-  submitInput, sendNext, skipAnimation, exitGame, onAnimationComplete, skipRef,
+  submitInput, sendNext, skipAnimation, exitGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [],
 }) {
@@ -232,7 +232,7 @@ export default function GameView({
               <div ref={privateBottomRef} />
             </main>
           )}
-          <InputRequest request={inputRequest} onSubmit={submitInput} playerNames={playerNames} />
+          <InputRequest request={inputRequest} onSubmit={submitInput} playerNames={playerNames} transcribe={transcribe} />
         </div>
 
         <button

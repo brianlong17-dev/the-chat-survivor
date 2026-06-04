@@ -17,12 +17,10 @@ class Debater(BaseAgent):
         self,
         name: str,
         initial_persona: str,
-        model_name: str,
-        higher_model_name: str = None,
-        speaking_style: str = "",
-        client=None,
+        api_client,
+        speaking_style: str = ""
     ):
-        super().__init__(name, model_name, higher_model_name=higher_model_name, client=client)
+        super().__init__(name, api_client=api_client)
         self.rating = 0
         self.persona = initial_persona
         self.game_strategy = "Begin to take action and form strategy."
@@ -112,9 +110,10 @@ class Debater(BaseAgent):
     def _get_full_user_content(self, game_board, turn_prompt, instruction_override=None) :
         return UserContent.render(self, game_board, turn_prompt, instruction_override)
 
-    def take_turn_standard(self, turn_prompt, game_board, model, instruction_override=None, thinking=False):
+    def take_turn_standard(self, turn_prompt, game_board, model, instruction_override=None, thinking=False,
+                           use_higher_model = False):
         full_user_content = self._get_full_user_content(game_board, turn_prompt, instruction_override)
-        turn = self.get_response(full_user_content, model, game_board, thinking) 
+        turn = self.get_response(full_user_content, model, game_board, thinking, use_higher_model) 
         self.process_turn_cognitive_fields(turn)
         return turn
     
@@ -217,11 +216,12 @@ class Debater(BaseAgent):
             "Who's playing a good game, who are you rooting for, what drama are you most compelled by? ")
         
         context_string = self._summarise_phase_context_string(game_board)
-        if not self.game_over:
-            self.use_higher_model = True
+  
+        use_higher_model_for_summary = not self.game_over
         response_model = self._build_summary_model()
         
-        response = self.take_turn_standard(prompt, game_board, response_model, instruction_override=context_string)
+        response = self.take_turn_standard(prompt, game_board, response_model, instruction_override=context_string, 
+                                           use_higher_model = use_higher_model_for_summary)
         self._process_life_lesson_compression(response)
         self.phase_summaries_detailed[phase_number] = response.public_response
         self.phase_summaries_brief[phase_number] = response.brief_summary

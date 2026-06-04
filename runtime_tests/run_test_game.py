@@ -12,10 +12,8 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) 
 from core.bootstrap import create_engine, ConsoleGameEventSink
-from core.api_client import api_client
 from core.levels.phase_description import PhaseDescription
 from agents.human_player import Human
-from runtime_tests.hardcoded_cast import build_hardcoded_debaters
 from gameplay_management.game_cycle.game_circle import GameCircle
 from gameplay_management.games.game_guess import GameGuess
 from gameplay_management.game_cycle.game_mob import GameMob
@@ -35,8 +33,7 @@ if __name__ == "__main__":
     # ── 2. Bootstrap ──
     all_names = list(agent_state.keys())
     sink = ConsoleGameEventSink()
-    hardcoded_agents = build_hardcoded_debaters(all_names)
-    engine = create_engine(sink, agents=hardcoded_agents, allow_rename=False)
+    engine = create_engine(sink, names=all_names, populate_agents=False, allow_rename=False)
     add_human = False
     if add_human:
         human = Human('Brian')
@@ -105,4 +102,4 @@ if __name__ == "__main__":
         rounds += 1
         phase = PhaseDescription(rounds=[GameTargetedChoiceSteal, VoteBottomTwo])
         engine.phase_runner.run_phase(phase)
-    api_client.print_summary()
+    engine.api_client.print_summary()

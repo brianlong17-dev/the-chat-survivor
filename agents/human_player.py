@@ -23,18 +23,17 @@ class Human(Debater):
     
     
     def __init__(self, name: str):
-        super().__init__(name=name, initial_persona='', model_name=None,
-                         higher_model_name=None, speaking_style="")
+        super().__init__(name=name, initial_persona='', api_client=None, speaking_style="")
         self.is_testing = False
     
     def is_human(self):
         return True
     
-    def get_response(self, user_content: str, response_model, game_board, system_content: str = None):
-        system_content = system_content or self._system_prompt(game_board)
+    def get_response(self, user_content: str, response_model, game_board, thinking=False, use_higher_model=False):
+        #thinking, use_higher_model discarded for human player .
         if self.is_testing:
-            print(f"[GAME STATE]:\n{system_content}")
-            print(f"[PROMPT]:\n{user_content}")
+            print(f"[System prompt]:\n{self._system_prompt(game_board)}")
+            print(f"[Context]:\n{user_content}")
             print("-" * 50)
 
         fields = response_model.model_fields

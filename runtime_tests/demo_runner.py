@@ -16,43 +16,10 @@ from gameplay_management.discussion_rounds.discussion_round_directed_short impor
 
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
 from runtime_tests.game_setup import (
-    load_fixture, apply_agent_state, create_agents_from_names,
+    load_fixture, apply_agent_state,
     add_human, setup_game_from_fixture,
 )
 
-
-
-def _run_reunion(sink, fixture_filename: str, finalist_scores: dict, elimination_order: list, human_name: str = None, phase_number=None):
-    from core.bootstrap import create_engine
-    from core.levels.phase_description import PhaseDescription
-    from gameplay_management.eliminations.reunion_round import FinaleReunionRound
-
-    agent_state = load_fixture(fixture_filename)
-    all_names = list(agent_state.keys())
-    agents = create_agents_from_names(all_names)
-
-    engine = create_engine(sink, agents=agents, allow_rename=False)
-    if phase_number:
-        engine.game_board.phase_number = 11
-
-    if human_name:
-        add_human(human_name, engine, is_dead=True)
-
-    engine.initialiseGameBoard()
-    agents = {a.name: a for a in engine.agents}
-
-    for name, score in finalist_scores.items():
-        engine.game_board.agent_scores[name] = score
-        
-    apply_agent_state(agents, agent_state)
-    for name in elimination_order:
-        agent = agents[name]
-        engine.eliminate_player(agent)
-
-    
-
-    phase = PhaseDescription(rounds=[FinaleReunionRound])
-    engine.phase_runner.run_phase(phase)
 
 
 REUNION_FIXTURES = {
@@ -135,21 +102,46 @@ PD_FINALE_FIXTURES = {
 }
 
 
-def run_demo_reunion(sink, human_name: str = None, fixture_choice: str = None):
-    """Reunion Finale: jury votes between two finalists, then a PD finale."""
+def run_demo_reunion(sink, api_client, human_name: str = None, fixture_choice: str = None):
+    
+    from core.bootstrap import create_engine
+    from core.levels.phase_description import PhaseDescription
+    from gameplay_management.eliminations.reunion_round import FinaleReunionRound
+    
     choice = fixture_choice or "game_3"
     cfg = REUNION_FIXTURES.get(choice) or REUNION_FIXTURES["game_3"]
-    _run_reunion(
-        sink,
-        fixture_filename=cfg["fixture_filename"],
-        finalist_scores=cfg["finalist_scores"],
-        elimination_order=cfg["elimination_order"],
-        human_name=human_name,
-        phase_number=cfg["phase_number"],
-    )
+    fixture_filename=cfg["fixture_filename"]
+    finalist_scores=cfg["finalist_scores"]
+    elimination_order=cfg["elimination_order"]
+    human_name=human_name
+    phase_number=cfg["phase_number"]
+
+    agent_state = load_fixture(fixture_filename)
+    all_names = list(agent_state.keys())
+
+    engine = create_engine(sink, names=all_names, populate_agents=False, api_client=api_client)
+    if phase_number:
+        engine.game_board.phase_number = 11
+
+    if human_name:
+        add_human(human_name, engine, is_dead=True)
+
+    engine.initialiseGameBoard()
+    agents = {a.name: a for a in engine.agents}
+
+    for name, score in finalist_scores.items():
+        engine.game_board.agent_scores[name] = score
+        
+    apply_agent_state(agents, agent_state)
+    for name in elimination_order:
+        agent = agents[name]
+        engine.eliminate_player(agent)
+
+    phase = PhaseDescription(rounds=[FinaleReunionRound])
+    engine.phase_runner.run_phase(phase)
 
 
-def run_demo_pd_finale(sink, human_name: str = None, fixture_choice: str = None):
+def run_demo_pd_finale(sink, api_client, human_name: str = None, fixture_choice: str = None):
     """Prisoner's Dilemma Finale: two finalists, split-or-steal endgame."""
     from core.bootstrap import create_engine
     from core.levels.phase_description import PhaseDescription
@@ -160,8 +152,9 @@ def run_demo_pd_finale(sink, human_name: str = None, fixture_choice: str = None)
     finalist_names = set(cfg["finalist_scores"].keys())
     agent_state = load_fixture(cfg["fixture_filename"])
     all_names = list(agent_state.keys())
-    agents = create_agents_from_names(all_names)
-    engine = create_engine(sink, agents=agents, allow_rename=False)
+    
+    engine = create_engine(sink, names=all_names, populate_agents=False, api_client=api_client)
+    
     if cfg["phase_number"]:
         engine.game_board.phase_number = cfg["phase_number"]
         
@@ -188,7 +181,7 @@ def run_demo_pd_finale(sink, human_name: str = None, fixture_choice: str = None)
     #engine.phase_runner.run_phase(phase)
 
 
-def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
+def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str = None):
     """Game Phase: 11 real players, mid-game Knives + Vote round."""
     from core.levels.phase_description import PhaseDescription
     from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
@@ -204,6 +197,7 @@ def run_demo_game(sink, human_name: str = None, fixture_choice: str = None):
 
     engine, agents = setup_game_from_fixture(
         sink,
+        api_client,
         fixture_filename="game_agent_state.json",
         scores=scores,
         phase_number=3,

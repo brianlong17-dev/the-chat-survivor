@@ -25,7 +25,7 @@ class GamePerformSobStory(GameMechanicsMixin):
     # ------------------------------------------------------------------
 
     def _get_sob_story(self, player, turn_prompt, response_model):
-        response = player.take_turn_standard(turn_prompt, self.game_board, response_model)
+        response = player.take_turn_standard(turn_prompt, self.game_board, response_model, use_higher_model=True)
         return player, response
 
     def _get_sob_story_judgement(self, judge, turn_prompt, response_model, run_in_parallel):
@@ -49,7 +49,6 @@ class GamePerformSobStory(GameMechanicsMixin):
         story_prompt = GamePromptLibrary.sob_story_prompt
         story_tasks = []
         for player in agents:
-            player.use_higher_model = True
             #we may have to use a different action field here- replace with public response with brief word before you go - 'here goes!'
             response_model = self.turn_manager._create_model(
                 player,

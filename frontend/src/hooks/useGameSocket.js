@@ -25,6 +25,7 @@ export function useGameSocket(autoRun, animateText) {
   const [playerNames, setPlayerNames] = useState([])
 
   const wsRef = useRef(null)
+  const transcribePendingRef = useRef(null)
   const autoRunRef = useRef(autoRun)
   useEffect(() => { autoRunRef.current = autoRun }, [autoRun])
 
@@ -98,6 +99,12 @@ export function useGameSocket(autoRun, animateText) {
 
     if (evt.type === 'private_conversation') {
       setPrivateConversations(prev => [...prev, { participants: evt.participants ?? [], messages: evt.messages }])
+      return
+    }
+    if (evt.type === 'transcription') {
+      const resolve = transcribePendingRef.current
+      transcribePendingRef.current = null
+      resolve?.(evt.text || '')
       return
     }
     if (evt.type === 'cast') { setPlayerNames(evt.names ?? []); return }
@@ -190,6 +197,22 @@ export function useGameSocket(autoRun, animateText) {
     skipRef.current = false
   }, [])
 
+  const transcribe = useCallback((blob, hints = []) => {
+    return new Promise((resolve) => {
+      if (!wsRef.current) { resolve(''); return }
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = reader.result
+        const base64 = typeof dataUrl === 'string' ? dataUrl.split(',')[1] : ''
+        const mimeType = blob.type || 'audio/webm'
+        transcribePendingRef.current = resolve
+        wsRef.current.send(JSON.stringify({ type: 'transcribe', audio: base64, mimeType, hints }))
+      }
+      reader.onerror = () => resolve('')
+      reader.readAsDataURL(blob)
+    })
+  }, [])
+
   const sendNext = useCallback(() => {
     if (wsRef.current) {
       wsRef.current.send(JSON.stringify({ type: 'next_turn' }))
@@ -201,7 +224,7 @@ export function useGameSocket(autoRun, animateText) {
     status, events, scores, evicted,
     inputRequest, awaitingNext, phaseRounds, currentRoundIndex, feedMarkers, segmentTitles,
     widget, privateConversations, playerNames,
-    startGame, startDemo, submitInput, sendNext, skipAnimation, exitGame,
+    startGame, startDemo, submitInput, sendNext, skipAnimation, exitGame, transcribe,
     onAnimationComplete, skipRef, isAnimating: isAnimatingState,
   }
 }

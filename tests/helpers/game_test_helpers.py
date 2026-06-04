@@ -34,12 +34,21 @@ class TestGameSink(NoopGameSink):
 
 
 class QueuedClient:
+    _mock_output = False
+    default_model = "test-model"
+    higher_model = "test-model-high"
+
     def __init__(self, responses):
         self._responses = list(responses)
         self.calls = []
 
-    def create(self, **kwargs):
-        self.calls.append(kwargs)
+    def create(self, response_model, messages, thinking=False, use_higher_model=False):
+        self.calls.append({
+            "response_model": response_model,
+            "messages": messages,
+            "thinking": thinking,
+            "use_higher_model": use_higher_model,
+        })
         if not self._responses:
             raise AssertionError("API client called more times than expected")
         response = self._responses.pop(0)
@@ -80,13 +89,12 @@ def attach_test_runtime(board, simulation, game_manager, game_master=None):
     return game_manager
 
 
-def make_debater(name, client, model_name="test-model"):
+def make_debater(name, api_client):
     return Debater(
         name=name,
         initial_persona=f"{name} persona",
-        model_name=model_name,
         speaking_style="normal",
-        client=client,
+        api_client=api_client,
     )
 
 

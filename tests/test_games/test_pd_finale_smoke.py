@@ -25,10 +25,14 @@ VERBOSE = os.environ.get("PD_VERBOSE") == "1"
 class ScriptedFinaleClient:
     """Fills every field with dummy values. `action` is popped from a queue."""
 
+    _mock_output = False
+    default_model = "test-model"
+    higher_model = "test-model-high"
+
     def __init__(self, actions):
         self._actions = list(actions)
 
-    def create(self, *, model, response_model, messages):
+    def create(self, response_model, messages, thinking=False, use_higher_model=False):
         return self._fill(response_model)
 
     def _fill(self, response_model):

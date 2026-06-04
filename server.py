@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 import os
 import threading
@@ -6,12 +7,13 @@ import traceback
 from datetime import date
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+from core.bootstrap import create_engine
+from core.api_client_setup import create_api_client
 from core.sinks.websocket_sink import WebSocketSink
 from runtime_tests.demo_runner import DEMO_REGISTRY
-from core.api_client import api_client
 from core.levels.level_registry import game_design_for_id
 
 load_dotenv()
@@ -32,6 +34,46 @@ _limit_lock = threading.Lock()
 _games_today = 0
 _limit_date = date.today()
 DAILY_CAP = 20
+
+MAX_AUDIO_BYTES = 10 * 1024 * 1024  # 10 MB decoded
+
+async def _handle_transcribe(websocket, api_client, msg):
+    try:
+        
+        """Transcribe audio over the websocket without blocking the event loop."""
+        audio_b64 = msg.get("audio") or ""
+        # base64 expands by ~4/3, so cap the encoded length cheaply before decoding
+        if len(audio_b64) > (MAX_AUDIO_BYTES // 3) * 4 + 4:
+            await websocket.send_text(json.dumps({"type": "transcription", "text": ""}))
+            return
+        audio_bytes = base64.b64decode(audio_b64)
+        if len(audio_bytes) > MAX_AUDIO_BYTES:
+            await websocket.send_text(json.dumps({"type": "transcription", "text": ""}))
+            return
+        hints = msg.get("hints")
+        mime_type = msg.get("mimeType") or "audio/webm"
+        text = await asyncio.to_thread(api_client.transcribe, audio_bytes, mime_type, hints=hints)
+        await websocket.send_text(json.dumps({"type": "transcription", "text": text}))
+    except Exception:
+        traceback.print_exc()
+        try:
+            await websocket.send_text(json.dumps({"type": "transcription", "text": ""}))
+        except Exception:
+            pass
+
+
+def _send_error(websocket, loop, exc):
+    """Send an exception to the connected client. Safe to call from any thread."""
+    traceback.print_exc()
+    message = f"{exc}\n\n{traceback.format_exc()}" if DEV_MODE else str(exc)
+    try:
+        asyncio.run_coroutine_threadsafe(
+            websocket.send_text(json.dumps({"type": "error", "message": message})),
+            loop,
+        ).result(timeout=5)
+    except Exception:
+        pass
+
 
 def check_and_increment_global_limit() -> bool:
     global _games_today, _limit_date
@@ -62,21 +104,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# ---------------------------------------------------------------------------
-# Transcribe endpoint
-# ---------------------------------------------------------------------------
-
-@app.post("/api/transcribe")
-async def transcribe(audio: UploadFile = File(...), names: str = Form("")):
-    from fastapi import HTTPException
-    MAX_AUDIO_BYTES = 10 * 1024 * 1024  # 10 MB
-    audio_bytes = await audio.read(MAX_AUDIO_BYTES + 1)
-    if len(audio_bytes) > MAX_AUDIO_BYTES:
-        raise HTTPException(status_code=413, detail="Audio file too large (max 10 MB)")
-    hints = json.loads(names) if names else None
-    text = api_client.transcribe(audio_bytes, audio.content_type or "audio/webm", hints=hints)
-    return {"text": text}
 
 # ---------------------------------------------------------------------------
 # Flags endpoint
@@ -137,6 +164,7 @@ async def game_ws(websocket: WebSocket):
     global _active_games
     await websocket.accept()
 
+    #need to put this a method / file
     if not GAME_ENABLED:
         await websocket.send_text(json.dumps({"type": "error", "message": "Game is not available yet."}))
         await websocket.close()
@@ -170,51 +198,26 @@ async def game_ws(websocket: WebSocket):
             return
 
         sink = WebSocketSink(websocket, loop)
-
         
-
-        player_names = [str(n)[:30] for n in msg.get("names", [])[:12]]
+        player_names = [str(n)[:30] for n in msg.get("names", [])[:12]] #this magic number? put it somewhere
         human_player_name = str(msg["human_name"])[:30] if msg.get("human_name") else None
 
         level_id = msg.get("levelId")
-        
-        
-        
         game_design = game_design_for_id(level_id)
-
-        def run_game():
+        api_client = create_api_client(sink)
+      
+        def run_game(): 
             try:
-                from core.bootstrap import create_engine
-                if player_names:
-                    engine = create_engine(sink, names=player_names, game_design=game_design)
-                else:
-                    engine = create_engine(sink, number_of_players=7, generic_players=False, game_design=game_design)
+                engine = create_engine(sink, names=player_names, game_design=game_design, api_client=api_client)
                 engine.run(human_player_name=human_player_name)
             except Exception as e:
-                traceback.print_exc()
-                try:
-                    message = f"{e}\n\n{traceback.format_exc()}" if DEV_MODE else str(e)
-                    asyncio.run_coroutine_threadsafe(
-                        websocket.send_text(json.dumps({"type": "error", "message": message})),
-                        loop,
-                    ).result(timeout=5)
-                except Exception:
-                    pass
+                _send_error(websocket, loop, e)
 
         thread = threading.Thread(target=run_game, daemon=True)
         thread.start()
+        await _run_game_thread(thread, api_client, websocket, sink)
 
-        # Keep the connection alive, routing input responses to the sink
-        while thread.is_alive():
-            try:
-                data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
-                msg = json.loads(data)
-                if msg.get("type") == "input_response":
-                    sink._input_queue.put(str(msg.get("value", ""))[:1500])
-                elif msg.get("type") == "next_turn":
-                    sink._step_queue.put(True)
-            except asyncio.TimeoutError:
-                pass
+            
 
     except WebSocketDisconnect:
         if sink: sink.on_disconnect()
@@ -276,35 +279,36 @@ async def demo_ws(websocket: WebSocket):
             return
 
         sink = WebSocketSink(websocket, loop)
+        api_client = create_api_client(sink)
+        
         def run_demo():
             try:
-                runner(sink, human_name=human_name, fixture_choice=fixture_choice)
+                runner(sink, api_client, human_name=human_name, fixture_choice=fixture_choice, )
             except Exception as e:
-                traceback.print_exc()
-                try:
-                    message = f"{e}\n\n{traceback.format_exc()}" if DEV_MODE else str(e)
-                    asyncio.run_coroutine_threadsafe(
-                        websocket.send_text(json.dumps({"type": "error", "message": message})),
-                        loop,
-                    ).result(timeout=5)
-                except Exception:
-                    pass
+                _send_error(websocket, loop, e)
 
         thread = threading.Thread(target=run_demo, daemon=True)
         thread.start()
-        while thread.is_alive():
-            try:
-                data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
-                msg = json.loads(data)
-                if msg.get("type") == "input_response":
-                    sink._input_queue.put(str(msg.get("value", ""))[:1500])
-                elif msg.get("type") == "next_turn":
-                    sink._step_queue.put(True)
-            except asyncio.TimeoutError:
-                pass
+        await _run_game_thread(thread, api_client, websocket, sink)
 
     except WebSocketDisconnect:
         if sink: sink.on_disconnect()
     finally:
         with _active_games_lock:
             _active_games -= 1
+            
+            
+async def _run_game_thread(thread, api_client, websocket, sink):
+    while thread.is_alive():
+        try:
+            data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
+            msg = json.loads(data)
+            if msg.get("type") == "input_response":
+                sink._input_queue.put(str(msg.get("value", ""))[:1500])
+            elif msg.get("type") == "next_turn":
+                sink._step_queue.put(True)
+            elif msg.get("type") == "transcribe":
+                asyncio.create_task(_handle_transcribe(websocket, api_client, msg))
+        except asyncio.TimeoutError:
+            pass
+            

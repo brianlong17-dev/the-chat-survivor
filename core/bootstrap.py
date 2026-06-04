@@ -1,61 +1,43 @@
-import os
-
-from dotenv import load_dotenv
-import instructor
-
 from agents.character_generation.characterGeneration import CharacterGenerator
 from agents.game_host import GameMaster
 from core.gameboard import GameBoard
 from core.sinks.console_sink import ConsoleGameEventSink
 from core.levels.game_designs.game_design_default import GameDesignDefault
 from core.simulation_engine import SimulationEngine
-from core.api_client import api_client
+from core.api_client_setup import create_api_client
 from agents.player import Debater
-import google.genai as genai
 
-
-#gemini-2.0-flash-lite
-#"gemini-3.1-flash-lite-preview",
-#gemini-2.5-flash-lite
-#DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite-preview"
-DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
-#DEFAULT_MODEL_NAME = "gemini-2.0-flash-lite"
-DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
-#gemini-3-flash-preview
-def create_agent(name):
-    return Debater(name, '', DEFAULT_MODEL_NAME, higher_model_name = DEFAULT_HIGHER_MODEL_NAME)
-
+def create_blank_agent(name, api_client):
+    return Debater(name, '', api_client = api_client)
+    
+    
 def create_engine(game_sink, number_of_players: int = 0, generic_players: bool = False, names=None,
-                  agents = None,
                   allow_rename = True,
-                  model_name=DEFAULT_MODEL_NAME, higher_model_name=DEFAULT_HIGHER_MODEL_NAME,
-                  game_design= None):
+                  game_design= None,
+                  api_client=None,
+                  populate_agents=True):
     
     if game_design is None:
         game_design = GameDesignDefault
         
-    load_dotenv()
-    #client = instructor.from_provider('google/' + model_name, api_key=os.getenv("GEMINI_API_KEY"))
-    project=os.getenv("PROJECT")
-    location=os.getenv("LOCATION") 
-    client = genai.Client(
-        vertexai=True,
-        project=project,
-        location=location
-    )
-    api_client.init(client, model_name)
-    game_master = GameMaster(model_name, higher_model_name=higher_model_name)
+    if not api_client:
+        api_client = create_api_client(game_sink)
+        
+    game_master = GameMaster(api_client = api_client)
     game_board = GameBoard(game_sink)
-    generator = CharacterGenerator(game_sink, model_name, higher_model_name)
+    generator = CharacterGenerator(game_sink, api_client = api_client)
     
-    if agents:
-        agents = agents
-    elif names:
-        agents = generator.generate_agents_from_names(names, allow_rename = allow_rename) 
-    elif generic_players:
+    if generic_players:
         agents = generator.genericPlayers(number_of_players)
+        
+    elif names:
+        if populate_agents:
+            agents = generator.generate_agents_from_names(names, allow_rename = allow_rename) 
+        else:
+            agents = [create_blank_agent(name, api_client) for name in names]
+            
     else:
         rand_names = generator.generate_random_debaters_names(number_of_players)
         agents = generator.generate_agents_from_names(rand_names, allow_rename = allow_rename)
 
-    return SimulationEngine(agents=agents, game_board=game_board, game_master=game_master, generator=generator, game_design=game_design)
+    return SimulationEngine(agents=agents, game_board=game_board, game_master=game_master, generator=generator, game_design=game_design, api_client=api_client)

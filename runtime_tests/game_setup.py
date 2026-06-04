@@ -36,10 +36,6 @@ def apply_agent_state(agents: dict, agent_state: dict):
             agent.phase_summaries_brief[int(phase_str)] = text
 
 
-def create_agents_from_names(names):
-    from core.bootstrap import create_agent
-    return [create_agent(name) for name in names]
-
 
 def add_human(human_name, engine, is_dead=False):
     from agents.human_player import Human
@@ -59,6 +55,7 @@ def add_human(human_name, engine, is_dead=False):
 
 def setup_game_from_fixture(
     sink,
+    api_client,
     fixture_filename: str,
     scores: dict,
     phase_number: int = None,
@@ -74,9 +71,9 @@ def setup_game_from_fixture(
 
     agent_state = load_fixture(fixture_filename)
     all_names = list(agent_state.keys())
-    agents = create_agents_from_names(all_names)
+    
 
-    engine = create_engine(sink, agents=agents, allow_rename=False)
+    engine = create_engine(sink, allow_rename=False, names=all_names, populate_agents=False, api_client=api_client)
 
     if phase_number is not None:
         engine.game_board.phase_number = phase_number

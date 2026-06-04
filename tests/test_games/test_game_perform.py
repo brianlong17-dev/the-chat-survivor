@@ -34,9 +34,7 @@ def _build_perform_game(agent_specs, initial_scores=None):
         Debater(
             name=name,
             initial_persona=f"{name} persona",
-            client=clients[name],
-            model_name="test-model",
-            higher_model_name="test-model-high",
+            api_client=clients[name],
             speaking_style="normal",
         )
         for name in agent_specs

@@ -3,17 +3,15 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, create_model
 from agents.base_agent import BaseAgent
-from core.api_client import api_client
 from models.game_models import DynamicGameModelFactory, SummariseRoundComplex
 from models.player_models import BaseResponse
 from prompts.prompts import PromptLibrary
 
 class GameMaster(BaseAgent):
-    def __init__(self, model_name: str, higher_model_name: str = None, name ="Summariser"):
-        super().__init__(name, model_name, higher_model_name=higher_model_name)
+    def __init__(self, api_client):
+        super().__init__("Host", api_client=api_client)
         self.color = "YELLOW"
         self.round_summaries = deque(maxlen=50)
-        self.name = "Host"
     
     
     def _system_prompt(self, game_board):
@@ -41,7 +39,7 @@ class GameMaster(BaseAgent):
         #---------------
     
     def summariseRound(self, game_board):
-        turn = api_client.create(
+        turn = self.api_client.create(
             response_model=SummariseRoundComplex,
             messages=[
                 {"role": "system", "content": f"You oversee this game. You help to make the information manageable for the LLMs playing."},
@@ -56,7 +54,7 @@ class GameMaster(BaseAgent):
     
     def summarise_game_text(self, context, game_text):
         model = DynamicGameModelFactory.cycle_game_compression_model()
-        turn = api_client.create(
+        turn = self.api_client.create(
             response_model=model,
             messages=[
                 {"role": "system", "content": f"You oversee this game. You help to make the information manageable for the LLMs playing."},
@@ -74,7 +72,7 @@ class GameMaster(BaseAgent):
     
     def select_players(self, question, context, allowed_names, max_choices = 3):
         model = DynamicGameModelFactory.choose_multiple_agents(allowed_names, question, max_choices)
-        turn = api_client.create(
+        turn = self.api_client.create(
             response_model=model,
             messages=[
                 {"role": "system", "content": f"You oversee this game. We need you to select players based on the question: {question}"},
@@ -86,7 +84,7 @@ class GameMaster(BaseAgent):
     def create_host_script(self, directive, additional_context, context_explanation, game_context, cot_prompts = None):
         #It's referenced as directive in the model 
         model = DynamicGameModelFactory.host_script_model(cot_prompts)
-        turn = api_client.create(
+        turn = self.api_client.create(
             response_model=model,
             messages=[
                 #in time we will put personality into the user content- favorites, opinions

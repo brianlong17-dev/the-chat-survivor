@@ -1,19 +1,15 @@
 import json
 import os
+import uuid
 from abc import abstractmethod
 from datetime import datetime, timezone
 
-from core.api_client import api_client
-
 
 class BaseAgent:
-    def __init__(self, name: str, model_name: str, higher_model_name: str = None, color = "BLUE", client=None):
+    def __init__(self, name: str, api_client, color = "BLUE"):
         self.name = name
-        self.client = client  # optional override (used in tests)
-        self.model_name = model_name
-        self.higher_model_name = higher_model_name or model_name
+        self.api_client = api_client
         self.color = color
-        self.use_higher_model = False
         self.most_recent_internal_thought = ""
         self.debug_log = False          # set to True on any agent to enable logging
         self._log_call_index = 0        # monotonic counter per agent instance
@@ -101,7 +97,8 @@ class BaseAgent:
             os.remove(os.path.join(log_dir, existing.pop(0)))
 
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        filename = f"{self.name}_{timestamp}.jsonl"
+        suffix = uuid.uuid4().hex[:6]
+        filename = f"{self.name}_{timestamp}_{suffix}.jsonl"
         return os.path.join(log_dir, filename)
 
     def _extract_field_descriptions(self, response_model) -> dict:
@@ -137,7 +134,7 @@ class BaseAgent:
     # ------------------------------------------------------------------
     # Core API call
     # ------------------------------------------------------------------
-    def get_response(self, user_content: str, response_model, game_board, thinking=False):
+    def get_response(self, user_content: str, response_model, game_board, thinking=False, use_higher_model=False):
 
         system_content = self._system_prompt(game_board)
 
@@ -146,21 +143,17 @@ class BaseAgent:
             {"role": "user",   "content": user_content},
         ]
 
-        if self.use_higher_model:
-            api_model = self.higher_model_name
-            self.use_higher_model = False
-        else:
-            api_model = self.model_name
-
-        client = self.client or api_client
-        response = client.create(
-            model=api_model,
+        response = self.api_client.create(
             response_model=response_model,
             messages=messages,
-            thinking=thinking
+            thinking=thinking,
+            use_higher_model=use_higher_model
         )
-
+        
+        
+        
         if self.debug_log:
+            api_model = self.api_client.higher_model if use_higher_model else self.api_client.default_model 
             self._log_call_index += 1
             self._write_log_entry(response_model, api_model, messages, response)
 

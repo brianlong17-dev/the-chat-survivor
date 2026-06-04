@@ -8,7 +8,6 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.bootstrap import ConsoleGameEventSink
-from core.api_client import api_client
 from core.levels.phase_description import PhaseDescription
 from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
@@ -41,4 +40,4 @@ if __name__ == "__main__":
         rounds += 1
         phase = PhaseDescription(rounds=[GamePrisonersDilemmaFinale])
         engine.phase_runner.run_phase(phase)
-    api_client.print_summary()
+    engine.api_client.print_summary()

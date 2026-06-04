@@ -6,11 +6,17 @@ import os
 import random
 import threading
 import time
+import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from typing import Literal, get_args, get_origin
+from typing import TYPE_CHECKING, Literal, get_args, get_origin
 from pydantic import BaseModel
 import google.genai.types as types
+
+from core.sinks.game_sink import NoopGameSink
+
+if TYPE_CHECKING:
+    from core.sinks.game_sink import GameEventSink
 
 
 @dataclass(frozen=True)
@@ -26,18 +32,20 @@ class CallRecord:
     duration_ms: int
 
 class APIClient:
-    def __init__(self) -> None:
-        self._client = None
+    def __init__(self, client, model: str, higher_model_name: str,  sink: GameEventSink = None) -> None:
         self._records: list[CallRecord] = []
         self._lock = threading.Lock()
         self._index = 0
         self._log_path: str | None = None
-        self._mock_output = False
-
-    def init(self, client, model: str) -> None:
+        self._mock_output = True
         self._client = client
-        self._default_model = model
+        self.default_model = model
+        self.higher_model = higher_model_name 
         self._log_path = _make_log_path()
+        if not sink:
+            self.sink = NoopGameSink()
+        else:
+            self.sink = sink
         
     def _mock_response(self, response_model):
         long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, \n \n sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -87,20 +95,19 @@ class APIClient:
             except Exception as e:
                 if attempt < max_429_retries - 1 and _is_rate_limit(e):
                     wait = backoff * (2 ** attempt)
-                    print(f"[api_client] 429 rate limit — waiting {wait}s before retry {attempt + 1}/{max_429_retries - 1}")
+                    error_message = (f"server 429 rate limit — waiting {wait}s before retry {attempt + 1}/{max_429_retries - 1}")
+                    print(error_message)
+                    self.sink.system_private(error_message)
                     time.sleep(wait)
                 else:
                     raise
         result = response_model(**json.loads(response.text))
         return response, result
     
-    def create(self, response_model, messages: list, model: str | None = None, thinking=False):
-        if self._client is None:
-            raise RuntimeError("APIClient not initialized — call init() first")
-
+    def create(self, response_model, messages: list, thinking=False, use_higher_model = False):
         if self._mock_output:
             return self._mock_response(response_model)
-        api_model = model or self._default_model
+        api_model = self.default_model if not use_higher_model else self.higher_model
         caller = _caller()
         start = time.monotonic()
         response, result = self._make_call(messages, api_model, response_model, thinking=thinking)
@@ -128,7 +135,7 @@ class APIClient:
         if hints:
             hint_text = f"\nThe following names and terms may appear: {', '.join(hints)}."
             
-        api_model = model or self._default_model
+        api_model = model or self.default_model
         response = self._client.models.generate_content(
             model=api_model,
             contents=[
@@ -167,8 +174,7 @@ class APIClient:
             with open(summary_path, "w", encoding="utf-8") as f:
                 json.dump(s, f, indent=2)
 
-# ── module-level singleton ───────────────────────────────────────────────────
-api_client = APIClient()
+
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -215,9 +221,10 @@ def _write(path: str | None, record: CallRecord) -> None:
 def _make_log_path() -> str:
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs", "api_logs")
     os.makedirs(log_dir, exist_ok=True)
-    _prune_logs(log_dir, keep=25)
+    _prune_logs(log_dir, keep=50)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    return os.path.join(log_dir, f"api_calls_{ts}.jsonl")
+    suffix = uuid.uuid4().hex[:6]
+    return os.path.join(log_dir, f"api_calls_{ts}_{suffix}.jsonl")
 
 
 def _prune_logs(log_dir: str, keep: int) -> None:

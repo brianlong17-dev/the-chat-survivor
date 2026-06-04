@@ -5,7 +5,6 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from agents.character_generation.character_lister import CharacterLister
 from agents.player import Debater
-from core.api_client import api_client
 
 class CharacterProfile(BaseModel):
     who: str = Field(description="Remind yourself who this person is- normally from popular culture")
@@ -15,9 +14,8 @@ class CharacterProfile(BaseModel):
 
 class CharacterGenerator:
 
-    def __init__(self, game_sink, model_name: str, higher_model_name: str = None):
-        self.model_name = model_name
-        self.higher_model_name = higher_model_name or model_name
+    def __init__(self, game_sink, api_client):
+        self.api_client = api_client
         self.game_sink = game_sink
         self.character_lister = CharacterLister()
         self.characters = self.character_lister.goats
@@ -32,8 +30,7 @@ class CharacterGenerator:
                 Debater(
                     name,
                     personality,
-                    model_name=self.model_name,
-                    higher_model_name=self.higher_model_name,
+                    api_client=self.api_client,
                     speaking_style=speaking_style,
                 )
             )
@@ -96,9 +93,9 @@ class CharacterGenerator:
         return cast
 
     def generate_debater(self, character_name: str, allow_rename = True) -> 'Debater':
-        if api_client._mock_output:
+        if self.api_client._mock_output:
             allow_rename = False
-        profile = api_client.create(
+        profile = self.api_client.create(
             response_model=CharacterProfile,
             messages=[
                 {"role": "system", "content": "You are generating a starting profile for an AI debate simulation player. The name is typically of someone from popular culture, that it should be based on. "},
@@ -111,7 +108,6 @@ class CharacterGenerator:
         return Debater(
             name=final_name,
             initial_persona=profile.persona,
-            model_name=self.model_name,
-            higher_model_name=self.higher_model_name,
+            api_client=self.api_client,
             speaking_style=profile.speaking_style,
         )

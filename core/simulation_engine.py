@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from core.game_config import GameConfig
 from core.phase_runner import PhaseRunner
-from core.api_client import api_client
 from agents.human_player import Human
 
 if TYPE_CHECKING:
@@ -17,10 +16,11 @@ if TYPE_CHECKING:
     
 class SimulationEngine:
     def __init__(self, agents: list[Debater], game_board: GameBoard, game_master: GameMaster, generator: CharacterGenerator,
-                 game_design: GameDesign):
+                 game_design: GameDesign, api_client):
 
         self.game_master = game_master
         self.game_design = game_design
+        self.api_client = api_client
 
         self.game_board = game_board
         self.generator = generator
@@ -72,7 +72,7 @@ class SimulationEngine:
             self.phase_runner.run_phase(phase)
         #------------Fin------------#
         self.game_board.game_sink.on_game_over([agent.name for agent in self.agents])
-        api_client.print_summary()
+        self.api_client.print_summary()
         self._post_game_interview()
         
     def _post_game_interview(self):
