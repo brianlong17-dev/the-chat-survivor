@@ -7,7 +7,7 @@ import os
 
 from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
-from tests.helpers.scripted_game_design import ScriptedGameDesign
+from tests.helpers.testing_game_design import TestingGameDesign
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -137,7 +137,7 @@ def run_demo_reunion(sink, api_client, human_name: str = None, fixture_choice: s
         agent = agents[name]
         engine.eliminate_player(agent)
 
-    phase = PhaseDescription(rounds=[FinaleReunionRound])
+    phase = PhaseDescription(rounds=[FinaleReunionRound], should_summarise_phase=False)
     engine.phase_runner.run_phase(phase)
 
 
@@ -171,7 +171,7 @@ def run_demo_pd_finale(sink, api_client, human_name: str = None, fixture_choice:
         if agent.name not in finalist_names:
             engine.eliminate_player(agent)
             
-    game_design = ScriptedGameDesign([PhaseDescription(rounds=[GamePrisonersDilemmaFinale])])
+    game_design = TestingGameDesign([PhaseDescription(rounds=[GamePrisonersDilemmaFinale], should_summarise_phase=False)])
 
     engine.gameplay_config.pd_pairing_method = engine.gameplay_config.pd_pairing_choice_all
     engine.game_design = game_design
@@ -216,7 +216,8 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
     #while len(engine.agents) > 2:
     while round_count < 1:
         round_count += 1
-        phase = PhaseDescription(rounds=[GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo])
+        phase = PhaseDescription(rounds=[GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo], 
+                                 should_summarise_phase=False)
         engine.phase_runner.run_phase(phase)
 
 

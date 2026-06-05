@@ -102,4 +102,4 @@ if __name__ == "__main__":
         rounds += 1
         phase = PhaseDescription(rounds=[GameTargetedChoiceSteal, VoteBottomTwo])
         engine.phase_runner.run_phase(phase)
-    engine.api_client.print_summary()
+    engine.api_client.print_and_write_summary()

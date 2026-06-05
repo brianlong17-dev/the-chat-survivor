@@ -6,7 +6,7 @@ import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from core.api_client_setup import create_api_client
+from core.api_client import create_api_client
 from core.sinks.console_sink import ConsoleGameEventSink
 from agents.character_generation.characterGeneration import CharacterGenerator
 
