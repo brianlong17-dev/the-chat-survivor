@@ -1,0 +1,254 @@
+import asyncio
+import json
+import threading
+import traceback
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+
+from core.bootstrap import create_engine
+from core.api_client import create_api_client
+from core.sinks.websocket_sink import WebSocketSink
+from runtime_tests.demo_runner import DEMO_REGISTRY
+from core.levels.level_registry import game_design_for_id
+from web import rate_limits
+from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, DEV_MODE, GAME_ENABLED,
+    MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS,
+)
+from web.server_helpers import handle_transcribe
+
+app = FastAPI()
+
+
+@app.get("/api/status")
+async def status():
+    return rate_limits.snapshot()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ---------------------------------------------------------------------------
+# Flags endpoint
+# ---------------------------------------------------------------------------
+
+@app.get("/api/flags")
+async def get_flags():
+    return {"game_enabled": GAME_ENABLED, "demo_enabled": DEMO_ENABLED}
+
+# ---------------------------------------------------------------------------
+# Characters endpoint
+# ---------------------------------------------------------------------------
+
+@app.get("/api/characters")
+async def get_characters():
+    from agents.character_generation.character_lister import CharacterLister
+    lister = CharacterLister()
+    return {
+        "tabs": {
+            "Classics": lister.goats,
+            "Generics": lister.generics,
+            "Schemers": lister.schemers,
+            "Regulars": lister.regulars,
+            "Little Women" : lister.marches,
+            "Hot Heads": lister.agros,
+            "Logicos": lister.logicos,
+            "All": list(dict.fromkeys(lister.full_characters)),  # dedupe
+        }
+    }
+
+# ---------------------------------------------------------------------------
+# Levels endpoint
+# ---------------------------------------------------------------------------
+
+@app.get("/api/levels")
+async def get_levels():
+    from core.levels import AVAILABLE_LEVELS
+    return {
+        "levels": [
+            {
+                "id": level.id,
+                "name": level.name,
+                "description": level.description,
+                "min_players": level.min_players,
+                "max_players": level.max_players,
+                "locked": level.locked,
+            }
+            for level in AVAILABLE_LEVELS
+        ]
+    }
+
+# ---------------------------------------------------------------------------
+# WebSocket endpoint
+# ---------------------------------------------------------------------------
+async def _can_run_game(websocket: WebSocket):
+    if not GAME_ENABLED:
+        await websocket.send_text(json.dumps({"type": "error", "message": "Game is not available yet."}))
+        return False
+
+    if not await rate_limits.check_concurrency(websocket):
+        return False
+
+    if not await rate_limits.check_token_cap(websocket):
+        return False
+
+    if not rate_limits.check_and_increment_daily("game"):
+        await websocket.send_text(json.dumps({
+            "type": "error",
+            "message": "Daily game limit reached. Come back tomorrow."
+        }))
+        return False
+    return True
+
+@app.websocket("/ws/game")
+async def game_ws(websocket: WebSocket):
+    await websocket.accept()
+
+    if not await _can_run_game(websocket):
+        await websocket.close()
+        return
+
+    rate_limits.acquire_active_slot()
+    loop = asyncio.get_event_loop()
+    sink = None
+    api_client = None
+
+    try:
+        # Wait for the "start" message from the client
+        data = await websocket.receive_text()
+        msg = json.loads(data)
+        if msg.get("type") != "start":
+            await websocket.send_text(json.dumps({"type": "error", "message": "Expected start message"}))
+            return
+
+        sink = WebSocketSink(websocket, loop)
+
+        player_names = [str(n)[:MAX_NAME_LENGTH] for n in msg.get("names", [])[:MAX_PLAYERS]]
+        human_player_name = str(msg["human_name"])[:MAX_NAME_LENGTH] if msg.get("human_name") else None
+
+        level_id = msg.get("levelId")
+        game_design = game_design_for_id(level_id)
+        api_client = create_api_client(sink)
+
+        def run_game():
+            try:
+                engine = create_engine(sink, names=player_names, game_design=game_design, api_client=api_client)
+                engine.run(human_player_name=human_player_name)
+            except Exception as e:
+                _send_error(websocket, loop, e)
+
+        thread = threading.Thread(target=run_game, daemon=True)
+        thread.start()
+        await _run_game_thread(thread, api_client, websocket, sink)
+
+    except WebSocketDisconnect:
+        if sink: sink.on_disconnect()
+    finally:
+        rate_limits.release_slot(api_client)
+
+
+
+# ---------------------------------------------------------------------------
+# Demos endpoint
+# ---------------------------------------------------------------------------
+
+async def _can_run_demo(websocket: WebSocket, demo_id):
+    if not DEMO_ENABLED:
+        await websocket.send_text(json.dumps({"type": "error", "message": "Demo is not available yet."}))
+        return False
+
+    LOCKED_DEMOS = {} #"game_phase"}
+    if demo_id in LOCKED_DEMOS:
+        await websocket.send_text(json.dumps({"type": "error", "message": "This demo is not available yet."}))
+        return False
+
+    if not await rate_limits.check_concurrency(websocket):
+        return False
+
+    if not await rate_limits.check_token_cap(websocket):
+        return False
+
+    if not rate_limits.check_and_increment_daily("demo"):
+        await websocket.send_text(json.dumps({
+            "type": "error",
+            "message": "Daily demo limit reached. Come back tomorrow."
+        }))
+        return False
+
+    return True
+
+
+@app.websocket("/ws/demo")
+async def demo_ws(websocket: WebSocket):
+    await websocket.accept()
+    data = await websocket.receive_text()
+    msg = json.loads(data)
+    demo_id = msg.get("demo_id")
+
+    if not await _can_run_demo(websocket, demo_id):
+        await websocket.close()
+        return
+
+    rate_limits.acquire_active_slot()
+    loop = asyncio.get_event_loop()
+    sink = None
+    api_client = None
+    try:
+        human_name = str(msg["human_name"])[:MAX_NAME_LENGTH] if msg.get("human_name") else None
+        fixture_choice = str(msg["fixture_choice"])[:MAX_NAME_LENGTH] if msg.get("fixture_choice") else None
+        runner = DEMO_REGISTRY.get(demo_id)
+        if not runner: #this wont happen in practice
+            await websocket.send_text(json.dumps({"type": "error", "message": f"Unknown demo: {demo_id}"}))
+            return
+
+        sink = WebSocketSink(websocket, loop)
+        api_client = create_api_client(sink)
+
+        def run_demo():
+            try:
+                runner(sink, api_client, human_name=human_name, fixture_choice=fixture_choice, )
+            except Exception as e:
+                _send_error(websocket, loop, e)
+
+        thread = threading.Thread(target=run_demo, daemon=True)
+        thread.start()
+        await _run_game_thread(thread, api_client, websocket, sink)
+
+    except WebSocketDisconnect:
+        if sink: sink.on_disconnect()
+    finally:
+        rate_limits.release_slot(api_client)
+
+
+async def _run_game_thread(thread, api_client, websocket, sink):
+    while thread.is_alive():
+        try:
+            data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
+            msg = json.loads(data)
+            if msg.get("type") == "input_response":
+                sink._input_queue.put(str(msg.get("value", ""))[:MAX_INPUT_LENGTH])
+            elif msg.get("type") == "next_turn":
+                sink._step_queue.put(True)
+            elif msg.get("type") == "transcribe":
+                asyncio.create_task(handle_transcribe(websocket, api_client, msg))
+        except asyncio.TimeoutError:
+            pass
+
+
+def _send_error(websocket, loop, exc):
+    """Send an exception to the connected client. Safe to call from any thread."""
+    traceback.print_exc()
+    message = f"{exc}\n\n{traceback.format_exc()}" if DEV_MODE else str(exc)
+    try:
+        asyncio.run_coroutine_threadsafe(
+            websocket.send_text(json.dumps({"type": "error", "message": message})),
+            loop,
+        ).result(timeout=5)
+    except Exception:
+        pass

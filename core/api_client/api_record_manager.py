@@ -16,6 +16,7 @@ class CallRecord:
     response_model: str
     prompt_tokens: int | None
     completion_tokens: int | None
+    thinking_tokens: int | None
     total_tokens: int | None
     duration_ms: int
 
@@ -28,12 +29,14 @@ class APIRecordManager:
 
         self._total_input_tokens: int = 0
         self._total_output_tokens: int = 0
+        self._total_thinking_tokens: int = 0
+        self._total_api_tokens: int = 0
         self._call_index = 0
 
         self._lock = threading.Lock()
 
     def log_call(self, caller, api_model, response_model, response, start):
-        prompt, completion, total = self._extract_usage(response)
+        prompt, completion, thinking, total = self._extract_usage(response)
 
         with self._lock:
             record = CallRecord(
@@ -44,6 +47,7 @@ class APIRecordManager:
                 response_model=getattr(response_model, "__name__", str(response_model)),
                 prompt_tokens=prompt,
                 completion_tokens=completion,
+                thinking_tokens=thinking,
                 total_tokens=total,
                 duration_ms=int((time.monotonic() - start) * 1000),
             )
@@ -51,30 +55,34 @@ class APIRecordManager:
             self._records.append(record)
             self._total_input_tokens += prompt or 0
             self._total_output_tokens += completion or 0
+            self._total_thinking_tokens += thinking or 0
+            self._total_api_tokens += total or 0
 
         _write(self._log_path, record)
 
     def usage_totals(self) -> dict:
         with self._lock:
+            sum_total = self._total_input_tokens + self._total_output_tokens + self._total_thinking_tokens
             return {
                 "input": self._total_input_tokens,
                 "output": self._total_output_tokens,
-                "total": self._total_input_tokens + self._total_output_tokens,
+                "thinking": self._total_thinking_tokens,
+                "sum_total": sum_total,
+                "api_total": self._total_api_tokens,
+                "total": max(sum_total, self._total_api_tokens),
             }
 
     @staticmethod
-    def _extract_usage(response) -> tuple[int | None, int | None, int | None]:
+    def _extract_usage(response) -> tuple[int | None, int | None, int | None, int | None]:
         usage = getattr(response, "usage_metadata", None) or getattr(response, "usage", None)
         if usage is None:
-            return None, None, None
+            return None, None, None, None
 
         prompt = getattr(usage, "prompt_token_count", None) or getattr(usage, "prompt_tokens", None)
         completion = getattr(usage, "candidates_token_count", None) or getattr(usage, "completion_tokens", None)
-        #can be slightly different with metadata
-        total = getattr(usage, "total_token_count", None) or getattr(usage, "total_tokens", None)
-        if total is None and prompt is not None and completion is not None:
-            total = prompt + completion
-        return prompt, completion, total
+        thinking = getattr(usage, "thoughts_token_count", None) or getattr(usage, "thinking_tokens", None)
+        api_total = getattr(usage, "total_token_count", None) or getattr(usage, "total_tokens", None)
+        return prompt, completion, thinking, api_total
 
 
 
@@ -84,33 +92,41 @@ class APIRecordManager:
             records = list(self._records)
             total_input = self._total_input_tokens
             total_output = self._total_output_tokens
+            total_thinking = self._total_thinking_tokens
+            api_total = self._total_api_tokens
+        sum_total = total_input + total_output + total_thinking
         by_caller: dict[str, dict] = {}
         for r in records:
-            s = by_caller.setdefault(r.caller, {"calls": 0, "input": 0, "output": 0, "ms": 0})
+            s = by_caller.setdefault(r.caller, {"calls": 0, "input": 0, "output": 0, "thinking": 0, "ms": 0})
             s["calls"] += 1
             s["input"] += r.prompt_tokens or 0
             s["output"] += r.completion_tokens or 0
+            s["thinking"] += r.thinking_tokens or 0
             s["ms"] += r.duration_ms
         return {
             "total_calls": len(records),
             "total_input_tokens": total_input,
             "total_output_tokens": total_output,
-            "total_tokens": total_input + total_output,
+            "total_thinking_tokens": total_thinking,
+            "sum_total_tokens": sum_total,
+            "api_total_tokens": api_total,
             "by_caller": by_caller,
         }
 
     def print_and_write_summary(self) -> None:
         s = self.summary()
-        w = 72
+        w = 80
         print(f"\n{'─' * w}")
         print(f"  API — {s['total_calls']} calls · "
               f"{s['total_input_tokens']:,} in · "
               f"{s['total_output_tokens']:,} out · "
-              f"{s['total_tokens']:,} total")
+              f"{s['total_thinking_tokens']:,} thinking · "
+              f"sum {s['sum_total_tokens']:,} · api {s['api_total_tokens']:,}")
         print(f"{'─' * w}")
         for caller, stats in s["by_caller"].items():
-            print(f"  {caller:<36}  {stats['calls']:3d} calls  "
+            print(f"  {caller:<32}  {stats['calls']:3d} calls  "
                   f"{stats['input']:>7,} in  {stats['output']:>7,} out  "
+                  f"{stats['thinking']:>7,} think  "
                   f"{stats['ms']:>5}ms")
         print(f"{'─' * w}\n")
         if self._log_path:

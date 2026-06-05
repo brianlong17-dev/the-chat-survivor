@@ -51,7 +51,7 @@ class APIClient:
         if thinking:
             thinking_config = types.ThinkingConfig(thinking_budget=512, include_thoughts=True)
         else:
-            thinking_config = types.ThinkingConfig(include_thoughts=False)
+            thinking_config = types.ThinkingConfig(thinking_budget=0, include_thoughts=False)
         system_content = next((m["content"] for m in messages if m["role"] == "system"), None)
         user_content = next((m["content"] for m in messages if m["role"] == "user"), None)
         max_429_retries = 5
