@@ -2,50 +2,30 @@ from __future__ import annotations
 
 import inspect
 import json
-import os
 import random
-import threading
 import time
-import uuid
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Literal, get_args, get_origin
 from pydantic import BaseModel
 import google.genai.types as types
 
 from core.sinks.game_sink import NoopGameSink
+from core.api_client.api_record_manager import APIRecordManager
 
 if TYPE_CHECKING:
     from core.sinks.game_sink import GameEventSink
 
 
-@dataclass(frozen=True)
-class CallRecord:
-    index: int
-    timestamp: str
-    caller: str
-    model: str
-    response_model: str
-    prompt_tokens: int | None
-    completion_tokens: int | None
-    total_tokens: int | None
-    duration_ms: int
-
 class APIClient:
     def __init__(self, client, model: str, higher_model_name: str,  sink: GameEventSink = None) -> None:
-        self._records: list[CallRecord] = []
-        self._lock = threading.Lock()
-        self._index = 0
-        self._log_path: str | None = None
         self._mock_output = False
         self._client = client
         self.default_model = model
         self.higher_model = higher_model_name 
-        self._log_path = _make_log_path()
         if not sink:
             self.sink = NoopGameSink()
         else:
             self.sink = sink
+        self._record_manager = APIRecordManager()
         
     def _mock_response(self, response_model):
         long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, \n \n sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -112,23 +92,13 @@ class APIClient:
         caller = _caller()
         start = time.monotonic()
         response, result = self._make_call(messages, api_model, response_model, thinking=thinking)
-        prompt, completion, total = _extract_usage(response)
-        with self._lock:
-            record = CallRecord(
-                index=self._index,
-                timestamp=datetime.now(timezone.utc).isoformat(),
-                caller=caller,
-                model=api_model,
-                response_model=getattr(response_model, "__name__", str(response_model)),
-                prompt_tokens=prompt,
-                completion_tokens=completion,
-                total_tokens=total,
-                duration_ms=int((time.monotonic() - start) * 1000),
-            )
-            self._index += 1
-            self._records.append(record)
-
-        _write(self._log_path, record)
+        self._record_manager.log_call(
+            caller=caller,
+            api_model=api_model,
+            response_model=response_model,
+            response=response,
+            start=start,
+        )
         return result
 
     def transcribe(self, audio_bytes: bytes, mime_type: str = "audio/webm", model: str | None = None, hints: list[str] | None = None) -> str:
@@ -145,37 +115,15 @@ class APIClient:
             ],
         )
         return response.text.strip()
-        
+
     def summary(self) -> dict:
-        with self._lock:
-            records = list(self._records)
-        by_caller: dict[str, dict] = {}
-        for r in records:
-            s = by_caller.setdefault(r.caller, {"calls": 0, "tokens": 0, "ms": 0})
-            s["calls"] += 1
-            s["tokens"] += r.total_tokens or 0
-            s["ms"] += r.duration_ms
-        return {
-            "total_calls": len(records),
-            "total_tokens": sum(r.total_tokens or 0 for r in records),
-            "by_caller": by_caller,
-        }
+        return self._record_manager.summary()
 
-    def print_summary(self) -> None:
-        s = self.summary()
-        w = 60
-        print(f"\n{'─' * w}")
-        print(f"  API — {s['total_calls']} calls · {s['total_tokens']:,} tokens")
-        print(f"{'─' * w}")
-        for caller, stats in s["by_caller"].items():
-            print(f"  {caller:<40}  {stats['calls']:3d} calls  {stats['tokens']:>7,} tok  {stats['ms']:>5}ms")
-        print(f"{'─' * w}\n")
-        if self._log_path:
-            summary_path = self._log_path.replace(".jsonl", "_summary.json")
-            with open(summary_path, "w", encoding="utf-8") as f:
-                json.dump(s, f, indent=2)
+    def print_and_write_summary(self) -> None:
+        self._record_manager.print_and_write_summary()
 
-
+    def usage_totals(self) -> dict:
+        return self._record_manager.usage_totals()
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -199,36 +147,4 @@ def _caller() -> str:
     return "unknown"
 
 
-def _extract_usage(response) -> tuple[int | None, int | None, int | None]:
-    usage = getattr(response, "usage_metadata", None) or getattr(response, "usage", None)
-    if usage is None:
-        return None, None, None
-    prompt = getattr(usage, "prompt_token_count", None) or getattr(usage, "prompt_tokens", None)
-    completion = getattr(usage, "candidates_token_count", None) or getattr(usage, "completion_tokens", None)
-    total = getattr(usage, "total_token_count", None) or getattr(usage, "total_tokens", None)
-    if total is None and prompt is not None and completion is not None:
-        total = prompt + completion
-    return prompt, completion, total
 
-
-def _write(path: str | None, record: CallRecord) -> None:
-    if path is None:
-        return
-    line = json.dumps(asdict(record)) + "\n"
-    with open(path, "a", encoding="utf-8") as f:
-        f.write(line)
-
-
-def _make_log_path() -> str:
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs", "api_logs")
-    os.makedirs(log_dir, exist_ok=True)
-    _prune_logs(log_dir, keep=50)
-    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    suffix = uuid.uuid4().hex[:6]
-    return os.path.join(log_dir, f"api_calls_{ts}_{suffix}.jsonl")
-
-
-def _prune_logs(log_dir: str, keep: int) -> None:
-    logs = sorted(os.path.join(log_dir, f) for f in os.listdir(log_dir) if f.endswith(".jsonl"))
-    for old in logs[:-keep]:
-        os.remove(old)

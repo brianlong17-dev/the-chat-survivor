@@ -72,7 +72,7 @@ class SimulationEngine:
             self.phase_runner.run_phase(phase)
         #------------Fin------------#
         self.game_board.game_sink.on_game_over([agent.name for agent in self.agents])
-        self.api_client.print_summary()
+        self.api_client.print_and_write_summary()
         self._post_game_interview()
         
     def _post_game_interview(self):

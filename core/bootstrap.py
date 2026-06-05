@@ -4,7 +4,7 @@ from core.gameboard import GameBoard
 from core.sinks.console_sink import ConsoleGameEventSink
 from core.levels.game_designs.game_design_default import GameDesignDefault
 from core.simulation_engine import SimulationEngine
-from core.api_client_setup import create_api_client
+from core.api_client import create_api_client
 from agents.player import Debater
 
 def create_blank_agent(name, api_client):

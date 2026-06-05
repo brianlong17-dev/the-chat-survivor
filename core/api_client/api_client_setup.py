@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import google.genai as genai
 from google.auth import default
-from core.api_client import APIClient
+from core.api_client.api_client import APIClient
     
 DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
 DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite-preview"

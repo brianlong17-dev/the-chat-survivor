@@ -11,7 +11,7 @@ pip install fastapi "uvicorn[standard]" websockets
 ### 2. Run the backend
 From the **root of your repo**:
 ```
-uv run uvicorn server:app --reload
+uv run uvicorn web.server:app --reload
 ```
 
 ### 3. Run the frontend
@@ -23,7 +23,7 @@ npm run dev
 Then open http://localhost:5173
 
 ## File locations
-- `server.py` — FastAPI websocket server, lives at repo root
+- `web/server.py` — FastAPI websocket server
 - `frontend/` — Vite React app
 
 ## Event types

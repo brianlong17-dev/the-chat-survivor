@@ -60,7 +60,7 @@ This is a Claude summary of the project- I will come back to this document later
 - `ConsoleGameEventSink` ([core/sinks/console_sink.py](core/sinks/console_sink.py)) — terminal renderer, colored, animated text.
 - `WebSocketSink` ([core/sinks/websocket_sink.py](core/sinks/websocket_sink.py)) — serialises events to JSON, streams to a connected web client.
 
-**Web frontend (optional)** — [server.py](server.py) is a FastAPI bridge: REST endpoints for setup (character generation, available levels, feature flags), an audio transcription endpoint for spoken human input, and two WebSocket endpoints (`game_ws`, `demo_ws`) that each spin up a `SimulationEngine` wired to a `WebSocketSink`. The client in [frontend/](frontend/) is a Vite/React app that consumes the stream. The CLI and the web client share the same engine — only the sink changes.
+**Web frontend (optional)** — [web/server.py](web/server.py) is a FastAPI bridge: REST endpoints for setup (character generation, available levels, feature flags), an audio transcription endpoint for spoken human input, and two WebSocket endpoints (`game_ws`, `demo_ws`) that each spin up a `SimulationEngine` wired to a `WebSocketSink`. The client in [frontend/](frontend/) is a Vite/React app that consumes the stream. The CLI and the web client share the same engine — only the sink changes.
 
 ---
 
