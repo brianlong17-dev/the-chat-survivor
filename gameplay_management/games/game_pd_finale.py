@@ -81,8 +81,10 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             f"You have {self.game_board.agent_scores[player.name]} points. Your opponent has {self.game_board.agent_scores[opponent.name]} points. \n{self.sfx}"
             f"{turn_prompt_post}"
         )
+        additional_thought_nudge = "The end of your journey, what do you want your decision to be?"
+        
         public_response_prompt = "What do you say as you reveal your choice? From your own logic and feelings, express why you chose this."
-        return self.get_split_or_steal(player, turn_prompt, public_response_prompt= public_response_prompt)
+        return self.get_split_or_steal(player, turn_prompt, public_response_prompt= public_response_prompt, additional_thought_nudge=additional_thought_nudge)
         
     def finale_tie_split_or_steal(self, player):
         opponent = self._other_agents(player, self.agents)[0]
