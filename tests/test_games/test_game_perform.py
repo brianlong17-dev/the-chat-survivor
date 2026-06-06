@@ -6,12 +6,8 @@ import pytest
 
 from agents.player import Debater
 from core.gameboard import GameBoard
+from core.levels.phase_description import PhaseDescription
 from tests.helpers.game_test_helpers import QueuedClient, TestGameSink, TestSimulation, attach_test_runtime, host_messages, turn_payload
-
-
-@pytest.fixture(autouse=True)
-def no_test_delays(monkeypatch):
-    monkeypatch.setattr("gameplay_management.base_manager.time.sleep", lambda *_: None)
 
 
 class NoopGameMaster:
@@ -19,16 +15,23 @@ class NoopGameMaster:
         return SimpleNamespace(round_summary="")
 
 
-def _load_game_perform_class():
+_PERFORM_MODULES = {
+    "GamePerformSobStory": "gameplay_management.game_perform.game_perform_sob_story",
+    "GamePerformComedyRoast": "gameplay_management.game_perform.game_perform_comedy_roast",
+}
+
+
+def _load_game_perform_class(class_name="GamePerformSobStory"):
+    module_path = _PERFORM_MODULES[class_name]
     try:
-        module = importlib.import_module("gameplay_management.games.game_perform")
+        module = importlib.import_module(module_path)
     except Exception as exc:
-        pytest.fail(f"GamePerform is not importable yet: {exc}")
-    return module.GamePerformSobStory
+        pytest.fail(f"{class_name} is not importable yet: {exc}")
+    return getattr(module, class_name)
 
 
-def _build_perform_game(agent_specs, initial_scores=None):
-    game_cls = _load_game_perform_class()
+def _build_perform_game(agent_specs, initial_scores=None, class_name="GamePerformSobStory"):
+    game_cls = _load_game_perform_class(class_name)
     clients = {name: QueuedClient(responses) for name, responses in agent_specs.items()}
     agents = [
         Debater(
@@ -52,11 +55,13 @@ def _build_perform_game(agent_specs, initial_scores=None):
     game = game_cls(board, simulation)
     attach_test_runtime(board, simulation, game, game_master=game_master)
     game._shuffled_agents = lambda: list(simulation.agents)
+    board.newRound()
+    board.phase_runner.current_phase_description = PhaseDescription(rounds=[game_cls])
     return game, board, agents, clients
 
 
 def _run_sob_story(game, board):
-    bound = game.run_game_sob_story
+    bound = game.run_game_perform
     params = inspect.signature(bound).parameters
     if len(params) == 0:
         return bound()
@@ -112,10 +117,10 @@ def test_sob_story_uses_higher_model_for_story_turn_only():
 
     for name, client in clients.items():
         assert len(client.calls) == 4
-        assert client.calls[0]["model"] == "test-model-high", f"{name} story turn should use higher model"
-        assert client.calls[1]["model"] == "test-model"
-        assert client.calls[2]["model"] == "test-model"
-        assert client.calls[3]["model"] == "test-model"
+        assert client.calls[0]["use_higher_model"] is True, f"{name} story turn should use higher model"
+        assert client.calls[1]["use_higher_model"] is False
+        assert client.calls[2]["use_higher_model"] is False
+        assert client.calls[3]["use_higher_model"] is False
 
 
 def test_sob_story_makes_one_performer_followup_call_with_score_summary():
@@ -138,7 +143,12 @@ def test_sob_story_each_story_gets_scored_by_all_other_players():
         assert len(client.calls) == 4
 
     # Total judgments expected: 3 storytellers * 2 judges each.
-    public_msgs = [entry for entry in board.currentRound if entry["speaker"] != "HOST"]
+    all_msgs = [
+        msg
+        for entry in board.game_log.current_round.messageEntries
+        for msg in entry.messages
+    ]
+    public_msgs = [msg for msg in all_msgs if msg["speaker"] != GameBoard.HOST_NAME]
     assert len(public_msgs) >= 6
 
 
@@ -196,3 +206,60 @@ def test_sob_story_keeps_out_of_range_numeric_scores_as_is():
 
     assert board.agent_scores["Alice"] == 11
     assert board.agent_scores["Bob"] == 0
+
+
+# ---------------------------------------------------------------------------
+# Comedy Roast — sibling class, reuses the same run loop
+# ---------------------------------------------------------------------------
+
+
+def test_comedy_roast_broadcasts_roast_intro_not_sob_intro():
+    game, board, _agents, _clients = _build_perform_game(
+        _default_three_player_script(), class_name="GamePerformComedyRoast"
+    )
+
+    _run_sob_story(game, board)
+
+    messages = host_messages(board)
+    assert any("COMEDY ROAST" in m for m in messages)
+    assert not any("Every reality contestant has one" in m for m in messages)
+
+
+def test_comedy_roast_uses_higher_model_for_performance_turn_only():
+    game, board, _agents, clients = _build_perform_game(
+        _default_three_player_script(), class_name="GamePerformComedyRoast"
+    )
+
+    _run_sob_story(game, board)
+
+    for name, client in clients.items():
+        assert len(client.calls) == 4
+        assert client.calls[0]["use_higher_model"] is True, f"{name} roast turn should use higher model"
+        assert client.calls[1]["use_higher_model"] is False
+        assert client.calls[2]["use_higher_model"] is False
+        assert client.calls[3]["use_higher_model"] is False
+
+
+def test_comedy_roast_scoring_math_matches_sob_story():
+    game, board, _agents, _clients = _build_perform_game(
+        _default_three_player_script(), class_name="GamePerformComedyRoast"
+    )
+
+    _run_sob_story(game, board)
+
+    # Same averaging logic — identical expected scores to the sob story case.
+    assert board.agent_scores["Alice"] == 8  # round((9 + 6) / 2)
+    assert board.agent_scores["Bob"] == 6    # round((8 + 4) / 2)
+    assert board.agent_scores["Cara"] == 5   # round((5 + 5) / 2)
+
+
+def test_comedy_roast_results_header_uses_roast_label():
+    game, board, _agents, _clients = _build_perform_game(
+        _default_three_player_script(), class_name="GamePerformComedyRoast"
+    )
+
+    _run_sob_story(game, board)
+
+    messages = host_messages(board)
+    assert any("COMEDY ROAST results" in m for m in messages)
+    assert not any("SOB STORY results" in m for m in messages)

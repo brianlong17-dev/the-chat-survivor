@@ -12,7 +12,7 @@ from gameplay_management.game_cycle.game_circle import GameCircle
 from gameplay_management.game_cycle.game_mob import GameMob
 from gameplay_management.game_targeted.game_targeted_give import GameTargetedChoiceGive
 from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
-from gameplay_management.games.game_perform import GamePerformSobStory
+from gameplay_management.game_perform.game_perform_sob_story import GamePerformSobStory
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
 from gameplay_management.games.game_rps import GameRockPaperScissors
 from gameplay_management.immunities.highest_points_immunity import HighestPointsImmunity

@@ -6,7 +6,9 @@ from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
 from prompts.gamePrompts import GamePromptLibrary
 
 
-class GamePerformSobStory(GameMechanicsMixin):
+class GamePerformSobStoryOld(GameMechanicsMixin):
+    #I'm keeping this as the basis for an eventual refactor 
+    #that we will port to the new layout for GamePerformBase
     
     @classmethod
     def display_name(cls, cfg):
