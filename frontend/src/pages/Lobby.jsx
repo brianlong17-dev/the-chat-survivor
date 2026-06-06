@@ -119,7 +119,7 @@ export default function Lobby({ onStart }) {
 
   return (
     <div className="lobby">
-      <h1 className="lobby-title">THE GAME</h1>
+      <h1 className="lobby-title">CHAT SURVIVOR</h1>
 
       <div className="lobby-levels">
         <span className="lobby-selected-label">Level</span>

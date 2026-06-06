@@ -29,6 +29,13 @@
   letter-spacing: 0.3em;
   color: var(--accent);
   padding-bottom: 10px;
+  line-height: 1.4;
+}
+
+.app-title-two-line {
+  font-size: 14px;
+  line-height: 1.5;
+  padding-bottom: 4px;
 }
 
 .app-title-clickable {
@@ -1020,7 +1027,11 @@
 .level-cards {
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 .level-card {
@@ -1031,7 +1042,8 @@
   color: var(--text);
   cursor: pointer;
   transition: all 0.15s;
-  min-width: 180px;
+  min-width: 220px;
+  flex-shrink: 0;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1091,6 +1103,7 @@
 
 .level-card.locked .level-card-lock {
   display: block;
+  opacity: 0.3;
 }
 
 .lobby-selected {

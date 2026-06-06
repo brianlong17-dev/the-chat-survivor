@@ -106,7 +106,7 @@ export default function GameView({
     <div className="app">
       <header className="app-header">
         <div className="header-left">
-          <h1 className="app-title app-title-clickable" onClick={() => setExitConfirmOpen(true)}>THE GAME</h1>
+          <h1 className="app-title app-title-two-line app-title-clickable" onClick={() => setExitConfirmOpen(true)}>CHAT<br />SURVIVOR</h1>
           {showPrivateChats && (
             <div className="header-tabs">
               <button className={`header-tab${activeTab === 'feed' ? ' active' : ''}`} onClick={() => setActiveTab('feed')}>
