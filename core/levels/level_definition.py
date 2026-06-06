@@ -13,5 +13,7 @@ class LevelDefinition:
     description: str
     min_players: int
     max_players: int
+    token_budget: int
     game_design: Type[GameDesign]
     locked: bool = True
+    

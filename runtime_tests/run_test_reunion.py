@@ -6,6 +6,7 @@ writes fake phase summaries, then runs the reunion directly.
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.bootstrap import create_engine, ConsoleGameEventSink
+from core.api_client import create_api_client
 from core.levels.game_designs.game_design_default import GameDesignDefault
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
 from core.levels.phase_description import PhaseDescription
@@ -13,7 +14,8 @@ from core.levels.phase_description import PhaseDescription
 if __name__ == "__main__":
     # ── 1. Bootstrap with generic players (no character-gen API calls) ──
     sink = ConsoleGameEventSink()
-    engine = create_engine(sink, game_design=GameDesignDefault, number_of_players=5, generic_players=True)
+    api_client = create_api_client(sink, token_budget=2_000_000)
+    engine = create_engine(sink, game_design=GameDesignDefault, number_of_players=5, generic_players=True, api_client=api_client)
     engine.initialiseGameBoard()
 
     # Agents are: Alpha, Beta, Capa, Delta, Elphie

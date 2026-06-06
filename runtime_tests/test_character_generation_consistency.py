@@ -16,7 +16,7 @@ RUNS = 2
 
 if __name__ == "__main__":
     sink = ConsoleGameEventSink()
-    api_client = create_api_client(sink)
+    api_client = create_api_client(sink, token_budget=200_000)
     generator = CharacterGenerator(sink, api_client=api_client)
 
     for i in range(1, RUNS + 1):

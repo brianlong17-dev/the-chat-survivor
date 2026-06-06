@@ -14,9 +14,12 @@ from core.api_client.api_record_manager import APIRecordManager
 if TYPE_CHECKING:
     from core.sinks.game_sink import GameEventSink
 
+class BudgetExceeded(Exception):
+    pass
 
 class APIClient:
-    def __init__(self, client, model: str, higher_model_name: str,  sink: GameEventSink = None) -> None:
+    def __init__(self, client, model: str, higher_model_name: str,  sink: GameEventSink = None, 
+                 token_budget: int = 1500000) -> None: 
         self._mock_output = False
         self._client = client
         self.default_model = model
@@ -26,6 +29,7 @@ class APIClient:
         else:
             self.sink = sink
         self._record_manager = APIRecordManager()
+        self.token_budget = token_budget  # None = no ceiling
         
     def _mock_response(self, response_model):
         long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, \n \n sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -48,6 +52,7 @@ class APIClient:
         return response_model(**values)
 
     def _make_call(self, messages, api_model, response_model, thinking=False):
+        
         if thinking:
             thinking_config = types.ThinkingConfig(thinking_budget=512, include_thoughts=True)
         else:
@@ -88,6 +93,8 @@ class APIClient:
     def create(self, response_model, messages: list, thinking=False, use_higher_model = False):
         if self._mock_output:
             return self._mock_response(response_model)
+        if self._record_manager._total_api_tokens > self.token_budget:
+            raise BudgetExceeded(f"Token budget of {self.token_budget} exceeded")
         api_model = self.default_model if not use_higher_model else self.higher_model
         caller = _caller()
         start = time.monotonic()

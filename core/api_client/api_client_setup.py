@@ -9,7 +9,7 @@ DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
 DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
 
 
-def create_api_client(game_sink,
+def create_api_client(game_sink, token_budget,
                   model_name=DEFAULT_MODEL_NAME, higher_model_name=DEFAULT_HIGHER_MODEL_NAME):
 
     load_dotenv(override=True)
@@ -22,4 +22,4 @@ def create_api_client(game_sink,
         location=location,
         credentials=credentials
     )
-    return APIClient(client, model_name, higher_model_name, game_sink)
+    return APIClient(client, model_name, higher_model_name, game_sink, token_budget=token_budget)

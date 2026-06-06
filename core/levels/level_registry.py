@@ -15,24 +15,37 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
         description="An introduction to the format- Two players, Rock-Paper-Scissors, loser goes home.",
         min_players=2,
         max_players=2,
+        token_budget=100000,
         game_design=GameDesignQuickStart,
         locked=False
     ),
     LevelDefinition(
         id="beginner",
         name="Game One",
-        description="A six person, six phase game. The bottom two of each phase face the group vote.",
+        description="A six person, six phase game. The bottom two of each phase face the group vote. Longer alliances, longer strategies. ",
         min_players=6,
         max_players=6,
+        token_budget=15000000,
         game_design=GameDesignBeginner,
         locked=False
     ),
     LevelDefinition(
-        id="intermediate",
-        name="The Arena",
-        description="More discussion rounds and strategic voting. For seasoned players.",
+        id="perform",
+        name="Comedy Roast",
+        description="Players score each others performances, as they share sob stories and perform comedy roasts. ",
         min_players=6,
         max_players=8,
+        token_budget=15000000,
+        game_design=GameDesignBeginner,
+        locked=True
+    ),
+    LevelDefinition(
+        id="parlor",
+        name="The Parlor Games",
+        description="Players play more complex games, like Circle, Mobs and Knives. ",
+        min_players=6,
+        max_players=8,
+        token_budget=15000000,
         game_design=GameDesignBeginner,
         locked=True
     ),
@@ -46,11 +59,6 @@ def get_level_by_id(level_id: str) -> Optional[LevelDefinition]:
             return level
     return None
 
-def game_design_for_id(level_id: str):
-    level = get_level_by_id(level_id)
-    return level.game_design 
-
-        
 
 def get_available_levels() -> List[LevelDefinition]:
     """Get all available levels."""

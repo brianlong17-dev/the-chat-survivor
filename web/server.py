@@ -10,10 +10,10 @@ from core.bootstrap import create_engine
 from core.api_client import create_api_client
 from core.sinks.websocket_sink import WebSocketSink
 from runtime_tests.demo_runner import DEMO_REGISTRY
-from core.levels.level_registry import game_design_for_id
+from core.levels.level_registry import get_level_by_id
 from web import rate_limits
 from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, DEV_MODE, GAME_ENABLED,
-    MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS,
+    MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS, DEMO_TOKEN_BUDGET
 )
 from core.sanitize import sanitize_name
 from web.server_helpers import handle_transcribe
@@ -119,20 +119,23 @@ async def game_ws(websocket: WebSocket):
             await websocket.send_text(json.dumps({"type": "error", "message": "Expected start message"}))
             return
         level_id = msg.get("levelId")
-        game_design = game_design_for_id(level_id)
-        if not game_design:
+        level = get_level_by_id(level_id)
+        if not level:
             await websocket.send_text(json.dumps({"type": "error", "message": "Invalid level."}))
             return
-
+        
+        game_design = level.game_design 
         sink = WebSocketSink(websocket, loop)
 
-        player_names = [str(n)[:MAX_NAME_LENGTH] for n in msg.get("names", [])[:MAX_PLAYERS]]
+        
         human_player_name = str(msg["human_name"])[:MAX_NAME_LENGTH] if msg.get("human_name") else None
+        max_players = min(level.max_players, MAX_PLAYERS) - (1 if human_player_name else 0)
+        player_names = [str(n)[:MAX_NAME_LENGTH] for n in msg.get("names", [])[:max_players]]
 
         player_names = [sanitize_name(name) for name in player_names]
         human_player_name = sanitize_name(human_player_name)
         
-        api_client = create_api_client(sink)
+        api_client = create_api_client(sink, token_budget=level.token_budget)
 
         def run_game():
             try:
@@ -200,7 +203,7 @@ async def demo_ws(websocket: WebSocket):
             return
 
         sink = WebSocketSink(websocket, loop)
-        api_client = create_api_client(sink)
+        api_client = create_api_client(sink, token_budget = DEMO_TOKEN_BUDGET) 
 
         def run_demo():
             try:

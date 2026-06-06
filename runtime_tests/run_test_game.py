@@ -12,6 +12,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) 
 from core.bootstrap import create_engine, ConsoleGameEventSink
+from core.api_client import create_api_client
 from core.levels.game_designs.game_design_default import GameDesignDefault
 from core.levels.phase_description import PhaseDescription
 from agents.human_player import Human
@@ -34,7 +35,8 @@ if __name__ == "__main__":
     # ── 2. Bootstrap ──
     all_names = list(agent_state.keys())
     sink = ConsoleGameEventSink()
-    engine = create_engine(sink, game_design=GameDesignDefault, names=all_names, populate_agents=False, allow_rename=False)
+    api_client = create_api_client(sink, token_budget=2_000_000)
+    engine = create_engine(sink, game_design=GameDesignDefault, names=all_names, populate_agents=False, allow_rename=False, api_client=api_client)
     add_human = False
     if add_human:
         human = Human('Brian')

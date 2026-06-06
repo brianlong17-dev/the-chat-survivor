@@ -3,21 +3,17 @@ from agents.game_host import GameMaster
 from core.gameboard import GameBoard
 from core.sinks.console_sink import ConsoleGameEventSink
 from core.simulation_engine import SimulationEngine
-from core.api_client import create_api_client
 from agents.player import Debater
 
 def create_blank_agent(name, api_client):
     return Debater(name, '', api_client = api_client)
-    
-    
+
+
 def create_engine(game_sink, game_design, number_of_players: int = 0, generic_players: bool = False, names=None,
                   allow_rename = True,
                   api_client=None,
                   populate_agents=True):
 
-    if not api_client:
-        api_client = create_api_client(game_sink)
-        
     game_master = GameMaster(api_client = api_client)
     game_board = GameBoard(game_sink)
     generator = CharacterGenerator(game_sink, api_client = api_client)
