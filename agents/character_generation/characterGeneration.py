@@ -100,7 +100,8 @@ class CharacterGenerator:
             messages=[
                 {"role": "system", "content": "You are generating a starting profile for an AI debate simulation player. The name is typically of someone from popular culture, that it should be based on. "},
                 {"role": "user", "content": f"Create a rich, first-person persona and a physical form description for the historical figure: {character_name}. Make them highly opinionated."}
-            ]
+            ],
+            use_model_3=True
         )
         #self.game_sink.system_private(f"Generated: {character_name}. Speaking style: \n {profile.speaking_style}.")
         final_name = profile.name if (allow_rename and profile.name) else character_name

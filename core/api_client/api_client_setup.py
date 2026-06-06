@@ -3,9 +3,9 @@ from dotenv import load_dotenv
 import google.genai as genai
 from google.auth import default
 from core.api_client.api_client import APIClient
-    
-DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
-#DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite-preview"
+
+MODEL_3 = "gemini-3.1-flash-lite-preview" #"gemini-2.5-flash-lite"
+DEFAULT_MODEL_NAME = MODEL_3
 DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
 
 
@@ -22,4 +22,4 @@ def create_api_client(game_sink, token_budget,
         location=location,
         credentials=credentials
     )
-    return APIClient(client, model_name, higher_model_name, game_sink, token_budget=token_budget)
+    return APIClient(client, model_name, higher_model_name, game_sink, token_budget=token_budget, model_3 = MODEL_3)
