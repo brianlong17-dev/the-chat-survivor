@@ -6,7 +6,10 @@ import sys
 import os
 
 from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
+from gameplay_management.game_perform.game_perform_sob_story import GamePerformSobStory
+from gameplay_management.game_perform.game_perform_comedy_roast import GamePerformComedyRoast
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
+from gameplay_management.eliminations.voting_lowest_points import VoteLowestPoints
 from tests.helpers.testing_game_design import TestingGameDesign
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -216,9 +219,11 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
     #while len(engine.agents) > 2:
     while round_count < 1:
         round_count += 1
-        phase = PhaseDescription(rounds=[GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo], 
+        phase = PhaseDescription(rounds=[GamePerformComedyRoast, VoteLowestPoints, GamePerformComedyRoast],
                                  should_summarise_phase=False)
         engine.phase_runner.run_phase(phase)
+
+    engine.api_client.print_and_write_summary()
 
 
 DEMO_REGISTRY = {

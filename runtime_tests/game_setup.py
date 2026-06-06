@@ -92,7 +92,7 @@ def setup_game_from_fixture(
     apply_agent_state(agents_by_name, agent_state)
 
     if eliminate_after is not None:
-        for agent in engine.agents[eliminate_after:]:
-            engine.eliminate_player(agent)
+        for name in list(scores.keys())[eliminate_after:]:
+            engine.eliminate_player(agents_by_name[name])
 
     return engine, agents_by_name

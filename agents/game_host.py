@@ -53,6 +53,7 @@ class GameMaster(BaseAgent):
         return turn
     
     def summarise_game_text(self, context, game_text):
+        #used in game circle
         model = DynamicGameModelFactory.cycle_game_compression_model()
         turn = self.api_client.create(
             response_model=model,
