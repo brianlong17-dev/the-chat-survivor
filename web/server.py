@@ -13,7 +13,7 @@ from runtime_tests.demo_runner import DEMO_REGISTRY
 from core.levels.level_registry import get_level_by_id
 from web import rate_limits
 from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, DEV_MODE, GAME_ENABLED,
-    MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS, DEMO_TOKEN_BUDGET
+    MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS, DEMO_TOKEN_BUDGET, TRANSCRIPTION_ENABLED
 )
 from core.sanitize import sanitize_name
 from web.server_helpers import handle_transcribe
@@ -40,7 +40,7 @@ app.add_middleware(
 
 @app.get("/api/flags")
 async def get_flags():
-    return {"game_enabled": GAME_ENABLED, "demo_enabled": DEMO_ENABLED}
+    return {"game_enabled": GAME_ENABLED, "demo_enabled": DEMO_ENABLED, "transcription_enabled": TRANSCRIPTION_ENABLED}
 
 # ---------------------------------------------------------------------------
 # Characters endpoint
@@ -230,7 +230,7 @@ async def _run_game_thread(thread, api_client, websocket, sink):
                 sink._input_queue.put(str(msg.get("value", ""))[:MAX_INPUT_LENGTH])
             elif msg.get("type") == "next_turn":
                 sink._step_queue.put(True)
-            elif msg.get("type") == "transcribe":
+            elif msg.get("type") == "transcribe" and TRANSCRIPTION_ENABLED:
                 asyncio.create_task(handle_transcribe(websocket, api_client, msg))
         except asyncio.TimeoutError:
             pass

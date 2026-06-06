@@ -932,6 +932,8 @@
 .mic-btn:hover { border-color: var(--text-dim); color: var(--text); }
 .mic-btn.active { border-color: #d9706a; color: #d9706a; animation: pulse 1s infinite; }
 .mic-btn.transcribing { box-shadow: 0 0 0 2px var(--accent); animation: pulse-glow 1.5s infinite; }
+.mic-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.mic-btn:disabled:hover { border-color: var(--border); color: var(--text-dim); }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }

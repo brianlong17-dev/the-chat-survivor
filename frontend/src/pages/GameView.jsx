@@ -12,7 +12,7 @@ export default function GameView({
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
   submitInput, sendNext, skipAnimation, exitGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
-  privateConversations, playerNames = [],
+  privateConversations, playerNames = [], transcriptionEnabled,
 }) {
   const { showPrivate, autoRun, animateText, showPrivateChats } = settings
 
@@ -232,7 +232,7 @@ export default function GameView({
               <div ref={privateBottomRef} />
             </main>
           )}
-          <InputRequest request={inputRequest} onSubmit={submitInput} playerNames={playerNames} transcribe={transcribe} />
+          <InputRequest request={inputRequest} onSubmit={submitInput} playerNames={playerNames} transcribe={transcribe} transcriptionEnabled={transcriptionEnabled}/>
         </div>
 
         <button

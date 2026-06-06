@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react' 
 import { MAX_INPUT_CHARS } from '../utils/settings'
 
-export default function InputRequest({ request, onSubmit, playerNames = [], transcribe }) {
+export default function InputRequest({ request, onSubmit, playerNames = [], transcribe, transcriptionEnabled = true }) {
   const [value, setValue] = useState('')
   const [listening, setListening] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
@@ -75,7 +75,9 @@ export default function InputRequest({ request, onSubmit, playerNames = [], tran
               {value.length} / {MAX_INPUT_CHARS} — will be truncated
             </span>
           )}
-          <button className={`mic-btn ${listening ? 'active' : ''} ${transcribing ? 'transcribing' : ''}`} onClick={toggleMic} title="Voice input">
+          <button className={`mic-btn ${listening ? 'active' : ''} ${transcribing ? 'transcribing' : ''}`} 
+            onClick={toggleMic} disabled={!transcriptionEnabled} title="Voice input">
+              
             {listening
               ? (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

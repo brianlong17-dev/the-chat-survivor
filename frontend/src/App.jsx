@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import { loadSettings, saveSettings } from './utils/settings'
 import { useGameSocket } from './hooks/useGameSocket'
@@ -9,6 +9,14 @@ import GameView from './pages/GameView'
 export default function App() {
   const [view, setView] = useState('lobby')
   const [settings, setSettings] = useState(loadSettings)
+  const [transcriptionEnabled, setTranscriptionEnabled] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/flags')
+      .then(r => r.json())
+      .then(data => setTranscriptionEnabled(data.transcription_enabled))
+      .catch(() => setTranscriptionEnabled(false))
+  }, [])
 
   const updateSetting = (key, value) => {
     setSettings(prev => {
@@ -22,7 +30,7 @@ export default function App() {
   const { status, startGame, startDemo } = socket
 
   if (status !== 'idle') {
-    return <GameView {...socket} settings={settings} updateSetting={updateSetting} />
+    return <GameView {...socket} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} />
   }
 
   return (

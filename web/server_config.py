@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 GAME_ENABLED = True
 DEMO_ENABLED = True
 
+
 load_dotenv(override=True)
+TRANSCRIPTION_ENABLED = os.getenv("TRANSCRIPTION_ENABLED", "true").lower() in ("1", "true", "yes")
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() in ("1", "true", "yes")
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
