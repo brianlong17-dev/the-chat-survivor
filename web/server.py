@@ -92,17 +92,11 @@ async def _can_run_game(websocket: WebSocket):
         await websocket.send_text(json.dumps({"type": "error", "message": "Game is not available yet."}))
         return False
 
-    if not await rate_limits.check_concurrency(websocket):
-        return False
-
     if not await rate_limits.check_token_cap(websocket):
         return False
-
-    if not rate_limits.check_and_increment_daily("game"):
-        await websocket.send_text(json.dumps({
-            "type": "error",
-            "message": "Daily game limit reached. Come back tomorrow."
-        }))
+    
+    
+    if not await rate_limits.daily_and_concurrency_check(websocket, "game"):
         return False
     return True
 
@@ -114,7 +108,6 @@ async def game_ws(websocket: WebSocket):
         await websocket.close()
         return
 
-    rate_limits.acquire_active_slot()
     loop = asyncio.get_event_loop()
     sink = None
     api_client = None
@@ -195,7 +188,6 @@ async def demo_ws(websocket: WebSocket):
         await websocket.close()
         return
 
-    rate_limits.acquire_active_slot()
     loop = asyncio.get_event_loop()
     sink = None
     api_client = None

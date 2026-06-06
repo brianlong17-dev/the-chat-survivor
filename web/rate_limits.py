@@ -63,8 +63,15 @@ def _read_today() -> tuple[str, int, int, int]:
         ).fetchone()
         return today, row[0], row[1], row[2]
 
+async def daily_and_concurrency_check(websocket: WebSocket, kind: str) -> bool:
+    if not await check_concurrency_and_get_slot(websocket):
+        return False
+    if not await check_and_increment_daily(websocket, kind):
+        release_unused_slot()
+        return False
+    return True
 
-def check_and_increment_daily(kind: str) -> bool:
+async def check_and_increment_daily(websocket: WebSocket, kind: str) -> bool:
     column = "games" if kind == "game" else "demos"
     cap = DAILY_GAME_CAP if kind == "game" else DAILY_DEMO_CAP
     with _db_lock, _connect() as conn:
@@ -72,23 +79,27 @@ def check_and_increment_daily(kind: str) -> bool:
         current = conn.execute(
             f"SELECT {column} FROM daily_counts WHERE date=?", (today,)
         ).fetchone()[0]
-        if current >= cap:
+        if cap > current: 
+            conn.execute(
+                f"UPDATE daily_counts SET {column} = {column} + 1 WHERE date=?",
+                (today,),
+            )
             conn.commit()
-            return False
-        conn.execute(
-            f"UPDATE daily_counts SET {column} = {column} + 1 WHERE date=?",
-            (today,),
-        )
-        conn.commit()
-        return True
+            return True
+    await websocket.send_text(json.dumps({"type": "error", "message": f"Daily {kind} limit reached. Come back tomorrow."}))
+    return False
 
 
-async def check_concurrency(websocket: WebSocket) -> bool:
+async def check_concurrency_and_get_slot(websocket: WebSocket) -> bool:
+    global _active_games
     with _active_games_lock:
-        if _active_games >= MAX_CONCURRENT_GAMES:
-            await websocket.send_text(json.dumps({"type": "error", "message": f"Server is at capacity ({MAX_CONCURRENT_GAMES} active games). Try again soon."}))
-            return False
-    return True
+        if _active_games < MAX_CONCURRENT_GAMES:
+            _active_games += 1
+            return True 
+    await websocket.send_text(json.dumps({"type": "error", "message": 
+        f"Server is at capacity ({MAX_CONCURRENT_GAMES} active games). Try again soon."}))
+    return False
+                
 
 
 async def check_token_cap(websocket: WebSocket) -> bool:
@@ -98,11 +109,6 @@ async def check_token_cap(websocket: WebSocket) -> bool:
         return False
     return True
 
-
-def acquire_active_slot() -> None:
-    global _active_games
-    with _active_games_lock:
-        _active_games += 1
 
 
 def record_token_usage(api_client) -> None:
@@ -125,7 +131,11 @@ def release_slot(api_client) -> None:
     record_token_usage(api_client)
     with _active_games_lock:
         _active_games -= 1
-
+        
+def release_unused_slot() -> None:
+    global _active_games
+    with _active_games_lock:
+        _active_games -= 1
 
 def snapshot() -> dict:
     today, games, demos, tokens = _read_today()
