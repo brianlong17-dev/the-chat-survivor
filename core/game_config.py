@@ -33,8 +33,8 @@ class GameConfig:
         
         
         #....
-        self.pre_eviction_message = "A JOURNEY COMES TO AN END- THE RESULTS ARE FINAL. {victim_name} HAS BEEN EJECTED FROM THE ISLAND. 💀"
-        self.post_eviction_system_message = "{victim_name} has been removed from the island."
+        self.pre_eviction_message = "A JOURNEY COMES TO AN END- THE RESULTS ARE FINAL. {victim_name} HAS BEEN EJECTED FROM THE CHAT. 💀"
+        self.post_eviction_system_message = "{victim_name} has been removed from the chat."
         
         
         #--- Votes --- #
