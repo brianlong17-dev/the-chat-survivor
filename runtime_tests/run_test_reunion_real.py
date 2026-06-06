@@ -7,6 +7,7 @@ import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.bootstrap import create_engine, ConsoleGameEventSink
+from core.levels.game_designs.game_design_default import GameDesignDefault
 from core.levels.phase_description import PhaseDescription
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
 from agents.human_player import Human
@@ -20,7 +21,7 @@ if __name__ == "__main__":
     # ── 2. Bootstrap with the real character names ──
     all_names = list(agent_state.keys())
     sink = ConsoleGameEventSink()
-    engine = create_engine(sink, names=all_names, allow_rename=False)
+    engine = create_engine(sink, game_design=GameDesignDefault, names=all_names, allow_rename=False)
     engine.initialiseGameBoard()
 
     # ── 3. Build name->agent lookup ──

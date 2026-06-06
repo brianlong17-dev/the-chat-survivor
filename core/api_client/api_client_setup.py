@@ -5,7 +5,7 @@ from google.auth import default
 from core.api_client.api_client import APIClient
     
 DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
-DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite-preview"
+#DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite-preview"
 DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
 
 

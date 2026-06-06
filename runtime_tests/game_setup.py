@@ -67,12 +67,13 @@ def setup_game_from_fixture(
     eliminate_after: if set, eliminates all agents beyond this index after setup.
     """
     from core.bootstrap import create_engine
+    from core.levels.game_designs.game_design_default import GameDesignDefault
 
     agent_state = load_fixture(fixture_filename)
     all_names = list(agent_state.keys())
-    
 
-    engine = create_engine(sink, allow_rename=False, names=all_names, populate_agents=False, api_client=api_client)
+
+    engine = create_engine(sink, game_design=GameDesignDefault, allow_rename=False, names=all_names, populate_agents=False, api_client=api_client)
 
     if phase_number is not None:
         engine.game_board.phase_number = phase_number

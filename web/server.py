@@ -3,7 +3,6 @@ import json
 import threading
 import traceback
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -16,6 +15,7 @@ from web import rate_limits
 from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, DEV_MODE, GAME_ENABLED,
     MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS,
 )
+from core.sanitize import sanitize_name
 from web.server_helpers import handle_transcribe
 
 app = FastAPI()
@@ -95,7 +95,6 @@ async def _can_run_game(websocket: WebSocket):
     if not await rate_limits.check_token_cap(websocket):
         return False
     
-    
     if not await rate_limits.daily_and_concurrency_check(websocket, "game"):
         return False
     return True
@@ -119,14 +118,20 @@ async def game_ws(websocket: WebSocket):
         if msg.get("type") != "start":
             await websocket.send_text(json.dumps({"type": "error", "message": "Expected start message"}))
             return
+        level_id = msg.get("levelId")
+        game_design = game_design_for_id(level_id)
+        if not game_design:
+            await websocket.send_text(json.dumps({"type": "error", "message": "Invalid level."}))
+            return
 
         sink = WebSocketSink(websocket, loop)
 
         player_names = [str(n)[:MAX_NAME_LENGTH] for n in msg.get("names", [])[:MAX_PLAYERS]]
         human_player_name = str(msg["human_name"])[:MAX_NAME_LENGTH] if msg.get("human_name") else None
 
-        level_id = msg.get("levelId")
-        game_design = game_design_for_id(level_id)
+        player_names = [sanitize_name(name) for name in player_names]
+        human_player_name = sanitize_name(human_player_name)
+        
         api_client = create_api_client(sink)
 
         def run_game():
@@ -161,17 +166,10 @@ async def _can_run_demo(websocket: WebSocket, demo_id):
         await websocket.send_text(json.dumps({"type": "error", "message": "This demo is not available yet."}))
         return False
 
-    if not await rate_limits.check_concurrency(websocket):
-        return False
-
     if not await rate_limits.check_token_cap(websocket):
         return False
 
-    if not rate_limits.check_and_increment_daily("demo"):
-        await websocket.send_text(json.dumps({
-            "type": "error",
-            "message": "Daily demo limit reached. Come back tomorrow."
-        }))
+    if not await rate_limits.daily_and_concurrency_check(websocket, "demo"):
         return False
 
     return True
@@ -193,6 +191,8 @@ async def demo_ws(websocket: WebSocket):
     api_client = None
     try:
         human_name = str(msg["human_name"])[:MAX_NAME_LENGTH] if msg.get("human_name") else None
+        human_name = sanitize_name(human_name)
+        
         fixture_choice = str(msg["fixture_choice"])[:MAX_NAME_LENGTH] if msg.get("fixture_choice") else None
         runner = DEMO_REGISTRY.get(demo_id)
         if not runner: #this wont happen in practice
@@ -231,7 +231,6 @@ async def _run_game_thread(thread, api_client, websocket, sink):
                 asyncio.create_task(handle_transcribe(websocket, api_client, msg))
         except asyncio.TimeoutError:
             pass
-
 
 def _send_error(websocket, loop, exc):
     """Send an exception to the connected client. Safe to call from any thread."""

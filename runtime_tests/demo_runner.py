@@ -108,9 +108,10 @@ PD_FINALE_FIXTURES = {
 def run_demo_reunion(sink, api_client, human_name: str = None, fixture_choice: str = None):
     
     from core.bootstrap import create_engine
+    from core.levels.game_designs.game_design_default import GameDesignDefault
     from core.levels.phase_description import PhaseDescription
     from gameplay_management.eliminations.reunion_round import FinaleReunionRound
-    
+
     choice = fixture_choice or "game_3"
     cfg = REUNION_FIXTURES.get(choice) or REUNION_FIXTURES["game_3"]
     fixture_filename=cfg["fixture_filename"]
@@ -122,7 +123,7 @@ def run_demo_reunion(sink, api_client, human_name: str = None, fixture_choice: s
     agent_state = load_fixture(fixture_filename)
     all_names = list(agent_state.keys())
 
-    engine = create_engine(sink, names=all_names, populate_agents=False, api_client=api_client)
+    engine = create_engine(sink, game_design=GameDesignDefault, names=all_names, populate_agents=False, api_client=api_client)
     if phase_number:
         engine.game_board.phase_number = 11
 
@@ -156,8 +157,11 @@ def run_demo_pd_finale(sink, api_client, human_name: str = None, fixture_choice:
     agent_state = load_fixture(cfg["fixture_filename"])
     all_names = list(agent_state.keys())
     
-    engine = create_engine(sink, names=all_names, populate_agents=False, api_client=api_client)
-    
+    game_design = TestingGameDesign([PhaseDescription(rounds=[GamePrisonersDilemmaFinale], should_summarise_phase=False)])
+
+    engine = create_engine(sink, game_design=game_design, names=all_names, 
+                           populate_agents=False, api_client=api_client)
+
     if cfg["phase_number"]:
         engine.game_board.phase_number = cfg["phase_number"]
         
@@ -173,11 +177,11 @@ def run_demo_pd_finale(sink, api_client, human_name: str = None, fixture_choice:
     for agent in list(engine.agents):
         if agent.name not in finalist_names:
             engine.eliminate_player(agent)
-            
-    game_design = TestingGameDesign([PhaseDescription(rounds=[GamePrisonersDilemmaFinale], should_summarise_phase=False)])
-
+    
     engine.gameplay_config.pd_pairing_method = engine.gameplay_config.pd_pairing_choice_all
-    engine.game_design = game_design
+    
+   
+
     #phase = PhaseDescription(rounds=[GamePrisonersDilemmaFinale])
     #engine._dev_test_phase = phase
     engine.run_phase_loop()

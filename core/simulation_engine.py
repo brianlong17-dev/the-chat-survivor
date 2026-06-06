@@ -57,9 +57,7 @@ class SimulationEngine:
                     
 
     def run(self, human_player_name = ""):
-
         if human_player_name:
-            #name = 'Brian' # input("Name?\n")
             human_player = Human(human_player_name)
             self.agents.append(human_player)
             

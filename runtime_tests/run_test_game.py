@@ -12,6 +12,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) 
 from core.bootstrap import create_engine, ConsoleGameEventSink
+from core.levels.game_designs.game_design_default import GameDesignDefault
 from core.levels.phase_description import PhaseDescription
 from agents.human_player import Human
 from gameplay_management.game_cycle.game_circle import GameCircle
@@ -33,7 +34,7 @@ if __name__ == "__main__":
     # ── 2. Bootstrap ──
     all_names = list(agent_state.keys())
     sink = ConsoleGameEventSink()
-    engine = create_engine(sink, names=all_names, populate_agents=False, allow_rename=False)
+    engine = create_engine(sink, game_design=GameDesignDefault, names=all_names, populate_agents=False, allow_rename=False)
     add_human = False
     if add_human:
         human = Human('Brian')
