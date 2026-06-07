@@ -200,9 +200,16 @@ function PrivateThought({ speaker, message, color }) {
   )
 }
 
-function LoadingMessage({ message }) {
+function LoadingMessage({ message, done, completed_message }) {
+  if (done && completed_message) {
+    return (
+      <div className="msg loading-message">
+        <span className="loading-text">{completed_message}</span>
+      </div>
+    )
+  }
   return (
-    <div className="msg loading-message">
+    <div className="msg loading-message" style={done ? { visibility: 'hidden' } : undefined}>
       <span className="loading-text">{message}</span>
       <span className="loading-dot" style={{ animationDelay: '0s' }}>.</span>
       <span className="loading-dot" style={{ animationDelay: '0.2s' }}>.</span>
@@ -374,7 +381,7 @@ export function Message({ event, colorMap, onComplete, skipRef, animateText}) {
     case 'error':
       return <ErrorMsg message={event.message} />
     case 'loading':
-      return <LoadingMessage message={event.message} />
+      return <LoadingMessage message={event.message} done={event.done} completed_message={event.completed_message} />
     case 'feed_marker':
       return <FeedMarker label={event.label} />
     case 'points_update':

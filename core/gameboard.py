@@ -106,8 +106,8 @@ class GameBoard:
     def _loading_string(self, string):
         self.game_sink.loading_string(string)
 
-    def _end_loading(self):
-        self.game_sink.end_loading()
+    def _end_loading(self, message: str = None):
+        self.game_sink.end_loading(message)
 
     def _as_display_name(self, speaker: Union[str, BaseAgent]):
         if isinstance(speaker, str):
@@ -127,7 +127,8 @@ class GameBoard:
                                      directed_to_name = None, is_reply: bool = False, pre_string = None, post_string = None):
 
         if self.game_log._current_round_most_recent_player_entry(self.RESERVED_NAMES) and not agent.is_human():
-            self.game_sink.await_continue()
+            #self.game_sink.await_continue()
+            pass
         public_message, private_message = response.public_response, response.private_thoughts
         if pre_string:
             public_message = f"{pre_string}\n{public_message}"
@@ -168,12 +169,13 @@ class GameBoard:
     def host_broadcast(self, message, delay: float = 0.0, is_reply: bool = False):
         entry = self.game_log._current_round_most_recent_message_entry()
         if entry and not self._is_sys_host_message(entry):
-            self.game_sink.await_continue()
+            pass
+            #self.game_sink.await_continue()
         self.broadcast_public_action(self.HOST_NAME, message, is_reply=is_reply)
         self.game_sink.delay(delay)
 
     def environment_broadcast(self, message, delay):
-        #TODO make this right
+        #TODO make this right - its just a frontend thing for BANG
         self.broadcast_public_action("", message)
         if delay:
             self.game_sink.delay(delay)

@@ -110,7 +110,7 @@ export function useGameSocket(autoRun, animateText) {
     if (evt.type === 'cast') { setPlayerNames(evt.names ?? []); return }
     if (evt.type === 'input_request') { setInputRequest(evt); return }
     if (evt.type === 'loading_done') {
-      setEvents(prev => prev.filter(e => e.type !== 'loading'))
+      setEvents(prev => prev.map(e => e.type === 'loading' ? { ...e, done: true, completed_message: evt.message ?? null } : e))
       return
     }
         

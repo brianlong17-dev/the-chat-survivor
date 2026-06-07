@@ -67,5 +67,5 @@ class IntroRound(BaseRound):
                                            self._wake_up_player_i, parallel = True)
         for conv_id in conversation_ids:
             self.game_board.close_private_conversation(conv_id)
-        self.game_board._end_loading()
+        self.game_board._end_loading("Done.")
         #shoot one message

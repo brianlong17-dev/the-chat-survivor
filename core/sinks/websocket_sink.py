@@ -145,8 +145,8 @@ class WebSocketSink(GameEventSink):
     def loading_string(self, message: str):
         self._send({"type": "loading", "message": message})
 
-    def end_loading(self):
-        self._send({"type": "loading_done"})
+    def end_loading(self, message: str = None):
+        self._send({"type": "loading_done", "message": message})
 
     def delay(self, delay: float = 0.0):
         pass

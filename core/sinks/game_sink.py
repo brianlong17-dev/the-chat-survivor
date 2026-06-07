@@ -168,8 +168,10 @@ class GameEventSink(ABC):
         """Display an animated loading message in the feed. No-op by default."""
         pass
 
-    def end_loading(self) -> None:
-        """Remove the loading message from the feed. No-op by default."""
+    def end_loading(self, message: str = None) -> None:
+        """Remove the loading message from the feed. If `message` is given, the
+        loading row stays in place showing that text (no dots); otherwise it
+        becomes an invisible placeholder that preserves layout. No-op by default."""
         pass
 
     @abstractmethod
