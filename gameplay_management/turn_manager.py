@@ -27,6 +27,8 @@ class TurnManager:
         return getattr(response, GamePromptLibrary.model_field_choose_name, None)
 
     def _make_model_optional(self, model, agent):
+        raise Exception("This needs to be turned on in player_system_prompt(cls, agent, include_optional_response = False)")
+
         buffer = agent.optional_response_buffer
 
         existing_thought_desc = model.model_fields["private_thoughts"].description or ""
