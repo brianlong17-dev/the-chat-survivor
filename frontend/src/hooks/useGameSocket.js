@@ -37,29 +37,36 @@ export function useGameSocket(autoRun, animateText) {
   const pendingQueue = useRef([])
   const isAnimating = useRef(false)
   const skipRef = useRef(false)
+  const awaitingNextRef = useRef(false)
+  const statusRef = useRef(status)
+  useEffect(() => { statusRef.current = status }, [status])
+  const drainDelayRef = useRef(0)
+  const pacingRef = useRef(false)
 
   const drainQueue = useCallback(() => {
     while (pendingQueue.current.length > 0) {
       if (isAnimating.current) break
+      if (awaitingNextRef.current) break
+      if (pacingRef.current) break
+
       const evt = pendingQueue.current.shift()
+
       if (evt.type === 'points_update') { setScores(evt.scores); continue }
       if (evt.type === 'evicted_update') { setEvicted(evt.evicted_names); continue }
       if (evt.type === 'widget_update') { setWidget(evt.widget ?? null); continue }
+      if (evt.type === 'phase_rounds') { setPhaseRounds(evt.rounds); setCurrentRoundIndex(0); continue }
+      if (evt.type === 'phase_round_index') { setCurrentRoundIndex(evt.index); setFeedMarkers([]); setSegmentTitles([]); setWidget(null); continue }
+      if (evt.type === 'set_segments') { setSegmentTitles(evt.titles); continue }
       if (evt.type === 'feed_marker') {
         setFeedMarkers(prev => [...prev, evt.label])
         setEvents(prev => [...prev, evt])
         continue
       }
-      if (evt.type === 'awaiting_next') {                                       // ← new
-        if (autoRunRef.current) {
-          wsRef.current?.send(JSON.stringify({ type: 'next_turn' }))
-        } else {
-          setAwaitingNext(true)
-        }
-        continue
+
+      if (!autoRunRef.current && evt.type === 'public_action' && evt.should_hold) {
+        awaitingNextRef.current = true
+        setAwaitingNext(true)
       }
-
-
       if (isAnimatableEvent(evt, animateTextRef.current)) {
         isAnimating.current = true
         setIsAnimatingState(true)
@@ -67,6 +74,12 @@ export function useGameSocket(autoRun, animateText) {
         break
       }
       setEvents(prev => [...prev, evt])
+
+      if (drainDelayRef.current > 0 && evt.type === 'public_action') {
+        pacingRef.current = true
+        setTimeout(() => { pacingRef.current = false; drainQueue() }, drainDelayRef.current)
+        break
+      }
     }
   },  [setScores, setEvicted])
 
@@ -83,19 +96,18 @@ export function useGameSocket(autoRun, animateText) {
     }
   }, [animateText])
 
-  // resume immediately if autoRun is turned on while paused
   useEffect(() => {
-    if (autoRun && awaitingNext && wsRef.current) {
-      wsRef.current.send(JSON.stringify({ type: 'next_turn' }))
+    if (autoRun) {
+      awaitingNextRef.current = false
       setAwaitingNext(false)
+      if (wsRef.current) wsRef.current.send(JSON.stringify({ type: 'next_turn' }))
+      drainDelayRef.current = statusRef.current === 'done' ? 5 : 0
+      drainQueue()
     }
-  }, [autoRun, awaitingNext])
+  }, [autoRun])
 
   const handleMessage = useCallback((e) => {
     const evt = JSON.parse(e.data)
-    //if (evt.type === 'points_update') { setScores(evt.scores); return }
-    //if (evt.type === 'evicted_update') { setEvicted(evt.evicted_names); return }
-    // We move these too the queue
 
     if (evt.type === 'private_conversation') {
       setPrivateConversations(prev => [...prev, { participants: evt.participants ?? [], messages: evt.messages }])
@@ -109,16 +121,12 @@ export function useGameSocket(autoRun, animateText) {
     }
     if (evt.type === 'cast') { setPlayerNames(evt.names ?? []); return }
     if (evt.type === 'input_request') { setInputRequest(evt); return }
+    if (evt.type === 'loading') { setEvents(prev => [...prev, evt]); return }
     if (evt.type === 'loading_done') {
       setEvents(prev => prev.map(e => e.type === 'loading' ? { ...e, done: true, completed_message: evt.message ?? null } : e))
       return
     }
         
-    if (evt.type === 'phase_rounds') { setPhaseRounds(evt.rounds); setCurrentRoundIndex(0); return }
-    if (evt.type === 'phase_round_index') { setCurrentRoundIndex(evt.index); setFeedMarkers([]); setSegmentTitles([]); setWidget(null); return }
-    if (evt.type === 'set_segments') { setSegmentTitles(evt.titles); return }
-    if (evt.type === 'widget_update') { setWidget(evt.widget ?? null); return }
-
     if (evt.type === 'game_over') setStatus('done')
     if (evt.type === 'error') setStatus('error')
     pendingQueue.current.push(evt)
@@ -140,6 +148,10 @@ export function useGameSocket(autoRun, animateText) {
     isAnimating.current = false
     setIsAnimatingState(false)
     skipRef.current = false
+    awaitingNextRef.current = false
+    setAwaitingNext(false)
+    drainDelayRef.current = 0
+    pacingRef.current = false
 
     const ws = new WebSocket(wsUrl)
     wsRef.current = ws
@@ -195,6 +207,7 @@ export function useGameSocket(autoRun, animateText) {
     isAnimating.current = false
     setIsAnimatingState(false)
     skipRef.current = false
+    awaitingNextRef.current = false
   }, [])
 
   const transcribe = useCallback((blob, hints = []) => {
@@ -214,11 +227,13 @@ export function useGameSocket(autoRun, animateText) {
   }, [])
 
   const sendNext = useCallback(() => {
+    awaitingNextRef.current = false
+    setAwaitingNext(false)
     if (wsRef.current) {
       wsRef.current.send(JSON.stringify({ type: 'next_turn' }))
-      setAwaitingNext(false)
     }
-  }, [])
+    drainQueue()
+  }, [drainQueue])
 
   return {
     status, events, scores, evicted,

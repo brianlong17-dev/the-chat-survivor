@@ -71,6 +71,18 @@ export default function GameView({
     }
   }
 
+  const handleFeedMouseDown = () => {
+    userScrolledUpRef.current = true
+  }
+  const handleFeedMouseUp = () => {
+    if (window.getSelection().toString() === '') {
+      const feed = feedRef.current
+      if (feed && feed.scrollHeight - feed.scrollTop - feed.clientHeight < 20) {
+        userScrolledUpRef.current = false
+      }
+    }
+  }
+
   useEffect(() => {
     if (!settingsOpen) return
     const handler = (e) => {
@@ -82,13 +94,16 @@ export default function GameView({
     return () => document.removeEventListener('mousedown', handler)
   }, [settingsOpen])
 
-  useEffect(() => {
-    if (status !== 'running') return
+  useEffect(() => { 
     const id = setInterval(() => {
       if (!userScrolledUpRef.current) bottomRef.current?.scrollIntoView({ behavior: 'instant' })
     }, 100)
     return () => clearInterval(id)
   }, [status])
+
+  useEffect(() => {
+    if (!userScrolledUpRef.current) bottomRef.current?.scrollIntoView({ behavior: 'instant' })
+  }, [events.length])
 
   useEffect(() => {
     if (activeTab !== 'private') return
@@ -212,6 +227,8 @@ export default function GameView({
             onScroll={handleFeedScroll}
             onWheel={handleUserScrollIntent}
             onTouchMove={handleUserScrollIntent}
+            onMouseDown={handleFeedMouseDown}
+            onMouseUp={handleFeedMouseUp}
             style={{ display: showPrivateChats && activeTab === 'private' ? 'none' : undefined }}
           >
             <ThreadedFeed
