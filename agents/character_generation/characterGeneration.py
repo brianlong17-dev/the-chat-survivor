@@ -9,9 +9,10 @@ from agents.player import Debater
 class CharacterProfile(BaseModel):
     who: str = Field(description="Remind yourself who this person is- normally from popular culture")
     persona: str = Field(description="A detailed, first-person personality description, core beliefs, and strategic outlook if thrown into a game figure. What sensitive nuance behind this person?")
-    speaking_style: str = Field(description="Their speaking style, how they talk, to preserve the character from context bleed.")
+    speaking_style: str = Field(description="Their speaking style, how they talk, to preserve the character from context bleed. Do not write specific phrases. ")
     name: Optional[str] = Field(default=None, description="If a charcter is nameless, or has non title descriptors in their name - ie Drunk Girl or BMO (adventure time). Then you may rename them: ie Tiffany or BMO, etc.")
-
+    #type: str = Field(default=None, description="Would you categorise this person as Hero, Baddie, Simpleton, Complex Character or Shrewd Normal Character")
+    
 class CharacterGenerator:
 
     def __init__(self, game_sink, api_client):
@@ -98,14 +99,14 @@ class CharacterGenerator:
         profile = self.api_client.create(
             response_model=CharacterProfile,
             messages=[
-                {"role": "system", "content": "You are generating a starting profile for an AI debate simulation player. The name is typically of someone from popular culture, that it should be based on. "},
-                {"role": "user", "content": f"Create a rich, first-person persona and a physical form description for the historical figure: {character_name}. Make them highly opinionated."}
+                {"role": "system", "content": "You are generating a starting profile for an AI social simulation player. The name is typically of someone from popular culture, that it should be based on. "},
+                {"role": "user", "content": f"Create a rich, first-person persona and a physical form description for the historical figure or character: {character_name}. Make them colorful. "}
             ],
-            use_model_3=True
+            use_higher_model=True
         )
+        #print(f"{profile.name}: {profile.type}")
         #self.game_sink.system_private(f"Generated: {character_name}. Speaking style: \n {profile.speaking_style}.")
         final_name = profile.name if (allow_rename and profile.name) else character_name
-        #print(f"{final_name}: \n {profile.persona} \n {profile.speaking_style}")
         return Debater(
             name=final_name,
             initial_persona=profile.persona,
