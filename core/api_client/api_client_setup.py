@@ -4,8 +4,9 @@ import google.genai as genai
 from google.auth import default
 from core.api_client.api_client import APIClient
 
-MODEL_3 = "gemini-3.1-flash-lite-preview" #"gemini-2.5-flash-lite"
-DEFAULT_MODEL_NAME = MODEL_3
+MODEL_3 = "gemini-3.1-flash-lite-preview" 
+MODEL_2 = "gemini-2.5-flash-lite"
+DEFAULT_MODEL_NAME = MODEL_2
 DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
 
 

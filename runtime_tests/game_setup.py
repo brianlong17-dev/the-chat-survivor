@@ -42,6 +42,7 @@ def add_human(human_name, engine, is_dead=False):
     human = Human(human_name)
     agent_to_replace = next((a for a in engine.agents if a.name == human_name), None)
     if agent_to_replace:
+        #NOTE agent state applied afterwards, so the agent will have the correct memories for re-union
         idx = engine.agents.index(agent_to_replace)
         engine.agents[idx] = human
     else:

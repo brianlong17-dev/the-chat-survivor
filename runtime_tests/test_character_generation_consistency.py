@@ -10,15 +10,19 @@ from core.api_client import create_api_client
 from core.sinks.console_sink import ConsoleGameEventSink
 from agents.character_generation.characterGeneration import CharacterGenerator
 
-NAME = "Miranda Presley"
-NAME = "Elsa Greer"
-RUNS = 2
+M = "Miranda Priestly"
+PG = "Professor Quirrell"
+Aang = "Aang"
+
+NAME = Aang
+RUNS = 5
 
 if __name__ == "__main__":
     sink = ConsoleGameEventSink()
     api_client = create_api_client(sink, token_budget=200_000)
     generator = CharacterGenerator(sink, api_client=api_client)
-
+    
+    
     for i in range(1, RUNS + 1):
         print("\n" + "=" * 80)
         print(f"RUN {i}/{RUNS} — {NAME}")
