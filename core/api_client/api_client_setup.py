@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import google.genai as genai
 from google.auth import default
+from google.oauth2 import service_account
 from core.api_client.api_client import APIClient
 
 MODEL_3 = "gemini-3.1-flash-lite-preview" 
@@ -16,7 +17,17 @@ def create_api_client(game_sink, token_budget,
     load_dotenv(override=True)
     project=os.getenv("PROJECT")
     location=os.getenv("LOCATION")
-    credentials, project_id = default()
+    
+    creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    if creds_path:
+        credentials = service_account.Credentials.from_service_account_file(
+            creds_path,
+            scopes=["https://www.googleapis.com/auth/cloud-platform"]
+        )
+    else:
+        from google.auth import default
+        credentials, _ = default()
+        
     client = genai.Client(
         vertexai=True,
         project=project,
