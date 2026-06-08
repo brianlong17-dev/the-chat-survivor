@@ -12,7 +12,7 @@ export default function GameView({
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
   submitInput, sendNext, skipAnimation, exitGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
-  privateConversations, playerNames = [], transcriptionEnabled,
+  privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound
 }) {
   const { showPrivate, autoRun, animateText, showPrivateChats } = settings
 
@@ -161,6 +161,8 @@ export default function GameView({
           {(() => {
             const skipOrNext = isAnimating
               ? { label: 'Skip ›', action: skipAnimation, active: true }
+              : awaitingNextRound
+              ? { label: 'Next Round ›', action: sendNextRound, active: true }
               : { label: 'Next Turn ›', action: sendNext, active: awaitingNext && !autoRun }
             return (
               <button className="next-turn-btn" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
@@ -237,6 +239,8 @@ export default function GameView({
               animateText={animateText}
               onAnimationComplete={onAnimationComplete}
               skipRef={skipRef}
+              sendNextRound={sendNextRound}
+              awaitingNextRound={awaitingNextRound}
             />
             <div ref={bottomRef} />
           </main>

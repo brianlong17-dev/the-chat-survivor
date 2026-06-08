@@ -162,8 +162,10 @@ class GameEventSink(ABC):
         """Push a full widget state snapshot to the sidebar. No-op by default."""
         pass
 
-    def await_continue(self) -> None:
-        """Pause and wait for the viewer to advance to the next turn. No-op by default."""
+    def wait_for_continue_next_round(self) -> None:
+        pass
+
+    def _request_continue_next_round(self) -> None:
         pass
 
     def loading_string(self, message: str) -> None:
@@ -326,4 +328,4 @@ class CapturingGameSink(GameEventSink):
 
     def on_widget_update(self, widget) -> None:
         self.widget_updates.append(widget)
-        
+

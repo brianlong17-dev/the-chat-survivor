@@ -24,7 +24,13 @@ class ConsoleGameEventSink(GameEventSink):
         choice = questionary.select(description, choices=choices).ask()
         return choice
     
+    def wait_for_continue_next_round(self):
+        pass
+        #input("continue next round?")  
 
+    def _request_continue_next_round(self):
+        pass  # no-op
+    
     def on_game_intro(self, message: str) -> None:
         ConsoleRenderer.print_public_action("HOST", message)
 

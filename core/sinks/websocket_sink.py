@@ -2,6 +2,7 @@ import asyncio
 import queue
 import time
 import json
+import threading
 
 from fastapi import WebSocket
 
@@ -16,7 +17,8 @@ class WebSocketSink(GameEventSink):
         self.loop = loop
         self._disconnected = False
         self._input_queue: queue.Queue = queue.Queue()
-        self._step_queue: queue.Queue = queue.Queue()
+        self._round_gate = threading.Event()
+        self._round_gate.set() 
 
     def _send(self, payload: dict):
         if self._disconnected:
@@ -104,6 +106,18 @@ class WebSocketSink(GameEventSink):
 
     # -- Human input ----------------------------------------------------------
 
+    def wait_for_continue_next_round(self):
+        self._round_gate.wait()
+        self._round_gate.clear()
+        if self._disconnected:
+            raise RuntimeError("Client disconnected")
+        
+    def set_round_gate_open(self):
+        self._round_gate.set()
+        
+    def _request_continue_next_round(self):
+        self._send({"type": "next_round_request"})
+        
     def get_user_input_simple(self, field_name: str, description: str) -> str:
         self._send({"type": "input_request", "field": field_name, "description": description})
         result = self._input_queue.get()
@@ -118,17 +132,10 @@ class WebSocketSink(GameEventSink):
             raise RuntimeError("Client disconnected")
         return result
 
-    def await_continue(self):
-        self._send({"type": "awaiting_next"})
-        result = self._step_queue.get()
-        if self._disconnected:
-            raise RuntimeError("Client disconnected")
-        return result
-
     def on_disconnect(self):
         self._disconnected = True
         self._input_queue.put(None)
-        self._step_queue.put(None)
+        self._round_gate.set()
 
     def on_cast(self, names: list[str]):
         self._send({"type": "cast", "names": names})

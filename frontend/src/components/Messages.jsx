@@ -308,6 +308,15 @@ function packBlocks(children) {
   return blocks
 }
 
+function NextRoundButton({ onSend, nextRoundButtonActive}) {
+  return (
+    <div
+      className={`feed-next-round-btn${!nextRoundButtonActive ? ' clicked' : ''}`}
+      onClick={() => { if (nextRoundButtonActive) onSend?.() }}
+    />
+  )
+}
+
 const HOST_RAIL = '#8a8a8a'
 
 function railColor(msg, colorMap) {
@@ -315,9 +324,10 @@ function railColor(msg, colorMap) {
   return getSpeakerColor(msg.speaker, colorMap)
 }
 
-export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplete, skipRef }) {
+export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplete, skipRef, sendNextRound, awaitingNextRound}) {
   const groups = groupThread(events)
   const lastEvent = events[events.length - 1]
+  const lastNextRoundIdx = events.reduce((acc, e, i) => e.type === 'next_round_request' ? i : acc, -1)
 
   const renderMsg = (evt) => {
     const isLast = evt === lastEvent
@@ -328,6 +338,8 @@ export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplet
         onComplete={isLast ? onAnimationComplete : undefined}
         skipRef={isLast ? skipRef : undefined}
         animateText={animateText}
+        sendNextRound={sendNextRound}
+        awaitingNextRound={awaitingNextRound && events.indexOf(evt) === lastNextRoundIdx}
       />
     )
   }
@@ -357,7 +369,7 @@ export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplet
   })
 }
 
-export function Message({ event, colorMap, onComplete, skipRef, animateText}) {
+export function Message({ event, colorMap, onComplete, skipRef, animateText, sendNextRound, awaitingNextRound }) {
   switch (event.type) {
     case 'phase_header':
       return <PhaseHeader {...event} />
@@ -384,6 +396,8 @@ export function Message({ event, colorMap, onComplete, skipRef, animateText}) {
       return <LoadingMessage message={event.message} done={event.done} completed_message={event.completed_message} />
     case 'feed_marker':
       return <FeedMarker label={event.label} />
+    case 'next_round_request':
+      return <NextRoundButton onSend={sendNextRound} nextRoundButtonActive={awaitingNextRound} />
     case 'points_update':
     case 'turn_header':
     case 'phase_intro':

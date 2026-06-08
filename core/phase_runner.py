@@ -63,6 +63,7 @@ class PhaseRunner:
             self.game_board.game_sink.on_game_intro(host_intro_human_only) 
         
     def run_round(self, round, immunity_types):
+        self.game_board.game_sink.wait_for_continue_next_round()
         self.current_round_index += 1
         self.game_board.newRound()
         self.game_board.game_sink.on_phase_round_index(self.current_round_index - 1)
@@ -77,10 +78,12 @@ class PhaseRunner:
         else:
             round(self.game_board, self.simulation_engine).run_game()
         
+        
         #self.game_board.system_broadcast(self.game_board.agent_scores)
         round_summary = self.simulation_engine.game_master.summariseRound(self.game_board)
         
         self.game_board.endRound(round_summary)
+        self.game_board.game_sink._request_continue_next_round()
 
     def _impose_brevity_jail(self):
         for agent in self.simulation_engine.agents:

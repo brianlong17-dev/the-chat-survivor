@@ -16,6 +16,9 @@ export function useGameSocket(autoRun, animateText) {
   const [evicted, setEvicted] = useState([])
   const [inputRequest, setInputRequest] = useState(null)
   const [awaitingNext, setAwaitingNext] = useState(false)
+  const [awaitingNextRound, setAwaitingNextRound] = useState(false)
+  
+
   const [phaseRounds, setPhaseRounds] = useState([])
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0)
   const [feedMarkers, setFeedMarkers] = useState([])
@@ -38,6 +41,7 @@ export function useGameSocket(autoRun, animateText) {
   const isAnimating = useRef(false)
   const skipRef = useRef(false)
   const awaitingNextRef = useRef(false)
+  const awaitingNextRoundRef = useRef(false)
   const statusRef = useRef(status)
   useEffect(() => { statusRef.current = status }, [status])
   const drainDelayRef = useRef(0)
@@ -47,6 +51,7 @@ export function useGameSocket(autoRun, animateText) {
     while (pendingQueue.current.length > 0) {
       if (isAnimating.current) break
       if (awaitingNextRef.current) break
+      if (awaitingNextRoundRef.current) break
       if (pacingRef.current) break
 
       const evt = pendingQueue.current.shift()
@@ -61,6 +66,13 @@ export function useGameSocket(autoRun, animateText) {
         setFeedMarkers(prev => [...prev, evt.label])
         setEvents(prev => [...prev, evt])
         continue
+      }
+
+      if (evt.type === 'next_round_request') {
+        awaitingNextRoundRef.current = true
+        setAwaitingNextRound(true)
+        setEvents(prev => [...prev, evt])
+        break
       }
 
       if (!autoRunRef.current && evt.type === 'public_action' && evt.should_hold) {
@@ -96,11 +108,11 @@ export function useGameSocket(autoRun, animateText) {
     }
   }, [animateText])
 
+  
   useEffect(() => {
     if (autoRun) {
       awaitingNextRef.current = false
       setAwaitingNext(false)
-      if (wsRef.current) wsRef.current.send(JSON.stringify({ type: 'next_turn' }))
       drainDelayRef.current = statusRef.current === 'done' ? 5 : 0
       drainQueue()
     }
@@ -149,6 +161,8 @@ export function useGameSocket(autoRun, animateText) {
     setIsAnimatingState(false)
     skipRef.current = false
     awaitingNextRef.current = false
+    awaitingNextRoundRef.current = false   
+    setAwaitingNextRound(false)
     setAwaitingNext(false)
     drainDelayRef.current = 0
     pacingRef.current = false
@@ -201,6 +215,10 @@ export function useGameSocket(autoRun, animateText) {
     setPlayerNames([])
     setInputRequest(null)
     setAwaitingNext(false)
+
+    awaitingNextRoundRef.current = false 
+    setAwaitingNextRound(false)   
+
     setPhaseRounds([])
     setCurrentRoundIndex(0)
     pendingQueue.current = []
@@ -226,20 +244,26 @@ export function useGameSocket(autoRun, animateText) {
     })
   }, [])
 
+  
+  const sendNextRound = useCallback(() => {
+    awaitingNextRoundRef.current = false
+    setAwaitingNextRound(false)
+    if (wsRef.current) 
+      wsRef.current.send(JSON.stringify({ type: 'next_round' }))
+    drainQueue()
+  }, [drainQueue])
+
   const sendNext = useCallback(() => {
     awaitingNextRef.current = false
     setAwaitingNext(false)
-    if (wsRef.current) {
-      wsRef.current.send(JSON.stringify({ type: 'next_turn' }))
-    }
     drainQueue()
   }, [drainQueue])
 
   return {
     status, events, scores, evicted,
-    inputRequest, awaitingNext, phaseRounds, currentRoundIndex, feedMarkers, segmentTitles,
+    inputRequest, awaitingNext,  awaitingNextRound, phaseRounds, currentRoundIndex, feedMarkers, segmentTitles,
     widget, privateConversations, playerNames,
-    startGame, startDemo, submitInput, sendNext, skipAnimation, exitGame, transcribe,
+    startGame, startDemo, submitInput, sendNext, sendNextRound, skipAnimation, exitGame, transcribe,
     onAnimationComplete, skipRef, isAnimating: isAnimatingState,
   }
 }

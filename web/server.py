@@ -228,8 +228,8 @@ async def _run_game_thread(thread, api_client, websocket, sink):
             msg = json.loads(data)
             if msg.get("type") == "input_response":
                 sink._input_queue.put(str(msg.get("value", ""))[:MAX_INPUT_LENGTH])
-            elif msg.get("type") == "next_turn":
-                sink._step_queue.put(True)
+            elif msg.get("type") == "next_round":
+                sink.set_round_gate_open()
             elif msg.get("type") == "transcribe" and TRANSCRIPTION_ENABLED:
                 asyncio.create_task(handle_transcribe(websocket, api_client, msg))
         except asyncio.TimeoutError:

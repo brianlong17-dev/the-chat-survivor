@@ -27,7 +27,6 @@ class GameBoard:
         self.score_changed_in_round = False
         self.scores_at_round_start: dict[str, int] = {}
 
-
     def _human_in_restriction(self, restricted_users):
         if not restricted_users:
             return False
@@ -126,9 +125,6 @@ class GameBoard:
     def handle_public_private_output(self, agent: BaseAgent, response, delay: float = 0.0, output_inner_workings=False, 
                                      directed_to_name = None, is_reply: bool = False, pre_string = None, post_string = None):
 
-        if self.game_log._current_round_most_recent_player_entry(self.RESERVED_NAMES) and not agent.is_human():
-            #self.game_sink.await_continue()
-            pass
         public_message, private_message = response.public_response, response.private_thoughts
         if pre_string:
             public_message = f"{pre_string}\n{public_message}"
@@ -180,9 +176,6 @@ class GameBoard:
         
     def host_broadcast(self, message, delay: float = 0.0, is_reply: bool = False):
         entry = self.game_log._current_round_most_recent_message_entry()
-        if entry and not self._is_sys_host_message(entry):
-            pass
-            #self.game_sink.await_continue()
         self.broadcast_public_action(self.HOST_NAME, message, is_reply=is_reply)
         self.game_sink.delay(delay)
 
