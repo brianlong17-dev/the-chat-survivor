@@ -15,7 +15,7 @@ from web import rate_limits
 from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, DEV_MODE, GAME_ENABLED,
     MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS, DEMO_TOKEN_BUDGET, TRANSCRIPTION_ENABLED
 )
-from core.sanitize import sanitize_name
+from core.shared_web_game_functionality import sanitize_name
 from web.server_helpers import handle_transcribe
 
 app = FastAPI()

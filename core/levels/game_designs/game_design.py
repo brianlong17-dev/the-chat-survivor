@@ -1,4 +1,5 @@
 from core.game_config import GameConfig
+from core.shared_web_game_functionality import INACTIVITY_TIMEOUT
 from core.levels.phase_description import PhaseDescription
 from gameplay_management.discussion_rounds.discussion_round import DiscussionRound
 from gameplay_management.discussion_rounds.discussion_round_directed import DiscussionRoundDirected
@@ -77,7 +78,9 @@ class GameDesign:
 
         return PhaseDescription(rounds=rounds, immunity_types=immunity_types, config_mutations=config_mutations or [])
         
-     
+    @classmethod 
+    def server_timeout_string(cls):
+        return f"\n\n*NOTE: To preserve server space, games will timeout after {INACTIVITY_TIMEOUT // 60} minutes of inactivity!* "
     
     @classmethod 
     def human_only_game_intro(cls):

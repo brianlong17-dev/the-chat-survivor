@@ -7,7 +7,12 @@ import threading
 from fastapi import WebSocket
 
 from core.sinks.game_sink import GameEventSink
+from core.shared_web_game_functionality import INACTIVITY_TIMEOUT
+INACTIVITY_MESSAGE = f"Session timed out due to inactivity ({INACTIVITY_TIMEOUT//60} minutes)"
 
+class InactivityTimeout(Exception):
+    def __init__(self):
+        super().__init__("Session timed out due to inactivity")
 
 class WebSocketSink(GameEventSink):
     """Serialises game events to JSON and broadcasts over a websocket."""
@@ -107,7 +112,8 @@ class WebSocketSink(GameEventSink):
     # -- Human input ----------------------------------------------------------
 
     def wait_for_continue_next_round(self):
-        self._round_gate.wait()
+        if not self._round_gate.wait(timeout=INACTIVITY_TIMEOUT):
+            self._on_timeout()
         self._round_gate.clear()
         if self._disconnected:
             raise RuntimeError("Client disconnected")
@@ -120,17 +126,27 @@ class WebSocketSink(GameEventSink):
         
     def get_user_input_simple(self, field_name: str, description: str) -> str:
         self._send({"type": "input_request", "field": field_name, "description": description})
-        result = self._input_queue.get()
+        try:
+            result = self._input_queue.get(timeout=INACTIVITY_TIMEOUT)
+        except queue.Empty:
+            self._on_timeout()
         if self._disconnected:
             raise RuntimeError("Client disconnected")
         return result
 
     def get_user_input_multiple_choice(self, field_name, description, choices):
         self._send({"type": "input_request", "field": field_name, "description": description, "choices": choices})
-        result = self._input_queue.get() #this will be None if its disconnected
+        try:
+            result = self._input_queue.get(timeout=INACTIVITY_TIMEOUT) #this will be None if its disconnected
+        except queue.Empty:
+            self._on_timeout()
         if self._disconnected:
             raise RuntimeError("Client disconnected")
         return result
+    
+    def _on_timeout(self):
+        self.system_private(INACTIVITY_MESSAGE)
+        raise InactivityTimeout()
 
     def on_disconnect(self):
         self._disconnected = True

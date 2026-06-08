@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from core.shared_web_game_functionality import INACTIVITY_TIMEOUT  # noqa: F401 — re-exported for visibility
 
 # Feature flags — set to True to enable before publishing
 GAME_ENABLED = True
@@ -22,6 +23,7 @@ MAX_AUDIO_BYTES = 10 * 1024 * 1024  # 10 MB decoded
 MAX_PLAYERS = 12
 MAX_NAME_LENGTH = 30
 MAX_INPUT_LENGTH = 1500
+#INACTIVITY_TIMEOUT - imported
 
 RATE_LIMITS_DB_PATH = os.getenv("RATE_LIMITS_DB_PATH", "data/rate_limits.db")
 
