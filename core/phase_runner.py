@@ -1,3 +1,4 @@
+import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING
 
@@ -17,6 +18,7 @@ class PhaseRunner:
         self.simulation_engine = simulation_engine
         self.current_phase_description = None
         self.current_round_index = 0
+        self._dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
         
 
     @property
@@ -63,8 +65,7 @@ class PhaseRunner:
             self.game_board.game_sink.on_game_intro(host_intro_human_only) 
         
     def run_round(self, round, immunity_types):
-        dev_mode = True #need to init at start from .env
-        if not dev_mode:
+        if not self._dev_mode:
             self.game_board.game_sink.wait_for_continue_next_round()
         self.current_round_index += 1
         self.game_board.newRound()
@@ -85,7 +86,7 @@ class PhaseRunner:
         round_summary = self.simulation_engine.game_master.summariseRound(self.game_board)
         
         self.game_board.endRound(round_summary)
-        if not dev_mode:
+        if not self._dev_mode:
             self.game_board.game_sink._request_continue_next_round()
 
     def _impose_brevity_jail(self):

@@ -1,3 +1,7 @@
+import os
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 from agents.character_generation.characterGeneration import CharacterGenerator
 from agents.game_host import GameMaster
 from core.gameboard import GameBoard

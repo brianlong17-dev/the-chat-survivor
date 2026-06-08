@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 import google.genai as genai
 from google.auth import default
 from google.oauth2 import service_account
@@ -14,7 +13,6 @@ DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
 def create_api_client(game_sink, token_budget,
                   model_name=DEFAULT_MODEL_NAME, higher_model_name=DEFAULT_HIGHER_MODEL_NAME):
 
-    load_dotenv(override=True)
     project=os.getenv("PROJECT")
     location=os.getenv("LOCATION")
     

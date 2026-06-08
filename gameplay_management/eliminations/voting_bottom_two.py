@@ -123,7 +123,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
         if survivors_rewarded:
             reward_str = ", ".join([f"{name} (+{pts})" for name, pts in survivors_rewarded.items()])
             self._host_broadcast(
-                f"🛡️ BULLET DODGER BONUS! The following players took heat but survived the vote. "
+                f"*BULLET DODGER BONUS:* The following players took heat but survived the vote. "
                 f"They receive points for every vote they survived: {reward_str}"
             )
 

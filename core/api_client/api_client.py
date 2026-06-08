@@ -78,6 +78,11 @@ class APIClient:
                     ),
                 )
                 break
+            except json.JSONDecodeError:
+                if attempt < max_429_retries - 1:
+                    print(f"malformed JSON response — retrying ({attempt + 1}/{max_429_retries - 1})")
+                    continue
+                raise
             except Exception as e:
                 if attempt < max_429_retries - 1 and _is_rate_limit(e):
                     wait = backoff * (2 ** attempt)
