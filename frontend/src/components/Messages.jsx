@@ -313,7 +313,9 @@ function NextRoundButton({ onSend, nextRoundButtonActive}) {
     <div
       className={`feed-next-round-btn${!nextRoundButtonActive ? ' clicked' : ''}`}
       onClick={() => { if (nextRoundButtonActive) onSend?.() }}
-    />
+    >
+      NEXT ROUND ›
+    </div>
   )
 }
 

@@ -29,6 +29,8 @@ export default function GameView({
   const userScrolledUpRef = useRef(false)
   const leftDragRef = useRef({ startX: 0, startWidth: 0, moved: false })
   const [leftToggleCursor, setLeftToggleCursor] = useState('col-resize')
+  const rightDragRef = useRef({ startX: 0, startWidth: 0, moved: false })
+  const [rightToggleCursor, setRightToggleCursor] = useState('col-resize')
 
   const onLeftResizeStart = (e) => {
     const startWidth = settings.leftSidebarWidth ?? 220
@@ -44,6 +46,29 @@ export default function GameView({
     const onUp = () => {
       if (!leftDragRef.current.moved) {
         updateSetting('leftSidebarOpen', settings.leftSidebarOpen === false ? true : false)
+      }
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  const onRightResizeStart = (e) => {
+    const startWidth = settings.rightSidebarWidth ?? 200
+    rightDragRef.current = { startX: e.clientX, startWidth, moved: false }
+
+    const onMove = (mv) => {
+      const dx = mv.clientX - rightDragRef.current.startX
+      if (Math.abs(dx) > 4) rightDragRef.current.moved = true
+      const newWidth = Math.max(120, Math.min(500, rightDragRef.current.startWidth - dx))
+      updateSetting('rightSidebarWidth', newWidth)
+    }
+
+    const onUp = () => {
+      if (!rightDragRef.current.moved) {
+        updateSetting('sidebarOpen', settings.sidebarOpen === false ? true : false)
       }
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
@@ -258,11 +283,22 @@ export default function GameView({
 
         <button
           className="sidebar-toggle"
-          onClick={() => updateSetting('sidebarOpen', settings.sidebarOpen === false ? true : false)}
+          onMouseDown={onRightResizeStart}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect()
+            const offsetY = e.clientY - rect.top
+            const dist = Math.abs(offsetY - rect.height / 2)
+            const next = dist <= 24 ? 'pointer' : 'col-resize'
+            if (next !== rightToggleCursor) setRightToggleCursor(next)
+          }}
+          style={{ cursor: rightToggleCursor }}
         >
           {settings.sidebarOpen === false ? '‹' : '›'}
         </button>
-        <aside className={`sidebar ${settings.sidebarOpen === false ? 'collapsed' : ''}`}>
+        <aside
+          className={`sidebar ${settings.sidebarOpen === false ? 'collapsed' : ''}`}
+          style={{ width: settings.sidebarOpen === false ? 0 : (settings.rightSidebarWidth ?? 200) }}
+        >
           <Scoreboard scores={scores} evicted={evicted} />
           <RoundTracker rounds={phaseRounds} currentIndex={currentRoundIndex} />
         </aside>
