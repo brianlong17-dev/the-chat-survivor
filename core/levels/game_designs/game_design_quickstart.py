@@ -46,7 +46,6 @@ class GameDesignQuickStart(GameDesign):
                 ),
                 DiscussionLoop(
                     turn_prompt="Reply and continue the conversation. DO NOT REPEAT ANYTHING FROM YOUR PREVIOUS TURN. ",
-                    host_message ="So what do you both make of your competitor? ",
                 ),
             ]))
             
