@@ -4,8 +4,16 @@ from gameplay_management.discussion_rounds.discussion_settings import Discussion
 
 class GameDesignQuickStart(GameDesign):
     """Minimal Level 1: two players, one rock-paper-scissors game, lowest score eliminated."""
-    
-    @classmethod 
+
+    @classmethod
+    def min_players(cls) -> int:
+        return 2
+
+    @classmethod
+    def max_players(cls) -> int:
+        return 2
+
+    @classmethod
     def human_only_game_intro(cls):
         return "This is a demonstration game- a round of Rock Paper Scissors, and the loser gets eliminated! "
     

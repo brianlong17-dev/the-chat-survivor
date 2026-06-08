@@ -11,9 +11,15 @@ class LevelDefinition:
     id: str
     name: str
     description: str
-    min_players: int
-    max_players: int
     token_budget: int
     game_design: Type[GameDesign]
     locked: bool = True
+
+    @property
+    def min_players(self) -> int:
+        return self.game_design.min_players()
+
+    @property
+    def max_players(self) -> int:
+        return self.game_design.max_players()
     

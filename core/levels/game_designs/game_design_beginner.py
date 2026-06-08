@@ -12,6 +12,14 @@ class GameDesignBeginner(GameDesign):
         return None
     
     @classmethod
+    def min_players(cls) -> int:
+        return 6
+
+    @classmethod
+    def max_players(cls) -> int:
+        return 6
+    
+    @classmethod
     def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games = True, speed=1):
         cfg.vote_bottom_two_expand_ties = True
         
@@ -30,9 +38,6 @@ class GameDesignBeginner(GameDesign):
                     )
                 ]),
             )
-                
-            
-            
             return PhaseDescription(rounds=rounds) 
         
         if agent_number == 5:

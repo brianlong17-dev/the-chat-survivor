@@ -3,6 +3,8 @@ from core.levels.level_definition import LevelDefinition
 from core.levels.game_designs.game_design import GameDesign
 from core.levels.game_designs.game_design_beginner import GameDesignBeginner
 from core.levels.game_designs.game_design_quickstart import GameDesignQuickStart
+from core.levels.game_designs.game_design_comedy_roast import GameDesignComedyRoast
+from core.levels.game_designs.game_design_parlor import GameDesignParlor
 from gameplay_management.games.game_rps import GameRockPaperScissors
 from gameplay_management.games.game_guess import GameGuess
 from gameplay_management.eliminations.voting_elect_leader import VoteElectLeader
@@ -13,8 +15,6 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
         id="quickstart",
         name="Quick-Start Tutorial",
         description="An introduction to the format- Two players, Rock-Paper-Scissors, loser goes home.",
-        min_players=2,
-        max_players=2,
         token_budget=100000,
         game_design=GameDesignQuickStart,
         locked=False
@@ -23,8 +23,6 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
         id="beginner",
         name="Game One",
         description="A six person, six phase game. The bottom two of each phase face the group vote. Longer alliances, longer strategies. ",
-        min_players=6,
-        max_players=6,
         token_budget=15000000,
         game_design=GameDesignBeginner,
         locked=False
@@ -33,20 +31,16 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
         id="perform",
         name="Comedy Roast",
         description="Players score each others performances, as they share sob stories and perform comedy roasts. ",
-        min_players=6,
-        max_players=8,
         token_budget=15000000,
-        game_design=GameDesignBeginner,
+        game_design=GameDesignComedyRoast,
         locked=True
     ),
     LevelDefinition(
         id="parlor",
         name="The Parlor Games",
         description="Players play more complex games, like Circle, Mobs and Knives. ",
-        min_players=6,
-        max_players=8,
         token_budget=15000000,
-        game_design=GameDesignBeginner,
+        game_design=GameDesignParlor,
         locked=True
     ),
 ]

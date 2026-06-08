@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.bootstrap import create_engine, ConsoleGameEventSink
 from core.api_client import create_api_client
-from core.levels.game_designs.game_design_default import GameDesignDefault
+from tests.helpers.testing_game_design import TestingGameDesign
 from core.levels.phase_description import PhaseDescription
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
 from agents.human_player import Human
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     all_names = list(agent_state.keys())
     sink = ConsoleGameEventSink()
     api_client = create_api_client(sink, token_budget=2_000_000)
-    engine = create_engine(sink, game_design=GameDesignDefault, names=all_names, allow_rename=False, api_client=api_client)
+    engine = create_engine(sink, game_design=TestingGameDesign(), names=all_names, allow_rename=False, api_client=api_client)
     engine.initialiseGameBoard()
 
     # ── 3. Build name->agent lookup ──

@@ -108,7 +108,7 @@ PD_FINALE_FIXTURES = {
 def run_demo_reunion(sink, api_client, human_name: str = None, fixture_choice: str = None):
     
     from core.bootstrap import create_engine
-    from core.levels.game_designs.game_design_default import GameDesignDefault
+    from tests.helpers.testing_game_design import TestingGameDesign
     from core.levels.phase_description import PhaseDescription
     from gameplay_management.eliminations.reunion_round import FinaleReunionRound
 
@@ -123,7 +123,7 @@ def run_demo_reunion(sink, api_client, human_name: str = None, fixture_choice: s
     agent_state = load_fixture(fixture_filename)
     all_names = list(agent_state.keys())
 
-    engine = create_engine(sink, game_design=GameDesignDefault, names=all_names, populate_agents=False, api_client=api_client)
+    engine = create_engine(sink, game_design=TestingGameDesign(), names=all_names, populate_agents=False, api_client=api_client)
     if phase_number:
         engine.game_board.phase_number = 11
 

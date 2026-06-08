@@ -26,7 +26,15 @@ from gameplay_management.game_cycle.game_mob import GameMob
 
 
 class GameDesign:
-    
+
+    @classmethod
+    def min_players(cls) -> int:
+        raise NotImplementedError(f"{cls.__name__} must define min_players()")
+
+    @classmethod
+    def max_players(cls) -> int:
+        raise NotImplementedError(f"{cls.__name__} must define max_players()")
+
     @classmethod
     def initialise_game_config(cls, config):
         config.intro_round_welcome_message = cls.intro()
