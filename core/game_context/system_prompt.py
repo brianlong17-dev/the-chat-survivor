@@ -37,7 +37,7 @@ class SystemPrompt:
         output_string = (f"You are {agent.name}.\n\n"
             
             f"=== YOUR PROFILE ===\n"
-            f"Persona: {agent.persona}\n"
+            f"Persona: {agent.persona_string()}\n"
             f"Speaking Style: {agent.speaking_style}\n\n"
 
             f"=== LIFE LESSONS ===\n"

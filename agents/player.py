@@ -26,6 +26,7 @@ class Debater(BaseAgent):
         self.game_strategy = "Begin to take action and form strategy."
         self.position_assessment = ""
         self.life_lessons = deque(maxlen=8)
+        self.persona_additions = deque()
         self.speaking_style = speaking_style
         self.phase_summaries_detailed = {}
         self.phase_summaries_brief = {}
@@ -35,6 +36,7 @@ class Debater(BaseAgent):
         self.summarising = False
         self.optional_response_buffer = 0
         self.round_specific_strategy = ""
+        self._phase_initial_speaking_style = self.speaking_style
         
         #todo : implement temperature
     
@@ -43,7 +45,7 @@ class Debater(BaseAgent):
     def field_mappings(self) -> Dict[str, str]:
         #TODO just allgin these
         return {
-            "updated_persona_summary": "persona",
+            "persona_additions": "persona_additions",
             "updated_game_strategy": "game_strategy",
             "position_assessment": "position_assessment",
             "lifeLesson": "life_lessons",
@@ -61,16 +63,16 @@ class Debater(BaseAgent):
             
     def round_specific_strategy_name(self):
         return 'round_specific_strategy'
+    
     def clear_round_specific_strategy(self):
         self.round_specific_strategy=""
         
-    
             
     def internal_thinking_fields(self):
         fields = {}
         if not self.game_over:
             fields["updated_game_strategy"] = (str | None, Field(default=None, description=PromptLibrary.desc_agent_updated_game_strategy)) 
-        fields["updated_persona_summary"] = (str | None, Field(default=None, description=PromptLibrary.desc_persona_update))
+        fields["persona_additions"] = self._persona_field()
         fields["lifeLesson"] =  (Optional[str], Field(default=None, description=PromptLibrary.desc_agent_lifeLessons))
         fields["speaking_style"] = self._speaking_style_field()
         return fields
@@ -80,7 +82,10 @@ class Debater(BaseAgent):
     
     def _system_prompt(self, game_board):
         return SystemPrompt.render(self)
-      
+    
+    def persona_string(self):
+        return self.persona + '\n' + '\n'.join(self.persona_additions)
+    
     def process_turn_cognitive_fields(self, turn):
         thought = getattr(turn, 'private_thoughts_brief', "")
         self.most_recent_internal_thought = thought
@@ -174,7 +179,6 @@ class Debater(BaseAgent):
             )
         }
 
-
     def _build_summary_model(self):
         
         brief_summary_field = {"brief_summary" : (str, Field(description="Write an a brief summary of the phase from your perspective- Include the most essential information you want to remember. A brief couple of bullet points. Eventually this will be all you have to access from early phases."))}
@@ -183,12 +187,13 @@ class Debater(BaseAgent):
         else:
             game_commentary_description = "Given your place in the competition, how do you feel after that last phase? Anything you want to say to those supporting you at home?"
         game_commentary_field = {"game_commentary" : (str, Field(description=game_commentary_description))}
+        persona_uniqueness_field = {"persona_unique_detail" : (str, Field(description= "Inkeeping with the core of your character - what is one trait that you hold on to, in spite of the game, that makes you unique from other players? "))}
         
         public_response_prompt = "This is your summary- write in the first person, how you experienced the phase. Write every detail you think is important to commit to memory. This will only be seen by you. "
         if self.game_over:
             public_response_prompt += "Remember, you have been eliminated and you are now in the audience observing. What do you think of the players, who's doing well, what do you think of their strategies, who do you want to win?"
 
-        action_fields = brief_summary_field | game_commentary_field | self._life_lesson_compression_field()
+        action_fields = brief_summary_field | game_commentary_field | persona_uniqueness_field | self._life_lesson_compression_field()
         response_model = DynamicModelFactory.create_model_(
                 self,
                 model_name="sumariser",
@@ -225,6 +230,17 @@ class Debater(BaseAgent):
         self._process_life_lesson_compression(response)
         self.phase_summaries_detailed[phase_number] = response.public_response
         self.phase_summaries_brief[phase_number] = response.brief_summary
+        
+        #TODO we need to seperate the summary cognative fields -
+        #probably a parameter on take_turn_standard to skip, then manage it ourselves --
+        #we should probably make a new cognative model , since we're currently overwriting 3/4 anwyay
+        #and persona_additions is not an accurate field header anymore 
+        
+        self._phase_initial_speaking_style = self.speaking_style
+        
+        self.persona = response.persona_additions #in summary round this field becomes the compressed & combined output
+        self.persona_additions = deque([response.persona_unique_detail])
+        
         self.summarising=False
         
     def _process_life_lesson_compression(self, response):
@@ -237,8 +253,35 @@ class Debater(BaseAgent):
             
     def _speaking_style_field(self):
         if self.summarising:
-             return (str, Field(description=("Maintain current speaking style, but strip out any specific references to words or phrases or catch phrases."
-                f"Current speaking style: \n {self.speaking_style}")))
+             return (str, Field(description=(
+                f"Restore it to the specificity and richness it had at the start of this phase, keeping any genuine changes in tone. "
+                f"Strip any verbal tics, catchphrases, or phrases you have fallen into repeating. "
+                f"Your style at the start of this phase (match this richness): {self._phase_initial_speaking_style} "
+                f"Your style now: {self.speaking_style}"
+                )))
         else:
              return (Optional[str], Field(default=None, description=PromptLibrary.desc_agent_speaking_style))
+         
+    def _persona_field(self):
+        if self.summarising:
+            new_persona_detail = '\n'.join(self.persona_additions) 
+            return (str, Field(description=(
+                f"Integrate the new persona detail into the existing persona from the start of the phase. "
+                "Write within the register and the spirit of the character, but itegrate the evolutions. "
+                f"Compress all to the length of the original persona: ({len(self.persona.split())} words). \n\n"
+                
+                f"Your persona at the start of this phase (match this length and specificality): \n{self.persona} \n\n "
+                f"New Persona detail: \n{new_persona_detail}\n\n"
+                )))
+        else:
+             return (Optional[str], Field(default=None, description=
+                ("If no evolution in public persona - leave BLANK. "
+                 "In keeping with your existing public persona, "
+                 "If your persona had reason to evolve, what direction would your character evolve in? "
+                 "In keeping with their existing character - "
+                 "You can add an aditional line.  "
+                 "Not worldview or strategy - only your outward persona. "
+            )))
+                
+         
         

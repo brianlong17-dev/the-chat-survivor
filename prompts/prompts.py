@@ -1,11 +1,7 @@
 class PromptLibrary:
     #Agent
     line_break = (f"\n{"="*50}")
-    desc_persona_update = ("Only populate this field with a genuine evolution in your persona - "
-        "You should include details from your existing persona that stil apply. "
-        "Only include broad general traits that last beyond the current round. "
-        "Include any character traits, style or backstory that defines you. "
-    )
+    
     desc_agent_updated_game_strategy = ("Only populate if you want to update your game strategy. "
                                           "Based on how the game works, what is the smartest strategy?")
     desc_message = "Say what you want- Your thoughts and feelings should come through. (Don't repeat other messages. Say little if you have nothing new to say.)"
