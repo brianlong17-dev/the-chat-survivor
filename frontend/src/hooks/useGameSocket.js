@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 
-const WS_URL = `ws://${window.location.host}/ws/game`
-const WS_DEMO_URL = `ws://${window.location.host}/ws/demo`
+const WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/game`
+const WS_DEMO_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/demo`
 
 function isAnimatableEvent(evt, animateText) {
   if (evt.type !== 'public_action') return false
