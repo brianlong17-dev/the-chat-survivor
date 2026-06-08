@@ -34,12 +34,17 @@ class GameDesign:
     @classmethod
     def max_players(cls) -> int:
         raise NotImplementedError(f"{cls.__name__} must define max_players()")
+    
+    @classmethod
+    def should_dead_players_summarise(cls) -> bool:
+        return False
 
     @classmethod
     def initialise_game_config(cls, config):
         config.intro_round_welcome_message = cls.intro()
         config.intro_round_QA = cls.intro_QA()
         config.phase_one_intro = cls.phase_intro()
+        config.should_dead_players_summarise = cls.should_dead_players_summarise()
         
         if cls.pre_eviction_message():
             config.pre_eviction_message = cls.pre_eviction_message()

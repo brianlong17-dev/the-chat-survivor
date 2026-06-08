@@ -10,7 +10,13 @@ class GameDesignParlor(GameDesign):
     @classmethod
     def max_players(cls) -> int:
         return 12
-
+    
+    @classmethod
+    def should_dead_players_summarise(cls) -> bool:
+        return True #for reunion
+    
     @classmethod
     def get_phase_description(cls, phase_number, agent_number, cfg, **kwargs):
         raise NotImplementedError("GameDesignParlor phases not yet implemented")
+    
+    

@@ -50,5 +50,5 @@ class GameDesignQuickStart(GameDesign):
             ]))
             
             rounds = [DiscussionRound, GameRockPaperScissors, VoteLowestPoints]
-            return PhaseDescription(rounds=rounds)
+            return PhaseDescription(rounds=rounds, should_summarise_phase=False)
 

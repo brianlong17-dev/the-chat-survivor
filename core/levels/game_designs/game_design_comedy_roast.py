@@ -12,5 +12,9 @@ class GameDesignComedyRoast(GameDesign):
         return 8
 
     @classmethod
+    def should_dead_players_summarise(cls) -> bool:
+        return True #for audience vote
+    
+    @classmethod
     def get_phase_description(cls, phase_number, agent_number, cfg, **kwargs):
         raise NotImplementedError("GameDesignComedyRoast phases not yet implemented")
