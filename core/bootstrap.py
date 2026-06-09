@@ -35,9 +35,12 @@ def create_engine(game_sink, game_design, number_of_players: int = 0, generic_pl
         rand_names = generator.generate_random_debaters_names(number_of_players)
         agents = generator.generate_agents_from_names(rand_names, allow_rename = allow_rename)
 
-    max_players = game_design.max_players()
+    max_players, min_players = game_design.max_players(), game_design.min_players()
     if len(agents) > max_players:
         print(f"[WARNING] create_engine: clipped {len(agents)} agents to {max_players}")
         agents = agents[:max_players]
+    if len(agents) < min_players:
+        raise ValueError(f"create_engine: need at least {min_players} players, got {len(agents)}")
+
 
     return SimulationEngine(agents=agents, game_board=game_board, game_master=game_master, generator=generator, game_design=game_design, api_client=api_client)
