@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const DEMOS = [
   {
@@ -96,12 +96,38 @@ const DEMOS = [
   },
 ]
 
-function DemoCard({ demo, onStart }) {
+function DemoCard({ demo, onStart, turnstileEnabled }) {
   const [mode, setMode] = useState('watch')
   const [humanName, setHumanName] = useState('')
   const [fixtureId, setFixtureId] = useState(demo.fixtures ? demo.fixtures[0].id : null)
+  const [turnstileToken, setTurnstileToken] = useState(null)
+  const turnstileRef = useRef(null)
 
-  const canStart = mode === 'watch' || humanName.trim()
+  useEffect(() => {
+    if (!turnstileEnabled) return
+    let widgetId = null
+    const renderWidget = () => {
+      if (turnstileRef.current) {
+        widgetId = window.turnstile.render(turnstileRef.current, {
+          sitekey: '0x4AAAAAADhT2idZkL-1k2P0',
+          size: 'invisible',
+          callback: (token) => setTurnstileToken(token),
+          'expired-callback': () => setTurnstileToken(null),
+          'error-callback': () => setTurnstileToken(null),
+        })
+      }
+    }
+    if (window.turnstile) {
+      renderWidget()
+    } else {
+      window.onTurnstileLoad = renderWidget
+    }
+    return () => {
+      if (widgetId !== null) window.turnstile?.remove(widgetId)
+    }
+  }, [turnstileEnabled])
+
+  const canStart = (mode === 'watch' || humanName.trim()) && (!turnstileEnabled || turnstileToken)
 
   if (demo.locked) {
     return (
@@ -178,10 +204,11 @@ function DemoCard({ demo, onStart }) {
           />
         )}
       </div>
+      {turnstileEnabled && <div ref={turnstileRef} />}
       <button
         className="lobby-start-btn"
         disabled={!canStart}
-        onClick={() => onStart({ demoId: demo.id, humanName: mode === 'play' ? humanName.trim() : null, fixtureChoice: fixtureId })}
+        onClick={() => onStart({ demoId: demo.id, humanName: mode === 'play' ? humanName.trim() : null, fixtureChoice: fixtureId, turnstileToken })}
       >
         Run Demo
       </button>
@@ -190,13 +217,21 @@ function DemoCard({ demo, onStart }) {
 }
 
 export default function DemosPage({ onStart }) {
+  const [turnstileEnabled, setTurnstileEnabled] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/flags')
+      .then(r => r.json())
+      .then(data => setTurnstileEnabled(data.turnstile_enabled))
+  }, [])
+
   return (
     <div className="demos-page">
       <h1 className="lobby-title">Demos</h1>
       <p className="demos-subtitle">Pre-loaded game scenarios from real playthroughs.</p>
       <div className="demos-grid">
         {DEMOS.map(demo => (
-          <DemoCard key={demo.id} demo={demo} onStart={onStart} />
+          <DemoCard key={demo.id} demo={demo} onStart={onStart} turnstileEnabled={turnstileEnabled} />
         ))}
       </div>
     </div>

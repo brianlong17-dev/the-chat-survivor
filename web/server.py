@@ -218,9 +218,13 @@ async def game_ws(websocket: WebSocket):
 # Demos endpoint
 # ---------------------------------------------------------------------------
 
-async def _can_run_demo(websocket: WebSocket, demo_id):
+async def _can_run_demo(websocket: WebSocket, demo_id, token):
     if not DEMO_ENABLED:
         await websocket.send_text(json.dumps({"type": "error", "message": "Demo is not available yet."}))
+        return False
+
+    if TURNSTILE_ENABLED and not await verify_turnstile(token):
+        await websocket.send_json({"type": "error", "message": "Verification failed"})
         return False
 
     LOCKED_DEMOS = {} #"game_phase"}
@@ -243,8 +247,9 @@ async def demo_ws(websocket: WebSocket):
     data = await websocket.receive_text()
     msg = json.loads(data)
     demo_id = msg.get("demo_id")
+    turnstile_token = msg.get("turnstile_token")
 
-    if not await _can_run_demo(websocket, demo_id):
+    if not await _can_run_demo(websocket, demo_id, turnstile_token):
         await websocket.close()
         return
 

@@ -184,8 +184,8 @@ export function useGameSocket(autoRun, animateText) {
     connect(WS_GAME_URL, { type: 'start', names, human_name: humanName, levelId, turnstile_token: turnstileToken })
   }, [connect])
 
-  const startDemo = useCallback(({ demoId, humanName = null, fixtureChoice = null } = {}) => {
-    connect(WS_DEMO_URL, { type: 'start_demo', demo_id: demoId, human_name: humanName, fixture_choice: fixtureChoice })
+  const startDemo = useCallback(({ demoId, humanName = null, fixtureChoice = null, turnstileToken = null } = {}) => {
+    connect(WS_DEMO_URL, { type: 'start_demo', demo_id: demoId, human_name: humanName, fixture_choice: fixtureChoice, turnstile_token: turnstileToken })
   }, [connect])
 
   const submitInput = useCallback((value) => {
