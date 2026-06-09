@@ -4,8 +4,9 @@ const WS_GAME_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://$
 const WS_DEMO_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/demo`
 
 function isAnimatableEvent(evt, animateText) {
-  if (evt.type !== 'public_action') return false
   if (!animateText) return false
+  if (evt.type === 'round_start') return true
+  if (evt.type !== 'public_action') return false
   return evt.animate === true
 }
 
@@ -49,8 +50,9 @@ export function useGameSocket(autoRun, animateText) {
 
   const drainQueue = useCallback(() => {
     while (pendingQueue.current.length > 0) {
+      const peek = pendingQueue.current[0]
       if (isAnimating.current) break
-      if (awaitingNextRef.current) break
+      if (awaitingNextRef.current && peek.type != 'private_thought') break
       if (awaitingNextRoundRef.current) break
       if (pacingRef.current) break
 
@@ -79,12 +81,14 @@ export function useGameSocket(autoRun, animateText) {
         awaitingNextRef.current = true
         setAwaitingNext(true)
       }
+
       if (isAnimatableEvent(evt, animateTextRef.current)) {
         isAnimating.current = true
         setIsAnimatingState(true)
         setEvents(prev => [...prev, evt])
         break
       }
+      
       setEvents(prev => [...prev, evt])
 
       if (drainDelayRef.current > 0 && evt.type === 'public_action') {
@@ -248,7 +252,7 @@ export function useGameSocket(autoRun, animateText) {
   const sendNextRound = useCallback(() => {
     awaitingNextRoundRef.current = false
     setAwaitingNextRound(false)
-    if (wsRef.current) 
+    if (wsRef.current)
       wsRef.current.send(JSON.stringify({ type: 'next_round' }))
     drainQueue()
   }, [drainQueue])

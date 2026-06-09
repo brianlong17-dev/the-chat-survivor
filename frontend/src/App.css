@@ -320,7 +320,24 @@
   gap: 12px;
   margin: 10px 0 4px;
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.round-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  background: var(--text-dim);
+  transform-origin: left;
+  animation: lineExpand 1s ease-out 0.5s both;
+}
+
+@keyframes lineExpand {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
 }
 
 .border-bottom {
@@ -330,8 +347,8 @@
 }
 
 .round-label {
-  font-size: 11px;
-  color: var(--text-dim);
+  font-size: 13px;
+  color: var(--text);
   letter-spacing: 0.1em;
 }
 

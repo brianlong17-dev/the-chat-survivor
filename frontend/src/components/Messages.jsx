@@ -150,11 +150,35 @@ function PhaseHeader({ phase_number }) {
   )
 }
 
-function RoundHeader({ round_number, scores }) {
+function RoundHeader({ round_number, scores, onComplete }) {
+  const [revealed, setRevealed] = useState('')
+  const releasedRef = useRef(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (releasedRef.current) return
+      releasedRef.current = true
+      onComplete?.()
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    if (!scores) return
+    let i = 0
+    const interval = 600 / scores.length
+    const tick = setInterval(() => {
+      i++
+      setRevealed(scores.slice(0, i))
+      if (i >= scores.length) clearInterval(tick)
+    }, interval)
+    return () => clearInterval(tick)
+  }, [scores])
+
   return (
     <div className="msg round-header">
       <span className="round-label">Round {round_number}</span>
-      {scores && <span className="round-scores">{scores}</span>}
+      {scores && <span className="round-scores">{revealed}</span>}
     </div>
   )
 }
@@ -331,6 +355,10 @@ export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplet
   const lastEvent = events[events.length - 1]
   const lastNextRoundIdx = events.reduce((acc, e, i) => e.type === 'next_round_request' ? i : acc, -1)
 
+  function onRoundHeaderComplete() {
+    onAnimationComplete()
+  }
+
   const renderMsg = (evt) => {
     const isLast = evt === lastEvent
     return (
@@ -338,6 +366,7 @@ export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplet
         event={evt}
         colorMap={colorMap}
         onComplete={isLast ? onAnimationComplete : undefined}
+        onRoundHeaderComplete={onRoundHeaderComplete}
         skipRef={isLast ? skipRef : undefined}
         animateText={animateText}
         sendNextRound={sendNextRound}
@@ -371,12 +400,12 @@ export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplet
   })
 }
 
-export function Message({ event, colorMap, onComplete, skipRef, animateText, sendNextRound, awaitingNextRound }) {
+export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, skipRef, animateText, sendNextRound, awaitingNextRound }) {
   switch (event.type) {
     case 'phase_header':
       return <PhaseHeader {...event} />
     case 'round_start':
-      return <RoundHeader {...event} />
+      return <RoundHeader {...event} onComplete={onRoundHeaderComplete} />
     case 'public_action':
       return <PublicAction {...event} color={getSpeakerColor(event.speaker, colorMap)} onComplete={onComplete} skipRef={skipRef} 
       animateText={animateText}/>
