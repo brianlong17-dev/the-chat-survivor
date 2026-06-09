@@ -2,20 +2,21 @@ import os
 from dotenv import load_dotenv
 from core.shared_web_game_functionality import INACTIVITY_TIMEOUT  # noqa: F401 — re-exported for visibility
 
-# Feature flags — set to True to enable before publishing
-GAME_ENABLED = True
+load_dotenv(override=True)
+
+# Feature flags
+GAME_ENABLED = os.environ.get("GAME_ENABLED", "true").lower() == "true"
 DEMO_ENABLED = True
 
-
-load_dotenv(override=True)
 TRANSCRIPTION_ENABLED = os.getenv("TRANSCRIPTION_ENABLED", "true").lower() in ("1", "true", "yes")
 TURNSTILE_ENABLED = os.getenv("TURNSTILE_ENABLED", "").lower() != "false"
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() in ("1", "true", "yes")
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 
-MAX_CONCURRENT_GAMES = 5
-DAILY_GAME_CAP = 100
+MAX_CONCURRENT_GAMES = int(os.environ.get("MAX_CONCURRENT_GAMES", 5))
+DAILY_GAME_CAP = int(os.environ.get("DAILY_GAME_CAP", 100))
+MAX_TOKENS_PER_GAME = int(os.environ.get("MAX_TOKENS_PER_GAME", 1500000))
 DAILY_DEMO_CAP = 300
 DAILY_TOKEN_CAP = 30_000_000
 

@@ -12,10 +12,4 @@ def sanitize_text(text: str) -> str:
     return text
 
 
-def sanitize_name(name):
-    if not name:
-        return name
-    return " ".join(sanitize_text(name).split())
-
-
 INACTIVITY_TIMEOUT = 900  # seconds before idle round gate disconnects the session

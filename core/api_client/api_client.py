@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import random
 import time
 from typing import TYPE_CHECKING, Literal, get_args, get_origin
 from pydantic import BaseModel
 import google.genai.types as types
+
+MAX_TOKENS_PER_GAME_CAP = int(os.environ.get("MAX_TOKENS_PER_GAME", 1500000))
 
 from core.sinks.game_sink import NoopGameSink
 from core.api_client.api_record_manager import APIRecordManager
@@ -18,19 +21,21 @@ class BudgetExceeded(Exception):
     pass
 
 class APIClient:
-    def __init__(self, client, model: str, higher_model_name: str,  sink: GameEventSink = None, 
-                 token_budget: int = 1500000, model_3 = None) -> None: 
+    def __init__(self, client, model: str, higher_model_name: str,  sink: GameEventSink = None,
+                 token_budget: int = None, model_3 = None) -> None:
+        if token_budget is None:
+            raise ValueError("token_budget is required")
         self._mock_output = False
         self._client = client
         self.default_model = model
-        self.higher_model = higher_model_name 
+        self.higher_model = higher_model_name
         self.model_3 = model_3
-        if not sink:
+        if not sink: 
             self.sink = NoopGameSink()
         else:
             self.sink = sink
         self._record_manager = APIRecordManager()
-        self.token_budget = token_budget  # None = no ceiling
+        self.token_budget = min(token_budget, MAX_TOKENS_PER_GAME_CAP)
         
     def _mock_response(self, response_model):
         long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, \n \n sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -49,7 +54,7 @@ class APIClient:
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
                 values[name] = self._mock_response(annotation)
             else:
-                values[name] = f"{short_text}  [{name}]"
+                values[name] = f"{long_text}  [{name}]"
         return response_model(**values)
 
     def _make_call(self, messages, api_model, response_model, thinking=False):

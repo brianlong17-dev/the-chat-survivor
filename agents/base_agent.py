@@ -77,7 +77,7 @@ class BaseAgent:
     def _log_dir(self) -> str:
         here = os.path.dirname(os.path.abspath(__file__))
         root = os.path.dirname(here)
-        return os.path.join(root, "logs")
+        return os.path.join(root, "logs", "characterlogs")
 
     def _init_log_file(self) -> str:
         """Create a timestamped log file for this run, pruning old ones if needed."""
