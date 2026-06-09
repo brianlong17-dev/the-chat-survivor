@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const LOBBY_STORAGE_KEY = 'lobby_state'
 const HARD_CAP = 12
@@ -18,6 +18,32 @@ export default function Lobby({ onStart }) {
   const [selectedLevel, setSelectedLevel] = useState(saved.selectedLevel || null)
   const [dragIndex, setDragIndex] = useState(null)
   const [dragOverIndex, setDragOverIndex] = useState(null)
+  const [turnstileEnabled, setTurnstileEnabled] = useState(null)
+  const [turnstileToken, setTurnstileToken] = useState(null)
+  const turnstileRef = useRef(null)
+
+  useEffect(() => {
+    if (!turnstileEnabled) return
+    let widgetId = null
+    const renderWidget = () => {
+      if (turnstileRef.current) {
+        widgetId = window.turnstile.render(turnstileRef.current, {
+          sitekey: '0x4AAAAAADhT2idZkL-1k2P0',
+          callback: (token) => setTurnstileToken(token),
+          'expired-callback': () => setTurnstileToken(null),
+          'error-callback': () => setTurnstileToken(null),
+        })
+      }
+    }
+    if (window.turnstile) {
+      renderWidget()
+    } else {
+      window.onTurnstileLoad = renderWidget
+    }
+    return () => {
+      if (widgetId !== null) window.turnstile?.remove(widgetId)
+    }
+  }, [turnstileEnabled])
 
   useEffect(() => {
     localStorage.setItem(LOBBY_STORAGE_KEY, JSON.stringify({ selected, humanIndex, humanName, customNames, selectedLevel }))
@@ -32,7 +58,10 @@ export default function Lobby({ onStart }) {
       })
     fetch('/api/flags')
       .then(r => r.json())
-      .then(data => setGameEnabled(data.game_enabled))
+      .then(data => {
+        setGameEnabled(data.game_enabled)
+        setTurnstileEnabled(data.turnstile_enabled)
+      })
     fetch('/api/levels')
       .then(r => r.json())
       .then(data => {
@@ -115,7 +144,7 @@ export default function Lobby({ onStart }) {
     removeAI(name)
   }
 
-  const canStart = gameEnabled && activeCount >= minPlayers && activeCount <= maxPlayers && selectedLevel && !humanNameMissing
+  const canStart = gameEnabled && activeCount >= minPlayers && activeCount <= maxPlayers && selectedLevel && !humanNameMissing && (!turnstileEnabled || turnstileToken)
 
   return (
     <div className="lobby">
@@ -254,11 +283,12 @@ export default function Lobby({ onStart }) {
             />
           )}
         </div>
+        {turnstileEnabled && <div ref={turnstileRef} />}
         <button
           className="lobby-start-btn"
           disabled={!canStart}
           onClick={() => {
-            const startData = { names: activeAINames, humanName: mode === 'play' ? humanName.trim() : null, levelId: selectedLevel }
+            const startData = { names: activeAINames, humanName: mode === 'play' ? humanName.trim() : null, levelId: selectedLevel, turnstileToken}
             onStart(startData)
           }}
         >

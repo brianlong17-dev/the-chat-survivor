@@ -1,7 +1,10 @@
 import asyncio
 import json
+import os
 import threading
 import traceback
+
+import httpx
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,12 +16,17 @@ from runtime_tests.demo_runner import DEMO_REGISTRY
 from core.levels.level_registry import get_level_by_id
 from web import rate_limits
 from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, DEV_MODE, GAME_ENABLED,
-    MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS, DEMO_TOKEN_BUDGET, TRANSCRIPTION_ENABLED
+    MAX_INPUT_LENGTH, MAX_NAME_LENGTH, MAX_PLAYERS, DEMO_TOKEN_BUDGET, TRANSCRIPTION_ENABLED,
+    TURNSTILE_ENABLED
 )
 from core.shared_web_game_functionality import sanitize_name
 from web.server_helpers import handle_transcribe
 
 app = FastAPI()
+
+TURNSTILE_SECRET = os.getenv("TURNSTILE_SECRET")
+if not TURNSTILE_SECRET: # and TURNSTILE_ENABLED --  for now always crash
+    raise RuntimeError("TURNSTILE_ENABLED is on but TURNSTILE_SECRET is not set")
 
 
 @app.get("/api/status")
@@ -40,7 +48,7 @@ app.add_middleware(
 
 @app.get("/api/flags")
 async def get_flags():
-    return {"game_enabled": GAME_ENABLED, "demo_enabled": DEMO_ENABLED, "transcription_enabled": TRANSCRIPTION_ENABLED}
+    return {"game_enabled": GAME_ENABLED, "demo_enabled": DEMO_ENABLED, "transcription_enabled": TRANSCRIPTION_ENABLED, "turnstile_enabled": TURNSTILE_ENABLED}
 
 # ---------------------------------------------------------------------------
 # Characters endpoint
@@ -84,17 +92,64 @@ async def get_levels():
         ]
     }
 
+
+# ---------------------------------------------------------------------------
+# Shared helpers
+# ---------------------------------------------------------------------------
+async def _run_game_thread(thread, api_client, websocket, sink):
+    while thread.is_alive():
+        try:
+            data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
+            msg = json.loads(data)
+            if msg.get("type") == "input_response":
+                sink._input_queue.put(str(msg.get("value", ""))[:MAX_INPUT_LENGTH])
+            elif msg.get("type") == "next_round":
+                sink.set_round_gate_open()
+            elif msg.get("type") == "transcribe" and TRANSCRIPTION_ENABLED:
+                asyncio.create_task(handle_transcribe(websocket, api_client, msg))
+        except asyncio.TimeoutError:
+            pass
+
+def _send_error(websocket, loop, exc):
+    """Send an exception to the connected client. Safe to call from any thread."""
+    traceback.print_exc()
+    message = f"{exc}\n\n{traceback.format_exc()}" if DEV_MODE else str(exc)
+    try:
+        asyncio.run_coroutine_threadsafe(
+            websocket.send_text(json.dumps({"type": "error", "message": message})),
+            loop,
+        ).result(timeout=5)
+    except Exception:
+        pass
+
+async def verify_turnstile(token: str) -> bool:
+    if not token:
+        return False
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data={"secret": TURNSTILE_SECRET, "response": token}
+        )
+        return resp.json().get("success", False)
+
+
 # ---------------------------------------------------------------------------
 # WebSocket endpoint
 # ---------------------------------------------------------------------------
-async def _can_run_game(websocket: WebSocket):
+async def _can_run_game(websocket: WebSocket, token):
+
+
     if not GAME_ENABLED:
         await websocket.send_text(json.dumps({"type": "error", "message": "Game is not available yet."}))
         return False
 
+    if TURNSTILE_ENABLED and not await verify_turnstile(token):
+        await websocket.send_json({"type": "error", "message": "Verification failed"})
+        return False
+
     if not await rate_limits.check_token_cap(websocket):
         return False
-    
+
     if not await rate_limits.daily_and_concurrency_check(websocket, "game"):
         return False
     return True
@@ -102,8 +157,25 @@ async def _can_run_game(websocket: WebSocket):
 @app.websocket("/ws/game")
 async def game_ws(websocket: WebSocket):
     await websocket.accept()
+    data = await websocket.receive_text()
+    msg = json.loads(data)
 
-    if not await _can_run_game(websocket):
+    msg_type = msg.get("type")
+    names = msg.get("names", [])
+    human_name = msg.get("human_name")
+    level_id = msg.get("levelId")
+    turnstile_token = msg.get("turnstile_token")
+
+    if msg_type != "start":
+        await websocket.send_text(json.dumps({"type": "error", "message": "Expected start message"}))
+        return
+
+    level = get_level_by_id(level_id)
+    if not level:
+        await websocket.send_text(json.dumps({"type": "error", "message": "Invalid level."}))
+        return
+
+    if not await _can_run_game(websocket, turnstile_token):
         await websocket.close()
         return
 
@@ -112,35 +184,22 @@ async def game_ws(websocket: WebSocket):
     api_client = None
 
     try:
-        # Wait for the "start" message from the client
-        data = await websocket.receive_text()
-        msg = json.loads(data)
-        if msg.get("type") != "start":
-            await websocket.send_text(json.dumps({"type": "error", "message": "Expected start message"}))
-            return
-        level_id = msg.get("levelId")
-        level = get_level_by_id(level_id)
-        if not level:
-            await websocket.send_text(json.dumps({"type": "error", "message": "Invalid level."}))
-            return
-        
-        game_design = level.game_design 
+        game_design = level.game_design
         sink = WebSocketSink(websocket, loop)
 
-        
-        human_player_name = str(msg["human_name"])[:MAX_NAME_LENGTH] if msg.get("human_name") else None
-        max_players = min(level.max_players, MAX_PLAYERS) - (1 if human_player_name else 0)
-        player_names = [str(n)[:MAX_NAME_LENGTH] for n in msg.get("names", [])[:max_players]]
+        human_name = str(human_name)[:MAX_NAME_LENGTH] if human_name else None
+        human_name = sanitize_name(human_name)
 
+        max_players = min(level.max_players, MAX_PLAYERS) - (1 if human_name else 0)
+        player_names = [str(n)[:MAX_NAME_LENGTH] for n in names[:max_players]]
         player_names = [sanitize_name(name) for name in player_names]
-        human_player_name = sanitize_name(human_player_name)
-        
+
         api_client = create_api_client(sink, token_budget=level.token_budget)
 
         def run_game():
             try:
                 engine = create_engine(sink, names=player_names, game_design=game_design, api_client=api_client)
-                engine.run(human_player_name=human_player_name)
+                engine.run(human_player_name=human_name)
             except Exception as e:
                 _send_error(websocket, loop, e)
 
@@ -195,7 +254,7 @@ async def demo_ws(websocket: WebSocket):
     try:
         human_name = str(msg["human_name"])[:MAX_NAME_LENGTH] if msg.get("human_name") else None
         human_name = sanitize_name(human_name)
-        
+
         fixture_choice = str(msg["fixture_choice"])[:MAX_NAME_LENGTH] if msg.get("fixture_choice") else None
         runner = DEMO_REGISTRY.get(demo_id)
         if not runner: #this wont happen in practice
@@ -203,7 +262,7 @@ async def demo_ws(websocket: WebSocket):
             return
 
         sink = WebSocketSink(websocket, loop)
-        api_client = create_api_client(sink, token_budget = DEMO_TOKEN_BUDGET) 
+        api_client = create_api_client(sink, token_budget = DEMO_TOKEN_BUDGET)
 
         def run_demo():
             try:
@@ -221,28 +280,3 @@ async def demo_ws(websocket: WebSocket):
         rate_limits.release_slot(api_client)
 
 
-async def _run_game_thread(thread, api_client, websocket, sink):
-    while thread.is_alive():
-        try:
-            data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
-            msg = json.loads(data)
-            if msg.get("type") == "input_response":
-                sink._input_queue.put(str(msg.get("value", ""))[:MAX_INPUT_LENGTH])
-            elif msg.get("type") == "next_round":
-                sink.set_round_gate_open()
-            elif msg.get("type") == "transcribe" and TRANSCRIPTION_ENABLED:
-                asyncio.create_task(handle_transcribe(websocket, api_client, msg))
-        except asyncio.TimeoutError:
-            pass
-
-def _send_error(websocket, loop, exc):
-    """Send an exception to the connected client. Safe to call from any thread."""
-    traceback.print_exc()
-    message = f"{exc}\n\n{traceback.format_exc()}" if DEV_MODE else str(exc)
-    try:
-        asyncio.run_coroutine_threadsafe(
-            websocket.send_text(json.dumps({"type": "error", "message": message})),
-            loop,
-        ).result(timeout=5)
-    except Exception:
-        pass

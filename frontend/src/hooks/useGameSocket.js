@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 
-const WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/game`
+const WS_GAME_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/game`
 const WS_DEMO_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/demo`
 
 function isAnimatableEvent(evt, animateText) {
@@ -180,8 +180,8 @@ export function useGameSocket(autoRun, animateText) {
     }
   }, [handleMessage])
 
-  const startGame = useCallback(({ names = [], humanName = null, levelId = null } = {}) => {
-    connect(WS_URL, { type: 'start', names, human_name: humanName, levelId })
+  const startGame = useCallback(({ names = [], humanName = null, levelId = null, turnstileToken = null } = {}) => {
+    connect(WS_GAME_URL, { type: 'start', names, human_name: humanName, levelId, turnstile_token: turnstileToken })
   }, [connect])
 
   const startDemo = useCallback(({ demoId, humanName = null, fixtureChoice = null } = {}) => {
