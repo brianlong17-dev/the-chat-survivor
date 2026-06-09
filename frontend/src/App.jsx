@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import './App.mobile.css'
 import { loadSettings, saveSettings } from './utils/settings'
 import { useGameSocket } from './hooks/useGameSocket'
 import Lobby from './pages/Lobby'
 import DemosPage from './pages/DemosPage'
-import GameView from './pages/GameView'
+import GameViewRouter from './pages/GameViewRouter'
 
 export default function App() {
   const [view, setView] = useState('lobby')
@@ -30,7 +31,7 @@ export default function App() {
   const { status, startGame, startDemo } = socket
 
   if (status !== 'idle') {
-    return <GameView {...socket} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} />
+    return <GameViewRouter {...socket} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} />
   }
 
   return (

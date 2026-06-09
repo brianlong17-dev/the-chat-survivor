@@ -1,0 +1,501 @@
+/* ── Mobile Layout ── */
+
+.app-mobile {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-header-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.header-left-mobile {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.app-title-mobile {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: normal;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.app-title-mobile:active {
+  opacity: 0.7;
+}
+
+.header-controls-mobile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.next-turn-btn-mobile {
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  border: 1px solid #67b37d;
+  background: transparent;
+  color: #67b37d;
+  cursor: pointer;
+  animation: pulse 1.2s infinite;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.next-turn-btn-mobile:active:not(:disabled) {
+  background: #67b37d;
+  color: #000;
+  animation: none;
+}
+
+.next-turn-btn-mobile:disabled {
+  border-color: var(--border);
+  color: var(--text-dim);
+  cursor: default;
+  animation: none;
+  opacity: 0.4;
+}
+
+.start-btn-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.start-btn-mobile.status-running {
+  color: #67b37d;
+}
+
+.start-btn-mobile.status-done {
+  color: var(--accent);
+}
+
+.start-btn-mobile.status-error {
+  color: #d9706a;
+}
+
+.feed-switch-btn-mobile {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s;
+  flex-shrink: 0;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feed-switch-btn-mobile:active {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.feed-switch-btn-mobile.private {
+  opacity: 0.8;
+  color: var(--text-dim);
+}
+
+.feed-switch-btn-mobile svg {
+  display: block;
+}
+
+.settings-dropdown-mobile {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  white-space: nowrap;
+  z-index: 100;
+  border-radius: 4px;
+}
+
+/* ── Mobile Body ── */
+
+.app-body-mobile {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.feed-col-mobile {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.feed-mobile {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.feed-mobile::-webkit-scrollbar {
+  width: 4px;
+}
+
+.feed-mobile::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.feed-mobile::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* ── Sidebar Overlay System ── */
+
+.sidebar-overlay-mobile {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 900;
+  animation: fadeIn 0.2s ease;
+}
+
+.sidebar-mobile {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 85vw;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  z-index: 950;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-left-mobile {
+  left: 0;
+  animation: slideInLeft 0.3s ease;
+}
+
+.sidebar-right-mobile {
+  right: 0;
+  animation: slideInRight 0.3s ease;
+}
+
+.sidebar-header-mobile {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn-mobile {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.sidebar-close-btn-mobile:active {
+  color: var(--text);
+}
+
+.sidebar-mobile > * {
+  padding: 12px;
+}
+
+/* ── Sidebar Toggle Buttons ── */
+
+.sidebar-toggle-btn-mobile {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s;
+  flex-shrink: 0;
+  color: var(--text-dim);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-toggle-btn-mobile:active {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.sidebar-toggle-btn-mobile.active {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* ── Animations ── */
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ── Mobile Message Adjustments ── */
+
+.feed-mobile .msg {
+  padding: 1px 0;
+}
+
+.feed-mobile .speaker {
+  min-width: 65px;
+  max-width: 110px;
+  font-size: 11px;
+}
+
+.feed-mobile .message-text {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.feed-mobile .round-header {
+  margin: 6px 0 2px;
+  gap: 6px;
+}
+
+.feed-mobile .phase-header {
+  margin: 12px 0 4px;
+}
+
+.feed-mobile .phase-label {
+  font-size: 9px;
+}
+
+.feed-mobile .round-label {
+  font-size: 9px;
+}
+
+.feed-mobile .public-action {
+  gap: 8px;
+}
+
+/* ── Input Adjustments ── */
+
+.input-bar {
+  padding: 6px 10px 8px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+
+.input-prompt {
+  font-size: 9px;
+  margin-bottom: 4px;
+  letter-spacing: 0.1em;
+}
+
+.input-row {
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.input-text {
+  font-size: 12px;
+  padding: 5px 8px;
+  min-height: 28px;
+  max-height: 120px;
+  line-height: 1.4;
+  resize: none;
+}
+
+.input-submit {
+  padding: 6px 10px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.mic-btn {
+  padding: 6px 8px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.choice-btn {
+  padding: 4px 10px;
+  font-size: 10px;
+}
+
+/* ── Scoreboard Mobile ── */
+
+.scoreboard-title {
+  padding: 0;
+  margin: 12px 0 8px;
+}
+
+.score-list {
+  gap: 4px;
+}
+
+.score-row {
+  font-size: 12px;
+  gap: 6px;
+}
+
+.score-name {
+  font-size: 12px;
+}
+
+.score-pts {
+  font-size: 12px;
+}
+
+/* ── Round Widget Mobile ── */
+
+.round-widget {
+  margin: 12px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+  gap: 12px;
+}
+
+.rw-label {
+  font-size: 10px;
+}
+
+.rw-nominee-name {
+  font-size: 11px;
+}
+
+.rw-nominee-count {
+  font-size: 12px;
+}
+
+/* ── Segment Tracker Mobile ── */
+
+.segment-tracker {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: auto;
+}
+
+.segment-item {
+  font-size: 11px;
+  gap: 4px;
+}
+
+.segment-arrow {
+  font-size: 12px;
+}
+
+/* ── Round Tracker Mobile ── */
+
+.round-tracker {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.round-list {
+  gap: 4px;
+}
+
+.round-item {
+  font-size: 11px;
+  gap: 4px;
+}
+
+.round-item-arrow {
+  width: 8px;
+  font-size: 12px;
+}
+
+.round-item-name {
+  -webkit-line-clamp: 1;
+}
+
+/* ── Modal Mobile ── */
+
+.modal-box {
+  min-width: 280px;
+  max-width: 85vw;
+  padding: 16px 20px;
+}
+
+.modal-title {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.modal-body {
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.modal-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* ── Gear Button ── */
+
+.gear-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  padding: 0;
+}

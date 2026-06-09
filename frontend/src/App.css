@@ -1031,20 +1031,17 @@
 /* ── Lobby ── */
 
 .idle-layout {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .lobby {
   flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
   padding: 40px 60px 30px;
   gap: 24px;
-  overflow: hidden;
 }
 
 .lobby-title {
@@ -1238,8 +1235,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  overflow-y: auto;
-  flex: 1;
   content-visibility: auto;
 }
 

@@ -29,6 +29,7 @@ export default function Lobby({ onStart }) {
       if (turnstileRef.current) {
         widgetId = window.turnstile.render(turnstileRef.current, {
           sitekey: '0x4AAAAAADhT2idZkL-1k2P0',
+          size: 'invisible',
           callback: (token) => setTurnstileToken(token),
           'expired-callback': () => setTurnstileToken(null),
           'error-callback': () => setTurnstileToken(null),
