@@ -110,7 +110,7 @@ function DemoCard({ demo, onStart, turnstileEnabled }) {
       if (turnstileRef.current) {
         widgetId = window.turnstile.render(turnstileRef.current, {
           sitekey: '0x4AAAAAADhT2idZkL-1k2P0',
-          size: 'invisible',
+          appearance: 'interaction-only',
           callback: (token) => setTurnstileToken(token),
           'expired-callback': () => setTurnstileToken(null),
           'error-callback': () => setTurnstileToken(null),

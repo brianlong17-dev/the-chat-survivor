@@ -29,7 +29,7 @@ export default function Lobby({ onStart }) {
       if (turnstileRef.current) {
         widgetId = window.turnstile.render(turnstileRef.current, {
           sitekey: '0x4AAAAAADhT2idZkL-1k2P0',
-          size: 'invisible',
+          appearance: 'interaction-only',
           callback: (token) => setTurnstileToken(token),
           'expired-callback': () => setTurnstileToken(null),
           'error-callback': () => setTurnstileToken(null),
@@ -149,7 +149,7 @@ export default function Lobby({ onStart }) {
 
   return (
     <div className="lobby">
-      <h1 className="lobby-title">CHAT SURVIVOR</h1>
+      <h1 className="lobby-title">THE CHAT SURVIVOR</h1>
 
       <div className="lobby-levels">
         <span className="lobby-selected-label">Level</span>
@@ -284,7 +284,6 @@ export default function Lobby({ onStart }) {
             />
           )}
         </div>
-        {turnstileEnabled && <div ref={turnstileRef} />}
         <button
           className="lobby-start-btn"
           disabled={!canStart}
@@ -296,6 +295,7 @@ export default function Lobby({ onStart }) {
           {gameEnabled ? 'Start Game' : 'Coming Soon'}
         </button>
       </div>
+      {turnstileEnabled && <div ref={turnstileRef} style={{ display: 'flex', justifyContent: 'center' }} />}
     </div>
   )
 }
