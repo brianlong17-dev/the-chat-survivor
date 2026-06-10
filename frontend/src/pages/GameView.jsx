@@ -27,6 +27,8 @@ export default function GameView({
   const privateBottomRef = useRef(null)
   const lastSeenPrivateCountRef = useRef(0)
   const userScrolledUpRef = useRef(false)
+  const feedMouseDownPosRef = useRef(null)
+  const feedMouseIsDownRef = useRef(false)
   const leftDragRef = useRef({ startX: 0, startWidth: 0, moved: false })
   const [leftToggleCursor, setLeftToggleCursor] = useState('col-resize')
   const rightDragRef = useRef({ startX: 0, startWidth: 0, moved: false })
@@ -79,6 +81,7 @@ export default function GameView({
   }
 
   const handleFeedScroll = () => {
+    if (feedMouseIsDownRef.current) return
     const feed = feedRef.current
     if (!feed) return
     const distFromBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight
@@ -96,10 +99,15 @@ export default function GameView({
     }
   }
 
-  const handleFeedMouseDown = () => {
+  const handleFeedMouseDown = (e) => {
     userScrolledUpRef.current = true
+    feedMouseIsDownRef.current = true
+    feedMouseDownPosRef.current = { x: e.clientX, y: e.clientY }
   }
-  const handleFeedMouseUp = () => {
+  const handleFeedMouseUp = (e) => {
+    const start = feedMouseDownPosRef.current
+    const dragged = start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 4
+    if (dragged) return
     if (window.getSelection().toString() === '') {
       const feed = feedRef.current
       if (feed && feed.scrollHeight - feed.scrollTop - feed.clientHeight < 20) {
@@ -119,15 +127,26 @@ export default function GameView({
     return () => document.removeEventListener('mousedown', handler)
   }, [settingsOpen])
 
-  useEffect(() => { 
-    const id = setInterval(() => {
-      if (!userScrolledUpRef.current) bottomRef.current?.scrollIntoView({ behavior: 'instant' })
-    }, 100)
+  useEffect(() => {
+    const onWindowMouseUp = () => { feedMouseIsDownRef.current = false }
+    window.addEventListener('mouseup', onWindowMouseUp)
+    return () => window.removeEventListener('mouseup', onWindowMouseUp)
+  }, [])
+
+  const pinFeedToBottom = () => {
+    if (userScrolledUpRef.current || feedMouseIsDownRef.current) return
+    const feed = feedRef.current
+    if (!feed) return
+    if (feed.scrollHeight - feed.scrollTop - feed.clientHeight > 1) feed.scrollTop = feed.scrollHeight
+  }
+
+  useEffect(() => {
+    const id = setInterval(pinFeedToBottom, 100)
     return () => clearInterval(id)
   }, [status])
 
   useEffect(() => {
-    if (!userScrolledUpRef.current) bottomRef.current?.scrollIntoView({ behavior: 'instant' })
+    pinFeedToBottom()
   }, [events.length])
 
   useEffect(() => {

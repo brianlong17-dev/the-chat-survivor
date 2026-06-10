@@ -30,8 +30,11 @@ export default function GameViewMobile({
   const privateBottomRef = useRef(null)
   const lastSeenPrivateCountRef = useRef(0)
   const userScrolledUpRef = useRef(false)
+  const feedMouseDownPosRef = useRef(null)
+  const feedMouseIsDownRef = useRef(false)
 
   const handleFeedScroll = () => {
+    if (feedMouseIsDownRef.current) return
     const feed = feedRef.current
     if (!feed) return
     const distFromBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight
@@ -49,11 +52,16 @@ export default function GameViewMobile({
     }
   }
 
-  const handleFeedMouseDown = () => {
+  const handleFeedMouseDown = (e) => {
     userScrolledUpRef.current = true
+    feedMouseIsDownRef.current = true
+    feedMouseDownPosRef.current = { x: e.clientX, y: e.clientY }
   }
 
-  const handleFeedMouseUp = () => {
+  const handleFeedMouseUp = (e) => {
+    const start = feedMouseDownPosRef.current
+    const dragged = start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 4
+    if (dragged) return
     if (window.getSelection().toString() === '') {
       const feed = feedRef.current
       if (feed && feed.scrollHeight - feed.scrollTop - feed.clientHeight < 20) {
@@ -74,14 +82,25 @@ export default function GameViewMobile({
   }, [settingsOpen])
 
   useEffect(() => {
-    const id = setInterval(() => {
-      if (!userScrolledUpRef.current) bottomRef.current?.scrollIntoView({ behavior: 'instant' })
-    }, 100)
+    const onWindowMouseUp = () => { feedMouseIsDownRef.current = false }
+    window.addEventListener('mouseup', onWindowMouseUp)
+    return () => window.removeEventListener('mouseup', onWindowMouseUp)
+  }, [])
+
+  const pinFeedToBottom = () => {
+    if (userScrolledUpRef.current || feedMouseIsDownRef.current) return
+    const feed = feedRef.current
+    if (!feed) return
+    if (feed.scrollHeight - feed.scrollTop - feed.clientHeight > 1) feed.scrollTop = feed.scrollHeight
+  }
+
+  useEffect(() => {
+    const id = setInterval(pinFeedToBottom, 100)
     return () => clearInterval(id)
   }, [status])
 
   useEffect(() => {
-    if (!userScrolledUpRef.current) bottomRef.current?.scrollIntoView({ behavior: 'instant' })
+    pinFeedToBottom()
   }, [events.length])
 
   useEffect(() => {
