@@ -8,7 +8,7 @@ from datetime import date
 from fastapi import WebSocket
 
 from web.server_config import (DAILY_DEMO_CAP, DAILY_GAME_CAP, DAILY_TOKEN_CAP,
-    MAX_CONCURRENT_GAMES, RATE_LIMITS_DB_PATH,
+    MAX_CONCURRENT_GAMES, RATE_LIMITS_DB_PATH, CHECK_IP,
 )
 
 _db_lock = threading.Lock()
@@ -17,6 +17,7 @@ _db_lock = threading.Lock()
 # correctly resets on restart and does not need to be persisted.
 _active_games = 0
 _active_games_lock = threading.Lock()
+_active_ip_addresses: list[str] = []
 
 
 def _init_db() -> None:
@@ -63,11 +64,11 @@ def _read_today() -> tuple[str, int, int, int]:
         ).fetchone()
         return today, row[0], row[1], row[2]
 
-async def daily_and_concurrency_check(websocket: WebSocket, kind: str) -> bool:
-    if not await check_concurrency_and_get_slot(websocket):
+async def daily_and_concurrency_check(websocket: WebSocket, kind: str, ip_address: str) -> bool:
+    if not await check_concurrency_and_get_slot(websocket, ip_address):
         return False
     if not await check_and_increment_daily(websocket, kind):
-        release_unused_slot()
+        release_unused_slot(ip_address)
         return False
     return True
 
@@ -90,14 +91,23 @@ async def check_and_increment_daily(websocket: WebSocket, kind: str) -> bool:
     return False
 
 
-async def check_concurrency_and_get_slot(websocket: WebSocket) -> bool:
+async def check_concurrency_and_get_slot(websocket: WebSocket, ip_address: str) -> bool:
     global _active_games
+    global _active_ip_addresses
+
     with _active_games_lock:
+        if CHECK_IP and ip_address and ip_address in _active_ip_addresses:
+            await websocket.send_text(json.dumps({"type": "error", "message":
+                "You already have an active game running. Please wait for it to finish."}))
+            return False
         if _active_games < MAX_CONCURRENT_GAMES:
+            if ip_address:
+                _active_ip_addresses.append(ip_address)
             _active_games += 1
-            return True 
-    await websocket.send_text(json.dumps({"type": "error", "message": 
-        f"Server is at capacity ({MAX_CONCURRENT_GAMES} active games). Try again soon."}))
+            return True
+        else:
+            await websocket.send_text(json.dumps({"type": "error", "message":
+                f"Server is at capacity ({MAX_CONCURRENT_GAMES} active games). Try again soon."}))
     return False
                 
 
@@ -112,6 +122,7 @@ async def check_token_cap(websocket: WebSocket) -> bool:
 
 
 def record_token_usage(api_client) -> None:
+    #edge case - server crashes? this isn't recorded 
     if api_client is None:
         return
     total = api_client.usage_totals().get("total", 0)
@@ -126,16 +137,22 @@ def record_token_usage(api_client) -> None:
         conn.commit()
 
 
-def release_slot(api_client) -> None:
+def release_slot(api_client, ip_address: str) -> None:
     global _active_games
+    global _active_ip_addresses
     record_token_usage(api_client)
     with _active_games_lock:
         _active_games -= 1
-        
-def release_unused_slot() -> None:
+        if ip_address and ip_address in _active_ip_addresses:
+            _active_ip_addresses.remove(ip_address)
+
+def release_unused_slot(ip_address: str | None = None) -> None:
     global _active_games
+    global _active_ip_addresses
     with _active_games_lock:
         _active_games -= 1
+        if ip_address and ip_address in _active_ip_addresses:
+            _active_ip_addresses.remove(ip_address)
 
 def snapshot() -> dict:
     today, games, demos, tokens = _read_today()

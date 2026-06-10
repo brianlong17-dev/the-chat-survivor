@@ -55,7 +55,7 @@ def _parse_game_request(msg) -> GameRequest:
     return GameRequest(level=level, human_name=human_name, player_names=player_names)
 
 
-async def _can_run_game(websocket: WebSocket, token):
+async def _can_run_game(websocket: WebSocket, token, ip_address):
     if not GAME_ENABLED:
         await websocket.send_text(json.dumps({"type": "error", "message": "Game is not available yet."}))
         return False
@@ -67,7 +67,7 @@ async def _can_run_game(websocket: WebSocket, token):
     if not await rate_limits.check_token_cap(websocket):
         return False
 
-    if not await rate_limits.daily_and_concurrency_check(websocket, "game"):
+    if not await rate_limits.daily_and_concurrency_check(websocket, "game", ip_address):
         return False
 
     return True
@@ -88,7 +88,7 @@ async def game_ws(websocket: WebSocket):
     turnstile_token = msg.get("turnstile_token")
     ip_address = get_client_ip(websocket)
 
-    if not await _can_run_game(websocket, turnstile_token):
+    if not await _can_run_game(websocket, turnstile_token, ip_address):
         await websocket.close()
         return
 
@@ -118,4 +118,4 @@ async def game_ws(websocket: WebSocket):
     except WebSocketDisconnect:
         if sink: sink.on_disconnect()
     finally:
-        rate_limits.release_slot(api_client)
+        rate_limits.release_slot(api_client, ip_address)

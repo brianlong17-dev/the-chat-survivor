@@ -8,8 +8,11 @@ load_dotenv(override=True)
 GAME_ENABLED = os.environ.get("GAME_ENABLED", "true").lower() == "true"
 DEMO_ENABLED = True
 
-TRANSCRIPTION_ENABLED = os.getenv("TRANSCRIPTION_ENABLED", "true").lower() in ("1", "true", "yes")
-TURNSTILE_ENABLED = os.getenv("TURNSTILE_ENABLED", "").lower() != "false"
+TRANSCRIPTION_ENABLED = os.getenv("TRANSCRIPTION_ENABLED", "").lower() == "true"
+TURNSTILE_ENABLED = os.getenv("TURNSTILE_ENABLED", "").lower() == "true"
+CHECK_IP = os.getenv("CHECK_IP", "").lower() == "true"
+
+
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() in ("1", "true", "yes")
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")

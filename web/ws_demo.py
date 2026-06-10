@@ -33,7 +33,7 @@ async def _can_run_demo(websocket: WebSocket, demo_id, token):
     if not await rate_limits.check_token_cap(websocket):
         return False
 
-    if not await rate_limits.daily_and_concurrency_check(websocket, "demo"):
+    if not await rate_limits.daily_and_concurrency_check(websocket, "demo", get_client_ip(websocket)):
         return False
 
     return True
@@ -89,4 +89,4 @@ async def demo_ws(websocket: WebSocket):
     except WebSocketDisconnect:
         if sink: sink.on_disconnect()
     finally:
-        rate_limits.release_slot(api_client)
+        rate_limits.release_slot(api_client, get_client_ip(websocket))
