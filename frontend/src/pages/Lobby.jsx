@@ -220,13 +220,19 @@ export default function Lobby({ onStart }) {
 
       {activeTab === 'Custom' && (
         <div className="custom-input-row">
-          <input
-            className="lobby-name-input"
-            placeholder="Enter a name..."
-            value={customInput}
-            onChange={e => setCustomInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') addCustom() }}
-          />
+          <div className="name-input-wrapper">
+            <input
+              className="lobby-name-input"
+              placeholder="Enter a name..."
+              value={customInput}
+              maxLength={40}
+              onChange={e => setCustomInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') addCustom() }}
+            />
+            <span className={`name-char-count${customInput.length >= 40 ? ' at-limit' : ''}`}>
+              {customInput.length}/40
+            </span>
+          </div>
           <button className="input-submit" onClick={addCustom}>Add</button>
         </div>
       )}
@@ -292,7 +298,7 @@ export default function Lobby({ onStart }) {
             onStart(startData)
           }}
         >
-          {gameEnabled ? 'Start Game' : 'Coming Soon'}
+          {!gameEnabled ? 'Coming Soon' : activeCount < minPlayers ? `Select ${minPlayers - activeCount} more ${minPlayers - activeCount === 1 ? 'player' : 'players'}` : 'Start Game'}
         </button>
       </div>
       {turnstileEnabled && <div ref={turnstileRef} style={{ display: 'flex', justifyContent: 'center' }} />}

@@ -267,10 +267,10 @@ class Debater(BaseAgent):
             new_persona_detail = '\n'.join(self.persona_additions) 
             return (str, Field(description=(
                 f"Integrate the new persona detail into the existing persona from the start of the phase. "
-                "Write within the register and the spirit of the character, but itegrate the evolutions. "
+                "Write within the register, spirit and complexity of the character, but itegrate the evolutions and allow them to change. "
                 f"Compress all to the length of the original persona: ({len(self.persona.split())} words). \n\n"
                 
-                f"Your persona at the start of this phase (match this length and specificality): \n{self.persona} \n\n "
+                f"Your persona at the start of this phase (match this length, complexity and specificality): \n{self.persona} \n\n "
                 f"New Persona detail: \n{new_persona_detail}\n\n"
                 )))
         else:

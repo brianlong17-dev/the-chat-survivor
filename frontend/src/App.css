@@ -1373,6 +1373,29 @@
 
 .lobby-name-input:focus { border-color: var(--accent); }
 
+.name-input-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.name-input-wrapper .lobby-name-input {
+  padding-right: 38px;
+}
+
+.name-char-count {
+  position: absolute;
+  right: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.name-char-count.at-limit {
+  color: var(--accent);
+}
+
 .lobby-name-input.invalid {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(224, 123, 84, 0.25);

@@ -14,7 +14,7 @@ M = "Miranda Priestly"
 PG = "Professor Quirrell"
 Aang = "Aang"
 
-NAME = Aang
+NAME = "Thomas Wake (The Lighthouse)"
 RUNS = 5
 
 if __name__ == "__main__":

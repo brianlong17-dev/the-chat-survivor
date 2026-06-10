@@ -12,6 +12,9 @@ DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
 
 def create_api_client(game_sink, token_budget,
                   model_name=DEFAULT_MODEL_NAME, higher_model_name=DEFAULT_HIGHER_MODEL_NAME):
+    return create_vertex_api_client(game_sink, token_budget, model_name, higher_model_name)
+    
+def create_vertex_api_client(game_sink, token_budget, model_name, higher_model_name):
 
     project=os.getenv("PROJECT")
     location=os.getenv("LOCATION")
@@ -33,3 +36,7 @@ def create_api_client(game_sink, token_budget,
         credentials=credentials
     )
     return APIClient(client, model_name, higher_model_name, game_sink, token_budget=token_budget, model_3 = MODEL_3)
+
+
+def create_gemini_api_client():
+    pass
