@@ -153,13 +153,16 @@ class GameBoard:
         is_repeated_host_message = isinstance(speaker, str) and speaker.upper() == self.HOST_NAME and self._was_last_message_from_host()
         return not (is_system_speaker or is_human_speaker or is_repeated_host_message)
 
-    def broadcast_public_action(self, speaker: Union[str, BaseAgent], message: str, color: str = "", directed_to_name = None, is_reply = False, should_animate_override = False):
+    def broadcast_public_action(self, speaker: Union[str, BaseAgent], message: str, color: str = "", directed_to_name = None, is_reply = False, 
+                                should_animate_override = False):
         display_name = self._as_display_name(speaker)
+        if display_name.upper() == self.SYSTEM:
+            raise ValueError("SYSTEM cannot broadcast a public_action; use system_broadcast instead")
         self.game_log._update_history(display_name, message)
-        animate = should_animate_override or self._should_animate(speaker)
-        should_hold = should_animate_override or self._should_hold(speaker) 
-        self.game_sink.on_public_action(speaker, message, color=color, animate=animate, should_hold=should_hold,
-                                        directed_to_name = directed_to_name, is_reply = is_reply)
+        animate_as_player = should_animate_override or self._should_animate(speaker)
+        should_hold = should_animate_override or self._should_hold(speaker)
+        self.game_sink.on_public_action(speaker, message, color=color, animate_as_player=animate_as_player, should_hold=should_hold,
+                                        directed_to_name = directed_to_name, is_reply = is_reply,)
 
     def system_broadcast(self, message, private=False, border_bottom = False):
         if not private:
@@ -174,9 +177,10 @@ class GameBoard:
             return msg.get('speaker') in self.RESERVED_NAMES
         return False
         
-    def host_broadcast(self, message, delay: float = 0.0, is_reply: bool = False):
+    def host_broadcast(self, message, delay: float = 0.0, is_reply: bool = False,
+                       animate_as_player=False):
         entry = self.game_log._current_round_most_recent_message_entry()
-        self.broadcast_public_action(self.HOST_NAME, message, is_reply=is_reply)
+        self.broadcast_public_action(self.HOST_NAME, message, is_reply=is_reply, should_animate_override=animate_as_player)
         self.game_sink.delay(delay)
 
     def environment_broadcast(self, message, delay):

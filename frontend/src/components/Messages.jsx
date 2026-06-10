@@ -1,5 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
 
+// --- WordByWord animation parameters ---
+const WORD_ANIM_START_DELAY_MS = 80        // pause before first word begins
+const WORD_ANIM_SPEED_BUDGET_MS = 500      // total ms per sentence; divided by word count for per-word delay
+const WORD_ANIM_MAX_WORD_MS = 70           // cap per-word delay so short sentences don't drag (kicks in ≤6 words)
+
+const WORD_ANIM_BETWEEN_SENTENCE_MS = 300  // base gap after finishing one sentence before the next starts
+const WORD_ANIM_BETWEEN_SENTENCES_VARIANT = [100, 200, 300, 0, ]  // per-sentence offset added to base, cycles
+
+const WORD_ANIM_DOT_START_DELAY_MS = 300   // pause before the "..." dots begin
+const WORD_ANIM_DOT_STEP_MS = 400          // interval between each dot step ( . → .. → ... )
+const WORD_ANIM_DOT_HOLD_MS = 600          // how long "..." shows before clearing and moving on
+const WORD_ANIM_SNAP_ENABLED = false       // when false, all sentences animate word-by-word (no snapping)
+const WORD_ANIM_SNAP_LIMIT = 3             // sentences animated word-by-word before rest is snapped instantly
+const WORD_ANIM_SNAP_PAUSE_MS = 400        // pause before flushing snapped sentences
+const WORD_ANIM_SNAP_FADE_S = 0.4          // CSS fade-in duration (seconds) for snapped text
+const WORD_ANIM_END_LINGER_CHOICES_MS = [1000, 1500, 2000, 2500]  // cursor linger at end; one picked at random per message
+
 const SPEAKER_COLORS = [
   '#e07b54', '#5b8dd9', '#67b37d', '#c97bc4',
   '#d4a84b', '#5bbccc', '#d9706a', '#8d7fd9',
@@ -23,11 +40,37 @@ function renderBold(text) {
   })
 }
 
+function HostStagger({ text, onComplete, skipRef, animateText }) {
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
+  const doneRef = useRef(false)
+
+  useEffect(() => {
+    if (!animateText) { onCompleteRef.current?.(); return }
+
+    const finish = () => {
+      if (doneRef.current) return
+      doneRef.current = true
+      onCompleteRef.current?.()
+    }
+    const t = setTimeout(finish, 2000)               // 1s roll + 1s pause
+    const skip = setInterval(() => {
+      if (skipRef?.current) { clearInterval(skip); clearTimeout(t); finish() }
+    }, 100)
+
+    return () => { clearTimeout(t); clearInterval(skip) }
+  }, [text])
+
+  return <span className={animateText ? 'message-text host-roll' : 'message-text'}>{renderBold(text)}</span>
+}
+
 function WordByWord({ text, onComplete, skipRef, animateText }) {
   const [typed, setTyped] = useState('')
   const [snapped, setSnapped] = useState('')
   const [dots, setDots] = useState('')
+  const [typing, setTyping] = useState(false)
   const onCompleteRef = useRef(onComplete)
+  const SentenceLimitHit = false
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
   useEffect(() => {
     setTyped('')
@@ -37,15 +80,19 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
 
     if (!animateText) {
       setTyped(text)
+      setTyping(false)
       onCompleteRef.current?.()
       return
     }
+
+    setTyping(false)
 
     const snap = () => {
       clearTimeout(timeoutId)
       setTyped(text)
       setSnapped('')
       setDots('')
+      setTyping(false)
       onCompleteRef.current?.()
     }
 
@@ -57,22 +104,33 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
     const paragraphs = text.split('\n\n')
 
     const showDots = (onDone) => {
+      setTyping(true)
       const steps = ['.', '..', '...']
       let i = 0
       const tick = () => {
         if (checkSkip()) return
         setDots(steps[i]); i++
-        if (i < steps.length) timeoutId = setTimeout(tick, 400)
-        else timeoutId = setTimeout(() => { setDots(''); onDone() }, 600)
+        if (i < steps.length) timeoutId = setTimeout(tick, WORD_ANIM_DOT_STEP_MS)
+        else timeoutId = setTimeout(() => { setDots(''); onDone() }, WORD_ANIM_DOT_HOLD_MS)
       }
-      timeoutId = setTimeout(tick, 300)
+      timeoutId = setTimeout(tick, WORD_ANIM_DOT_START_DELAY_MS)
     }
 
+    const ABBREVIATIONS = /(?:^|\s)(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|vs|etc|[A-Z])\.\s*$/
     const splitSentences = (para) => {
       const matches = para.match(/[^.!?]+[.!?]+[\s]*/g) || []
       const consumed = matches.join('').length
       if (consumed < para.length) matches.push(para.slice(consumed))
-      return matches.length ? matches : [para]
+      // Merge fragments that end on an abbreviation ("Mr.", initials) into the next sentence.
+      const merged = []
+      for (const frag of matches) {
+        if (merged.length && ABBREVIATIONS.test(merged[merged.length - 1])) {
+          merged[merged.length - 1] += frag
+        } else {
+          merged.push(frag)
+        }
+      }
+      return merged.length ? merged : [para]
     }
 
     const runParagraph = (paraIdx, onDone) => {
@@ -90,30 +148,40 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
           showDots(onDone)
           return
         }
-        if (sentIdx >= 3) {
+        
+        if (WORD_ANIM_SNAP_ENABLED && sentIdx >= WORD_ANIM_SNAP_LIMIT) {
+          const SentenceLimitHit = true
           const rest = sentences.slice(sentIdx).join('')
           setSnapped(rest)
+          setTyping(true)
           timeoutId = setTimeout(() => {
             if (checkSkip()) return
             setTyped(prefix + para)
             setSnapped('')
             if (isLast) { onDone(); return }
             showDots(onDone)
-          }, 400)
+          }, WORD_ANIM_SNAP_PAUSE_MS)
           return
         }
         const sentence = sentences[sentIdx]
         const words = sentence.split(/(\s+)/)
         const wordCount = words.filter(w => w.trim()).length || 1
-        const wordDelay = Math.round(500 / wordCount)
+        const wordDelay = Math.min(Math.round(WORD_ANIM_SPEED_BUDGET_MS / wordCount), WORD_ANIM_MAX_WORD_MS)
+        
         let wordIdx = 0
         const tickWord = () => {
           if (checkSkip()) return
           wordIdx++
           const current = soFar + words.slice(0, wordIdx).join('')
           setTyped(prefix + current)
-          if (wordIdx < words.length) timeoutId = setTimeout(tickWord, wordDelay)
-          else timeoutId = setTimeout(() => runSentence(sentIdx + 1, current), 300)
+          if (wordIdx < words.length) {
+            setTyping(false)  // hide cursor while words are flowing
+            timeoutId = setTimeout(tickWord, wordDelay)
+          } else {
+            setTyping(true)   // cursor rests at end of sentence
+            const variant = WORD_ANIM_BETWEEN_SENTENCES_VARIANT[sentIdx % WORD_ANIM_BETWEEN_SENTENCES_VARIANT.length]
+            timeoutId = setTimeout(() => runSentence(sentIdx + 1, current), WORD_ANIM_BETWEEN_SENTENCE_MS + variant)
+          }
         }
         tickWord()
       }
@@ -123,21 +191,28 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
 
     const runAll = (paraIdx) => {
       if (paraIdx >= paragraphs.length) {
-        onCompleteRef.current?.()
+        // Let the cursor linger at the end before handing off to onComplete.
+        setTyping(true)
+        const linger = WORD_ANIM_END_LINGER_CHOICES_MS[Math.floor(Math.random() * WORD_ANIM_END_LINGER_CHOICES_MS.length)]
+        timeoutId = setTimeout(() => {
+          setTyping(false)
+          onCompleteRef.current?.()
+        }, linger)
         return
       }
       runParagraph(paraIdx, () => runAll(paraIdx + 1))
     }
 
-    timeoutId = setTimeout(() => runAll(0), 80)
+    timeoutId = setTimeout(() => runAll(0), WORD_ANIM_START_DELAY_MS)
     return () => clearTimeout(timeoutId)
   }, [text])
 
   return (
     <span style={{ whiteSpace: 'pre-wrap' }}>
       {renderBold(typed)}
-      {snapped && <span style={{ animation: 'fadeIn 0.4s ease forwards' }}>{snapped}</span>}
+      {snapped && <span style={{ animation: `fadeIn ${WORD_ANIM_SNAP_FADE_S}s ease forwards` }}>{snapped}</span>}
       {dots && <span style={{ color: 'var(--text-dim)', marginLeft: 2 }}>{dots}</span>}
+      {typing && <span className="type-cursor" />}
     </span>
   )
 }
@@ -145,7 +220,9 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
 function PhaseHeader({ phase_number }) {
   return (
     <div className="msg phase-header">
-      <span className="phase-label">— PHASE {phase_number} —</span>
+      <span className="phase-line phase-line-left" />
+      <span className="phase-label">PHASE {phase_number}</span>
+      <span className="phase-line phase-line-right" />
     </div>
   )
 }
@@ -183,17 +260,25 @@ function RoundHeader({ round_number, scores, onComplete }) {
   )
 }
 
-function PublicAction({ speaker, message, color, animate, onComplete, skipRef, animateText}) {
-  //so -- i believe that animate should come from the backend 
-  const isSystem = speaker === 'SYSTEM' || speaker === 'HOST'
+function PublicAction({ speaker, message, color, animate_as_player, onComplete, skipRef, animateText }) {
+  const isHost = speaker === 'HOST'
+  const isSystem = speaker === 'SYSTEM'   // shouldn't happen (backend asserts), render harmlessly
+
+  const label = (isHost || isSystem)
+    ? <span className="speaker system-speaker">{speaker}</span>
+    : <span className="speaker" style={{ color }}>{speaker}</span>
+
+  const body = () => {
+    if (isSystem) return <span className="message-text">{renderBold(message)}</span>
+    if (animate_as_player) return <WordByWord text={message} onComplete={onComplete} skipRef={skipRef} animateText={animateText} />
+    if (isHost)   return <HostStagger text={message} onComplete={onComplete} skipRef={skipRef} animateText={animateText} />
+    return <span className="message-text">{renderBold(message)}</span>
+  }
+
   return (
-    <div className={`msg public-action ${isSystem ? 'system' : ''}`}>
-      {!isSystem && <span className="speaker" style={{ color }}>{speaker}</span>}
-      {isSystem && <span className="speaker system-speaker">{speaker}</span>}
-      {animate
-        ? <WordByWord text={message} onComplete={onComplete} skipRef={skipRef} animateText={animateText} />
-        : <span className="message-text">{renderBold(message)}</span>
-      }
+    <div className={`msg public-action ${(isHost || isSystem) ? 'system' : ''}`}>
+      {label}
+      {body()}
     </div>
   )
 }

@@ -132,8 +132,8 @@ class BaseRound:
     #   Broadcasting    #
     #####################
 
-    def _host_broadcast(self, message, delay = 0, is_reply = False):
-        self.game_board.host_broadcast(message, delay, is_reply=is_reply)
+    def _host_broadcast(self, message, delay = 0, is_reply = False, animate_as_player=False):
+        self.game_board.host_broadcast(message, delay, is_reply=is_reply, animate_as_player=animate_as_player)
 
     def _host_broadcast_multiple_choice(self, messages):
         self.game_board.host_broadcast(random.choice(messages))

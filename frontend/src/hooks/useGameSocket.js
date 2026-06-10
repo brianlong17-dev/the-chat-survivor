@@ -7,7 +7,7 @@ function isAnimatableEvent(evt, animateText) {
   if (!animateText) return false
   if (evt.type === 'round_start') return true
   if (evt.type !== 'public_action') return false
-  return evt.animate === true
+  return evt.animate_as_player === true || evt.speaker === 'HOST'
 }
 
 export function useGameSocket(autoRun, animateText) {
@@ -52,7 +52,7 @@ export function useGameSocket(autoRun, animateText) {
     while (pendingQueue.current.length > 0) {
       const peek = pendingQueue.current[0]
       if (isAnimating.current) break
-      if (awaitingNextRef.current && peek.type != 'private_thought') break
+      if (awaitingNextRef.current && peek.type !== 'private_thought') break
       if (awaitingNextRoundRef.current) break
       if (pacingRef.current) break
 

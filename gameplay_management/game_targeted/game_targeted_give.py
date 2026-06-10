@@ -13,8 +13,8 @@ class GameTargetedChoiceGive(GameMechanicsMixin):
         return "Choose a player to receive points!"
     
     def _give_game_intro(self, targeted_games_points):
-        return (f"Well, enough of the scheming, lying, conning... whatever happened to giving!? "
-        f"In this round, you will get to pick a pal. The player you pick will receive {targeted_games_points} points! "
+        return (f"Well, enough of the scheming, lying, conning... whatever happened to *giving*!? "
+        f"In this round, you will get to *pick a pal*. The player you pick will receive *{targeted_games_points} points!* "
         f"Everyone is happy! Well... except any player with no friends! hehe")
     
     def _player_intro(self, player):
@@ -24,7 +24,7 @@ class GameTargetedChoiceGive(GameMechanicsMixin):
         points_amount = GamePromptLibrary.targeted_games_points
         game_instruction = f"Choose one player to receive {points_amount} points. Explain why."
 
-        self.game_board.host_broadcast(self._give_game_intro(points_amount))
+        self.game_board.host_broadcast(self._give_game_intro(points_amount),  animate_as_player=True)
 
         for player in self._shuffled_agents():
             self.game_board.host_broadcast(self._player_intro(player))

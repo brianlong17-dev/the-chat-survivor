@@ -131,11 +131,11 @@ class FinaleReunionRound(VoteMechanicsMixin):
         self._host_broadcast(f"Congratulations to our two finalists: {player1.name} and {player2.name}.")
 
         player_1_highlights = self._get_highlights(player1).script
-        self._host_broadcast(player_1_highlights)
+        self._host_broadcast(player_1_highlights, animate_as_player=True)
         self._reunion_turn(player1, "", prompt, is_reply = True)
 
         player_2_highlights = self._get_highlights(player2).script
-        self._host_broadcast(player_2_highlights)
+        self._host_broadcast(player_2_highlights ,animate_as_player=True)
         self._reunion_turn(player2, "", prompt, is_reply = True)
 
         
@@ -296,7 +296,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
             if player:
                 #host intro---
                 script = self._question_intro_script(player).script
-                self._host_broadcast(script)
+                self._host_broadcast(script, animate_as_player=True)
                 #------ Ask the question ------
                 public_response_prompt = (
                     "You've been identified as a player who could have a question- maybe you could have your mind changed? "

@@ -15,7 +15,7 @@ class GameTargetedChoiceSteal(GameMechanicsMixin):
     def _game_intro(self, points_amount):
         return (
             f"Well, it's time to lay down your mark.. "
-            f"In this round, you will get to STEAL. Whatever player you pick, you will receive {points_amount} points... and they will LOSE them! "
+            f"In this round, you will get to *STEAL*. Whatever player you pick, you will receive {points_amount} points... and they will *LOSE* them! "
             f"If you choose a player with less than {points_amount} points, their points wont go below zero, and you won't receive the full {points_amount} points."
         )
 
@@ -31,7 +31,7 @@ class GameTargetedChoiceSteal(GameMechanicsMixin):
         )
         thought_nudge = f"If you try to steal from someone with 0 points, you essentially pass."
 
-        self.game_board.host_broadcast(self._game_intro(points_amount))
+        self.game_board.host_broadcast(self._game_intro(points_amount), animate_as_player=True)
 
         for player in self._shuffled_agents():
             self.game_board.host_broadcast(self._player_intro(player))
