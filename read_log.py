@@ -81,7 +81,7 @@ def render_entry(entry: dict, show_all: bool, show_prompts: bool, brief: bool) -
         field("", str(response), WHITE)
 
 
-def find_log(log_dir: str = "logs", agent_name: str = None, run: int = 1) -> str | None:
+def find_log(log_dir: str = "logs/characterlogs", agent_name: str = None, run: int = 1) -> str | None:
     """Return the nth most recent log file (run=1 is most recent, run=2 is second most recent, etc.)"""
     if not os.path.isdir(log_dir):
         return None

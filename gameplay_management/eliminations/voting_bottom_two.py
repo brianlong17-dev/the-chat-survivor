@@ -167,7 +167,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
     
     def _reminder(self, candidates):
         #SCAF
-        return f"REMINDER: You can only choose from the players up for elimination: {self.format_list(candidates)}"
+        return f"REMINDER: You can only vote for the following players: {self.format_list(candidates)}"
     
     def _collect_vote_from_candidate_revote(self, agent, candidates):
         turn_prompt = ("You're up for elimination and it's a revote. You've already stated your case, "
@@ -188,7 +188,8 @@ class VoteBottomTwo(VoteMechanicsMixin):
         f"{self._reminder(candidates)}\n"
         )
         public_response_prompt = ("After your vote is revealed — explain WHY you chose to vote to ELIMINATE this person. This is also where "
-        "you can state your case to the other voters- should they vote to ELIMINATE another player? ")
+        "you can state your case to the other voters- should they vote to ELIMINATE another player? "
+        f"{self._reminder(candidates)}\n")
         additional_thought_nudge = ("Who do you want to send home and why? What can you say to get others to vote with you? ")
         return self.turn_manager._targeted_turn(agent, self._names(candidates), 
                                         "Who do you vote to eliminate from the competition? ",
@@ -200,7 +201,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
             turn_prompt = ("It's going to a revote. Will you change your vote? If you are changing your vote, explain why and what changed your mind.\n"
                            f"{self._reminder(candidates)}" )
             public_response_prompt = ("After your vote is revealed, give your reason. If your vote hasn't changed, just a one liner response please. ")
-            additional_thought_nudge = ("After hearing from everyone, do you want to change your vote? ")
+            additional_thought_nudge = ("After hearing from everyone, do you want to change your vote? Who do you want leave the competition? ")
         else:
             turn_prompt = ("You are safe and not up for elimination. Reveal your vote to the group, "
                 "then say who you are voting for and why. ")

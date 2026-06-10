@@ -62,7 +62,7 @@ class TurnManager:
     def _choose_name_field(self, allowed_names, reason_for_choosing_prompt, field_name = None):
         if not field_name:
             field_name = GamePromptLibrary.model_field_choose_name
-        choice_reason_prompt = f"The exact name of the agent. {reason_for_choosing_prompt}"
+        choice_reason_prompt = f"The name of the player: {reason_for_choosing_prompt}"
         return self.create_choice_field(field_name, allowed_names, choice_reason_prompt)
 
     # --- Turn Execution ---

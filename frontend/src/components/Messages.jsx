@@ -70,7 +70,6 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
   const [dots, setDots] = useState('')
   const [typing, setTyping] = useState(false)
   const onCompleteRef = useRef(onComplete)
-  const SentenceLimitHit = false
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
   useEffect(() => {
     setTyped('')
@@ -150,7 +149,6 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
         }
         
         if (WORD_ANIM_SNAP_ENABLED && sentIdx >= WORD_ANIM_SNAP_LIMIT) {
-          const SentenceLimitHit = true
           const rest = sentences.slice(sentIdx).join('')
           setSnapped(rest)
           setTyping(true)

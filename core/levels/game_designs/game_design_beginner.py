@@ -46,8 +46,16 @@ class GameDesignBeginner(GameDesign):
             return PhaseDescription(rounds=rounds)
         
         if agent_number == 4:
-            rounds = [GameTargetedChoiceSteal, DiscussionRoundDirectedShort, VoteBottomTwo]
-            cfg.allow_revote = True
+            # Regular discussion: a single loop = one message each, no replies.
+            cfg.set_discussion_settings(
+                DiscussionRoundSettings(loops=[
+                    DiscussionLoop(
+                        turn_prompt="Address the group of individuals with a single statement. React to what just happened in the previous game, and consider the bottom two elimination that is coming up next.",
+                        additional_thought_prompt="You only get one message — what is the most important thing to say to the group before the bottom two vote?",
+                    )
+                ]),
+            )
+            rounds = [GameTargetedChoiceSteal, DiscussionRound, VoteBottomTwo]            
             return PhaseDescription(rounds=rounds)
             
         if agent_number == 3:
