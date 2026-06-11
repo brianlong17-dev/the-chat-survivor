@@ -98,7 +98,7 @@ async def check_concurrency_and_get_slot(websocket: WebSocket, ip_address: str) 
     with _active_games_lock:
         if CHECK_IP and ip_address and ip_address in _active_ip_addresses:
             await websocket.send_text(json.dumps({"type": "error", "message":
-                "You already have an active game running. Please wait for it to finish."}))
+                "There is another game still running from your network :( Please wait for it to finish."}))
             return False
         if _active_games < MAX_CONCURRENT_GAMES:
             if ip_address:

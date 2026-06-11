@@ -58,6 +58,14 @@ async def verify_turnstile(token: str) -> bool:
         return resp.json().get("success", False)
 
 
+async def _notify_game_start(ntfy_url, msg):
+    try:
+        async with httpx.AsyncClient() as client:
+            await client.post(ntfy_url, content=msg, timeout=3)
+    except Exception:
+        pass
+
+
 def log_game_start(is_game, id, player_names, human_name, ip_address, token_budget):
     event = "game_start" if is_game else "demo_start"
     _get_game_logger().info(json.dumps({
@@ -70,6 +78,13 @@ def log_game_start(is_game, id, player_names, human_name, ip_address, token_budg
         "token_budget": token_budget,
         "time": datetime.utcnow().isoformat(),
     }))
+    
+    if ntfy_game_start := os.getenv("ntfy_game_start"):
+        ntfy_url = f"https://ntfy.sh/{ntfy_game_start}"
+        label = "Game" if is_game else "Demo"
+        name_label = human_name if human_name else "Viewer"
+        msg = f"{ip_address} - {label} started ({id})— {name_label} playing with {', '.join(player_names)}"
+        asyncio.create_task(_notify_game_start(ntfy_url, msg))
 
 
 async def _run_game_thread(thread, api_client, websocket, sink):

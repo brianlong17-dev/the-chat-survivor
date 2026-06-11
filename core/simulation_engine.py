@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from core.game_config import GameConfig
 from core.phase_runner import PhaseRunner
-from agents.human_player import Human
 
 if TYPE_CHECKING:
     from agents.character_generation.characterGeneration import CharacterGenerator
@@ -56,11 +55,7 @@ class SimulationEngine:
             self.agents[0].debug_log = True
                     
 
-    def run(self, human_player_name = ""):
-        if human_player_name:
-            human_player = Human(human_player_name)
-            self.agents.append(human_player)
-            
+    def run(self):
         self.initialiseGameBoard()
         self.run_phase_loop()
     

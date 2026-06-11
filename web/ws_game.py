@@ -102,8 +102,8 @@ async def game_ws(websocket: WebSocket):
 
         def run_game():
             try:
-                engine = create_engine(sink, names=req.player_names, game_design=req.level.game_design, api_client=api_client)
-                engine.run(human_player_name=req.human_name)
+                engine = create_engine(sink, human_player_name=req.human_name, names=req.player_names, game_design=req.level.game_design, api_client=api_client)
+                engine.run()
             except Exception as e:
                 _send_error(websocket, loop, e)
 

@@ -8,12 +8,14 @@ from core.gameboard import GameBoard
 from core.sinks.console_sink import ConsoleGameEventSink
 from core.simulation_engine import SimulationEngine
 from agents.player import Debater
+from agents.human_player import Human
+
 
 def create_blank_agent(name, api_client):
     return Debater(name, '', api_client = api_client)
 
 
-def create_engine(game_sink, game_design, number_of_players: int = 0, generic_players: bool = False, names=None,
+def create_engine(game_sink, game_design, human_player_name = None, number_of_players: int = 0, generic_players: bool = False, names=None,
                   allow_rename = True,
                   api_client=None,
                   populate_agents=True):
@@ -35,7 +37,12 @@ def create_engine(game_sink, game_design, number_of_players: int = 0, generic_pl
         rand_names = generator.generate_random_debaters_names(number_of_players)
         agents = generator.generate_agents_from_names(rand_names, allow_rename = allow_rename)
 
+    if human_player_name:
+        human_player = Human(human_player_name)
+        agents.append(human_player)
+        
     max_players, min_players = game_design.max_players(), game_design.min_players()
+    
     if len(agents) > max_players:
         print(f"[WARNING] create_engine: clipped {len(agents)} agents to {max_players}")
         agents = agents[:max_players]
