@@ -52,16 +52,18 @@ async def status():
 async def get_characters():
     from agents.character_generation.character_lister import CharacterLister
     lister = CharacterLister()
+    _all= list(dict.fromkeys(lister.full_characters + lister.agros + lister.regulars + lister.logicos + lister.schemers ))
     return {
         "tabs": {
             "Classics": lister.goats,
-            "Generics": lister.generics,
-            "Schemers": lister.schemers,
-            "Regulars": lister.regulars,
+            "Adventure Time": lister.adventure_time,
+            "Star Wars": lister.star_wars,
+            "Succession": lister.succession,
             "Little Women": lister.marches,
-            "Hot Heads": lister.agros,
-            "Logicos": lister.logicos,
-            "All": list(dict.fromkeys(lister.full_characters)),
+            "Avatar": lister.avatar,
+            "Meryls": lister.streep,
+            "The Killer": lister.the_killer,
+            "All": _all
         }
     }
 

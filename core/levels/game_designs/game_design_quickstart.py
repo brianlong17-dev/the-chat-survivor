@@ -37,9 +37,9 @@ class GameDesignQuickStart(GameDesign):
         if agent_number == 2:
             cfg.set_discussion_settings(DiscussionRoundSettings(loops=[
                 DiscussionLoop(
-                    turn_prompt="Say hello and introduce yourself! ",
-                    host_message ="Welcome to our players! Why doesn't everyone introduce themselves? ",
-                    additional_thought_prompt="Do you recognise the other player?",
+                    turn_prompt="Say hello! If you don't know them, introduce yourself- if you already know them, you can greet them. ",
+                    host_message ="Welcome to our players! Why doesn't everyone introduce themselves? Or have you two already met? ",
+                    additional_thought_prompt="Do you recognise the other player - {opponent_names} - do you already know them?",
                 ),
                 DiscussionLoop(
                     turn_prompt="Reply and continue the conversation. DO NOT REPEAT ANYTHING FROM YOUR PREVIOUS TURN. ",

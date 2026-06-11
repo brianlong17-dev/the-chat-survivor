@@ -18,56 +18,117 @@ class CharacterLister:
                 'Demon Twink']
     swearers = ['Rick Sanches', 'Tony Soprano', 'Logan Roy', 'Tony Montana', 'Katya Zamolodchikova', 'Lois Griffin', 'Gordon Ramsay']
     
-    goats = ['Morty Smith', 'Lady Macbeth', 'Donald Trump', 'Gollum', 'Miranda Priestly',
-             'Buffy Summers',
-             'Catherine Earnshaw', 
-             'Heathcliffe',
-             'Logan Roy', 
-             'Amy March',
-             'Jo March',
-             'Hercule Poirot',
-             'Drunk Frat Girl',
-             'Avatar Aang',
-             'Jake the Dog',
-             'Lumpy Space Princess', 'Lady Diana', 'Elphaba Thrope',
-             'Professor Quirrell'
-             
-             
+    streep = ["Miranda Priestly",
+              "Madeline Ashton",
+              "Margaret Thatcher",
+                "Julia Child",
+              "Aunt Josephine (Series of Unfortunate Events)", 
+              "Aunt March",
+               "Donna Sheridan (Mamma Mia)",
+               "Lindy Chamberlain", "Clarissa Vaughan"]
+    
+    adventure_time = ["Finn the Human", "Jake the Dog", "Lumpy Space Princess", "Lemongrab",
+                      "Peppermint Butler", "Princess Bubblegum",
+                      "Ice King", "BMO (Adventure Time)", "Banana Guard", "Tree Trunks (Adventure Time)",
+                      "The Lich", ]
+    
+    star_wars = ["Yoda", "Han Solo",  "Princess Leia", "C-3PO", "Anakin Skywalker", "Senator Palpatine", 
+                 "The Mandalorian",
+                 "Baby Yoda", "Obi-Wan Kenobi", "Boba Fett",
+                 "Darth Vader", "Chewbacca", "R2-D2", "Jabba the Hutt"
+                 ]
+    
+    succession = ["Logan Roy", "Kendall Roy", 
+                  
+                  "Roman Roy", "Gerri Kellman",
+                  "Shiv Roy", "Tom Wambsgans", "Cousin Greg", 
+                  "Connor Roy", "Willa Ferreyra (Succession)" ,
+                  "Caroline Collingwood", "Marcia Roy",
+                  
+                 ]
+    
+    avatar = avatar_tla = ["Toph Beifong", "Prince Zuko", "Uncle Iroh", 
+              "Azula", "Ty Lee", "Cabbage Merchant (Avatar)",
+              "Mai (Avatar)", "Fire Lord Ozai", "Suki (Avatar)", 
+              "King Bumi",   "Avatar Aang", "Katara", "Sokka", ]
+
+    goats = ['Morty Smith', 'Lady Macbeth', 'Donald Trump', 'Gollum', 'Logan Roy', 'Elle Woods',
+             'Lumpy Space Princess', 'Jake the Dog', 'Catherine Earnshaw', "Thomas Wake (The Lighthouse)",
+             'Heathcliffe', 'Professor Quirrell', 'Miranda Priestly', 'Buffy Summers',
+             'Amy March', 'Jo March', 'Drunk Frat Girl', "Cabbage Merchant (Avatar)", "Benoit Blanc",
+             "Patrick Bateman"
              ]
     
     past_goats = [ 'GLaDOS',  'Hermione Granger', 'Dennis Reynolds', 'Michael Scott']
     
     politics = [
-    'Hilary Clinton', 'Nancy Pelosi', 'Donald Trump', 'Margaret Thatcher', 'Lady Macbeth']
+    'Hillary Clinton', 'Nancy Pelosi', 'Donald Trump', 'Margaret Thatcher', 'Lady Macbeth']
     marches = ['Jo March', 'Amy March', 'Meg March', 'Beth March', "Marmee March", "Theodore 'Laurie' Laurence", "Mr. Laurence", "Aunt March"]
     
-    regulars = ['Lucille Bluth', 'Kendall Roy', 'Shiv Roy', 'Harry Potter']
-    schemers = ['Lady Macbeth', 'Anna Delvey', 'Petyr Baelish']
-    agros = [ 'Donald Trump', 'Jair Bolsonaro', "Michael O'Leary", 'Kanye West', 'Logan Roy']
-    logicos = ['HAL 9000', 'GLaDOS', 'Spock', 'Detective Columbo', 'Benoit Blanc']
+   
     foils = ['Morty Smith', 'Michael Scott']
-    pools= [regulars, schemers, agros, logicos, foils]
+    
     for_sure = ['Lady Macbeth', 'Morty Smith', 'Drunk Frat Girl', 'Drunk Frat Boy', 'Hermione Granger']
 
+    
+    regulars = ['Lucille Bluth', 'Kendall Roy', 'Shiv Roy', 'Harry Potter']
+    schemers = ['Lady Macbeth', 'Anna Delvey', 'Petyr Baelish',
+                'Frank Underwood (House of Cards)',
+                'Amy Dunne (Gone Girl)',
+                'Cersei Lannister',
+                'Hannibal Lecter',
+                'Patrick Bateman',
+                'Nurse Ratched',]
+    agros = [ 'Donald Trump', "Michael O'Leary", 'Kanye West', 'Logan Roy']
+    logicos = ['HAL 9000', 'GLaDOS', 'Spock', 'Detective Columbo', 'Benoit Blanc']
+  
+    pools= [regulars, schemers, agros, logicos, foils]
     full_characters = [
-    'Donald Trump', 'Margaret Thatcher', 'Ronald Regan',
+    'Donald Trump', 'Margaret Thatcher', 
     'Avatar Aang', 
     'Lady Macbeth',
     'Gollum', 
     'Lord Voldemort', 'Hermione Granger', 
-    'Cleopatra', 'Napoleon Bonaparte', 'Joan of Arc', 'Rasputin', 'Genghis Khan',
-    'Marie Antoinette', 'Leonardo da Vinci', 'Sun Tzu', 'Machiavelli',
+     'Rasputin',
+    'Marie Antoinette', 'Machiavelli',
     'Abraham Lincoln', 'Catherine the Great', 'Blackbeard',
-    'Sherlock Holmes', 'Hannibal Lecter', 'Lady Macbeth',
-    'Gandalf', 'Severus Snape', 'Katniss Everdeen', 'Captain Ahab',
-    'Miranda Priestly',
-    'Darth Vader','Wednesday Addams', 'Tony Stark',
+    'Sherlock Holmes', 'Hannibal Lecter', 
+    'Gandalf', 'Severus Snape', 'Captain Ahab',
+    'Wednesday Addams', 'Tony Stark',
     'Oscar Wilde', 'Alice in Wonderland', 'Victor Frankenstein', 'Count Dracula',
-    'Tyler Durden', 'Gollum', 'Winston Churchill',
-    'Amelia Earhart', 'William Shakespeare', 
+    'Tyler Durden', 'Winston Churchill',
     
-    'The Great Gatsby', 'Nurse Ratched', 'Lord Voldemort', 'Hermione Granger', 'Frodo Baggins',
-    'James Bond', 'Katara', 'Zuko', 'Uncle Iroh', 'Buffy Summers',
+    
+    'Nurse Ratched', 'Frodo Baggins',
+    'James Bond', 
     'Elphaba Thrope','Dorian Gray', 'Frankenstein Monster',
-    'Holden Caulfield', 'Lisbeth Salander', 'Morty Smith', 'Rick Sanches'
+    'Holden Caulfield', 'Lisbeth Salander', 'Rick Sanches'
 ]
+    
+    the_killer = [
+    'Hannibal Lecter', 'Patrick Bateman (American Psycho)', 'Norman Bates (Psycho)',
+    'Jack Torrance (The Shining)',
+    'Nurse Ratched (One Flew Over the Cuckoo\'s Nest)',
+    'Annie Wilkes (Misery)',
+    'Amy Dunne (Gone Girl)',
+    'Anton Chigurh (No Country for Old Men)',
+    'Judge Holden (Blood Meridian)',
+    'Humbert Humbert (Lolita)',
+    'Alex DeLarge (A Clockwork Orange)',
+    'Tom Ripley (The Talented Mr Ripley)',
+    'Freddy Krueger',
+    'Jason Voorhees',
+    'Michael Myers (Halloween)',
+    'Pennywise (IT)',
+    'Ghostface (Scream)',
+    'Leatherface (Texas Chainsaw Massacre)',
+    'Chucky (Child\'s Play)',
+    'Pinhead (Hellraiser)',
+    'Jigsaw (Saw)',
+    'Dracula',
+    'Frankenstein\'s Monster',
+    'The Invisible Man',
+    'Dorian Gray',
+    'Jekyll and Hyde',
+]
+    

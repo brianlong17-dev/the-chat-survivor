@@ -14,7 +14,7 @@ class CharacterProfile(BaseModel):
     character_type: str = Field(description="Would you categorise this person as Hero, Baddie, Simpleton, Sweet, Complex Character or Shrewd Normal Character")
     additional_depth: str = Field(description="An extra line - (in first person):"
                                 "If Baddie: what is their other side- what makes them relatable, understandable, wounded, longing, secretly warm? What line in them draws compassion and understanding? "
-                                "If Hero: What is their other side: their cheeky hypocrisy, their good humour, the challenge in their personality, their sadness? "
+                                "If Hero: What makes them less perfect and more fun? What is their other side: their cheeky hypocrisy, good humour, the challenge in their personality, their sadness? "
                                 "If Sweet: where is the shrewdness or dry side?"
                                 "Otherwise: What's a countervailing depth or compassion? "
                                 )

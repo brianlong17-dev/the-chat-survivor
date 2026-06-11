@@ -91,6 +91,9 @@ class BaseRound:
 
     def _names(self, agents: Sequence["Debater"]) -> list[str]:
         return [agent.name for agent in agents]
+    
+    def _opponent_names(self, player):
+        return [agent.name for agent in self.agents if agent != player]
 
     def _agent_by_name(self, name, incl_dead = False):
         agents = list(self.simulationEngine.agents)

@@ -54,6 +54,7 @@ class DiscussionRoundDirected(BaseRound):
                             ordered_agents.append(chosen_agent)
                         else:
                             appendage = "This is your last turn in the discussion round. Say anything else you want to say. "
+                            #in this case they should also get the thought prompt etc
 
                     user_prompt = f"{player.name} last message was directed to you. Please respond directly to them. {appendage}"
                     self.turn_manager.respond_to(chosen_agent, user_prompt, public_response_prompt="Your public response. ",

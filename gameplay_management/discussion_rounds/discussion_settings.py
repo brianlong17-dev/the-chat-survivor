@@ -7,9 +7,19 @@ class DiscussionLoop:
     turn_prompt: str = "Chat and strategise"
     host_message: Optional[str] = None
     additional_thought_prompt: Optional[str] = None
+    #separate directed fields to avoid defaults
     directed_turn_prompt: str = ""
     directed_public_response_prompt: str = ""
     directed_additional_thought_prompt: str = ""
+    
+    def formatted_additional_thought_prompt(self, opponent_names):
+        if self.additional_thought_prompt:
+            return self.additional_thought_prompt.format(opponent_names=opponent_names)
+        else:
+            return None
+
+    
+    
 
 
 @dataclass

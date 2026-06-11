@@ -134,7 +134,15 @@ export default function Lobby({ onStart }) {
 
   const addCustom = () => {
     const name = customInput.trim()
-    if (!name || customNames.includes(name)) return
+    if (!name) return
+    const lower = name.toLowerCase()
+    const allNames = [...customNames, ...Object.values(tabs).flat()]
+    const existing = allNames.find(n => n.toLowerCase() === lower)
+    if (existing) {
+      toggle(existing)
+      setCustomInput('')
+      return
+    }
     setCustomNames([...customNames, name])
     if (selected.length < hardSelectableAI) setSelected([...selected, name])
     setCustomInput('')
