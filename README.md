@@ -38,7 +38,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for a full breakdown of how the component
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/<your-username>/the-chat-survivor.git
+git clone https://github.com/brianlong17-dev/the-chat-survivor.git
 cd the-chat-survivor
 uv sync
 ```
