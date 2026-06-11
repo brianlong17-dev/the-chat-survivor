@@ -25,9 +25,10 @@ Games start simple — Prisoner's Dilemma, give-or-steal — and get more comple
 Agents are more than static Q&A bots. Each one has:
 
 - **Evolving state** — persona, strategy, speaking style, and life lessons that update after every turn.
+- **Multiple streams of consciousness** — Their public output and private thoughts are pased through seperate streams. They have personality iterations as well as strategic updates and life lessons. Each turn we read their public output and private thoughts.
 - **Memory compression** — at the end of each phase, agents summarise what happened into detailed and brief memories, preventing context from growing unboundedly across a long game.
 - **Visibility-filtered context** — private conversations are only shown to the agents who were part of them.
-- **A Game Master** — a separate LLM agent that summarises rounds and can select players by personality parameter (e.g. "most chaotic") for wildcard immunity.
+
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for a full breakdown of how the components fit together.
 
