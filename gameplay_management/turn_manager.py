@@ -27,7 +27,7 @@ class TurnManager:
         return getattr(response, GamePromptLibrary.model_field_choose_name, None)
 
     def _make_model_optional(self, model, agent):
-        raise Exception("This needs to be turned on in player_system_prompt(cls, agent, include_optional_response = False)")
+        #raise Exception("This needs to be turned on in player_system_prompt(cls, agent, include_optional_response = False)")
 
         buffer = agent.optional_response_buffer
 
@@ -66,8 +66,8 @@ class TurnManager:
         return self.create_choice_field(field_name, allowed_names, choice_reason_prompt)
 
     # --- Turn Execution ---
-
-    def take_turn(self, player, turn_prompt, *,
+    
+    def take_turn_optional(self, player, turn_prompt, *,
                   model_name: str = "DynamicTurnModel",
                   public_response_prompt: str = None,
                   private_thoughts_prompt: str = None,
@@ -76,23 +76,18 @@ class TurnManager:
                   game_logic_fields = None,
                   round_specific_strategy = None,
                   action_post_response: bool = False,
-                  instruction_override = None,
-                  optional: bool = False,
                   broadcast: bool = False,
-                  include_target_name = False,
                   is_reply = False,
-                  thinking = False):
-        
-        
-        optional = optional and self.optional_responses_in_use
-        if optional:
-            additional_thought_nudge = additional_thought_nudge or "Is this a worthwile place to spend your optional response buffer? Why?"
-            speak_silent_field = self.create_choice_field(
-                "will_you_speak_or_remain_silent",
-                ["speak", "remain_silent"],
-                "Declare your choice first. If 'remain_silent', leave public_response null."
-            )
-            game_logic_fields = {**(game_logic_fields or {}), **speak_silent_field}
+                  use_higher_model=False):
+        #if not self.optional_responses_in_use: should be handled oustside of here maybe?
+
+        additional_thought_nudge = additional_thought_nudge or "Is this a worthwile place to spend your optional response buffer? Why?"
+        speak_silent_field = self.create_choice_field(
+            "will_you_speak_or_remain_silent",
+            ["speak", "remain_silent"],
+            "Declare your choice first. If 'remain_silent', leave public_response null."
+        )
+        game_logic_fields = {**(game_logic_fields or {}), **speak_silent_field}
 
         model = self._create_model(
             player,
@@ -106,18 +101,43 @@ class TurnManager:
             action_post_response=action_post_response,
         )
 
-        if optional:
-            result = self._basic_turn_optional(model, player, turn_prompt)
-        else:
-            result = player.take_turn_standard(turn_prompt, self.game_board, model, instruction_override=instruction_override, thinking=thinking)
-
-        #TODO modified broadcasts need to live outside
+        result = self._basic_turn_optional(model, player, turn_prompt, use_higher_model=use_higher_model)
         if broadcast and result and result.public_response:
-            directed_to_name = self._get_target_name_from_response(result) if include_target_name else None
-            #this needs to go out of here. 
-            directed_to_name = None if directed_to_name == 'Group' else directed_to_name
-            self.game_board.handle_public_private_output(player, result, directed_to_name = directed_to_name, is_reply = is_reply)
+            self._output_response(player, result, is_reply=is_reply)
+        return result
 
+
+    def take_turn(self, player, turn_prompt, *,
+                  model_name: str = "DynamicTurnModel",
+                  public_response_prompt: str = None,
+                  private_thoughts_prompt: str = None,
+                  additional_thought_nudge: str = None,
+                  action_fields = None,
+                  game_logic_fields = None,
+                  round_specific_strategy = None,
+                  action_post_response: bool = False,
+                  instruction_override = None,
+                  broadcast: bool = False,
+                  is_reply = False,
+                  thinking = False,
+                  use_higher_model=False):
+
+        model = self._create_model(
+            player,
+            model_name,
+            public_response_prompt=public_response_prompt,
+            private_thoughts_prompt=private_thoughts_prompt,
+            additional_thought_nudge=additional_thought_nudge,
+            action_fields=action_fields,
+            game_logic_fields=game_logic_fields,
+            round_specific_strategy=round_specific_strategy,
+            action_post_response=action_post_response,
+        )
+
+        result = player.take_turn_standard(turn_prompt, self.game_board, model, instruction_override=instruction_override, thinking=thinking,
+                                               use_higher_model=use_higher_model)
+        if broadcast:
+            self._output_response(player, result, is_reply=is_reply)
         return result
 
     def _create_model(
@@ -166,11 +186,11 @@ class TurnManager:
 
     def _ask_directed_question(self, player, possible_target_names, turn_prompt,
                                public_response_prompt, additional_thought_nudge = None, is_reply = False):
-        #Maybe depreciate -
         target_field_description = "Who your question/statement is directed to. "
-        return self._targeted_turn(player, possible_target_names, target_field_description, turn_prompt,
-                               public_response_prompt, additional_thought_nudge, broadcast = True, include_target_name = True,
-                               is_reply = is_reply)
+        response = self._targeted_turn(player, possible_target_names, target_field_description, turn_prompt,
+                               public_response_prompt, additional_thought_nudge, broadcast=False)
+        self._output_response(player, response, include_target_name=True, is_reply=is_reply)
+        return response
 
     def _targeted_turn(self, player, possible_target_names, target_field_description, turn_prompt,
                                public_response_prompt, additional_thought_nudge = None, broadcast = False,
@@ -181,21 +201,19 @@ class TurnManager:
                               additional_thought_nudge=additional_thought_nudge,
                               action_fields=action_fields,
                               broadcast=broadcast,
-                              include_target_name = include_target_name,
                               is_reply = is_reply)
-
+        
     def _basic_turn(self, agent, turn_prompt, public_response_prompt,
-                    private_thoughts_prompt = None, optional = False):
+                    private_thoughts_prompt = None):
         return self.take_turn(agent, turn_prompt,
                               model_name="basic_turn",
                               public_response_prompt=public_response_prompt,
                               private_thoughts_prompt=private_thoughts_prompt,
-                              optional=optional,
                               broadcast=True)
 
     # --- Optional Response Mechanics ---
 
-    def _basic_turn_optional(self, model, agent, turn_prompt):
+    def _basic_turn_optional(self, model, agent, turn_prompt, use_higher_model=False):
         agent.optional_response_buffer = round(agent.optional_response_buffer + self._buffer_amount, 2)
         if agent.optional_response_buffer < 1:
             self._low_buffer_message(agent)
@@ -207,7 +225,7 @@ class TurnManager:
             f"Staying silent is free and lets the buffer accumulate for higher-value moments later.")
         turn_prompt += f"\n{optional_response_prompt}\n"
 
-        result = agent.take_turn_standard(turn_prompt, self.game_board, model)
+        result = agent.take_turn_standard(turn_prompt, self.game_board, model, use_higher_model=use_higher_model)
         if result.public_response:
             agent.optional_response_buffer = round(agent.optional_response_buffer - 1, 2)
             self.base_manager.debug_print(f"{agent.name} spends buffer - new buffer: {agent.optional_response_buffer} ")
@@ -215,6 +233,27 @@ class TurnManager:
             self.base_manager.debug_print(f"{agent.name} passes, buffer: {agent.optional_response_buffer}")
             self.base_manager.debug_print(f"{agent.name} thoughts: {result.private_thoughts}")
         return result
+
+    def _output_response(self, player, response, pre_message_choice_reveal=None, post_message_choice_reveal=None, is_reply=False, delay=0,
+                         include_target_name=False):
+        pre_string = None
+        post_string = None
+        if pre_message_choice_reveal:
+            choice_value = getattr(response, pre_message_choice_reveal, None)
+            if choice_value is not None:
+                pre_string = f"*{str(choice_value).upper()}*"
+        if post_message_choice_reveal:
+            choice_value = getattr(response, post_message_choice_reveal, None)
+            if choice_value is not None:
+                post_string = f"*{str(choice_value).upper()}*"
+        
+        directed_to_name = None
+        if include_target_name:
+            directed_to_name = self._get_target_name_from_response(response)
+            directed_to_name = None if directed_to_name == 'Group' else directed_to_name
+
+        self.game_board.handle_public_private_output(player, response, pre_string=pre_string, post_string=post_string,
+                                                     directed_to_name=directed_to_name, is_reply=is_reply, delay=delay)
 
     def _low_buffer_message(self, agent):
         self.base_manager.private_system_message(agent, "Your turn here was passed as your optional response buffer was too low.")

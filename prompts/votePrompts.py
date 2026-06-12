@@ -13,19 +13,7 @@ class VotePromptLibrary:
         "*{victim_name}* HAS BEEN EJECTED FROM THE CHAT. ☠ ☠ ☠  \n"
     )
 
-    winner_chooses_host_msg = (
-        "🚨🚨🚨 The time... has come. The player with the highest score, {leading_player_name}, "
-        "gets to choose who leaves the game this round. "
-        "They will choose from the following players:\n {other_agent_names} \n"
-    )
-    winner_chooses_context_msg = (
-        "As the leading player you get to choose the player who will now leave the competition"
-    )
-    winner_chooses_choice_prompt = "Choose the player you want to remove from the competition"
-    winner_chooses_thought_nudge = (
-        "Who do you want to send home? In terms of allies, competition, what is your best choice?"
-    )
-
+    
     vote_one_player_turn_prompt = (
         "You must vote for one player you want to leave the competition. "
         "They player with the most votes will leave the game. "

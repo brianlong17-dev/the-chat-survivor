@@ -6,7 +6,7 @@ class GamePerformComedyRoast(GamePerformBase):
 
     _performance_model_name = "ComedyRoast"
     _judge_model_name = "ComedyRoastJudge"
-    _results_header = "🔥 COMEDY ROAST results"
+    _results_header = "*COMEDY ROAST FINAL RESULTS:* "
 
     @classmethod
     def display_name(cls, cfg):

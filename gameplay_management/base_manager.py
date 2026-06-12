@@ -6,6 +6,7 @@ from agents.base_agent import BaseAgent
 from gameplay_management.turn_manager import TurnManager
 from prompts.prompts import PromptLibrary
 from pydantic import Field
+from prompts.gamePrompts import GamePromptLibrary
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -68,6 +69,9 @@ class BaseRound:
     #####################
     #   Agent Access    #
     #####################
+    
+    def _name_choice_field(self):
+        return GamePromptLibrary.model_field_choose_name
 
     @property
     def agents(self):

@@ -1,7 +1,6 @@
 from typing import Optional, Sequence
 
 from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
-from prompts.votePrompts import VotePromptLibrary
 
 
 class VoteWinnerChooses(VoteMechanicsMixin):
@@ -16,17 +15,13 @@ class VoteWinnerChooses(VoteMechanicsMixin):
     def run_vote(self, immunity_players: Optional[Sequence[str]]):
         self.run_voting_winner_chooses(immunity_players)
     
-    def _get_winner_chooses_model(self, leading_player, up_for_elimination):
-        
-        choice_prompt = VotePromptLibrary.winner_chooses_choice_prompt
-        additional_thought_nudge = VotePromptLibrary.winner_chooses_thought_nudge
-        #--------------
-        
-        action_fields = self.turn_manager.create_choice_field("target_name", up_for_elimination, 
-                                                              field_description= choice_prompt)
-        return self.turn_manager._create_model(leading_player, "leader_vote_player_off",
-                    additional_thought_nudge=additional_thought_nudge, action_fields=action_fields)
-        
+    def _host_intro(self, chooser, up_for_elimination):
+        return (
+            f"The time has come... to choose. The player with the highest score, {chooser.name}, "
+            "will now pick who will be elminated from the competition. The players at risk of being sent home are "
+            f"\n*{self.format_list(up_for_elimination)}*.\n"
+        )
+    
         
     def run_voting_winner_chooses(self, immunity_players: Optional[Sequence[str]] = None, with_pass_option: bool = False):
         
@@ -36,24 +31,17 @@ class VoteWinnerChooses(VoteMechanicsMixin):
             name for name in self.game_board.agent_names()
             if name != leading_player.name and name not in immunity_players
         ]
-        
-        if not up_for_elimination:
-            self.game_board.host_broadcast("No players qualify for elimination! Everyone is safe")
-            return
-            
-                
-        leading_player_message = VotePromptLibrary.winner_chooses_host_msg.format(
-            leading_player_name=leading_player.name,
-            other_agent_names=", ".join(up_for_elimination),
-        )
 
-        self.game_board.host_broadcast(leading_player_message)
+        self.game_board.host_broadcast(self._host_intro(leading_player, up_for_elimination))
         
+        context_msg =  ("As the leading player you get to choose the player who will now leave the competition")
+        choice_prompt = "Choose the player you want to remove from the competition. "
+        additional_thought_nudge =  "Who do you want to send home? In terms of allies, competition, what is your best choice?"
+        public_response_prompt = "What do you say as you reveal your choice?"
         
-        model = self._get_winner_chooses_model(leading_player, up_for_elimination)
-        context_msg = VotePromptLibrary.winner_chooses_context_msg
-        response = leading_player.take_turn_standard(context_msg, self.game_board, model)
-        #-------------
+        response = self.turn_manager._targeted_turn(leading_player, up_for_elimination, choice_prompt, context_msg,
+                                                    public_response_prompt, additional_thought_nudge=additional_thought_nudge)
         
-        self.publicPrivateResponse(leading_player, response)
-        self.eliminate_player_by_name(response.target_name)
+        self.turn_manager._output_response(leading_player, response, 
+                    pre_message_choice_reveal=self._name_choice_field(), is_reply=True, delay=1)
+        self.eliminate_player_by_name(self.turn_manager._get_target_name_from_response(response))

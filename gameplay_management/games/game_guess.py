@@ -5,10 +5,6 @@ from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
 
 
 class GameGuess(GameMechanicsMixin):
-    
-    def take_turns_threaded(self, agents, model, the_lambda, use_threads = True):
-        pass
-    
     @classmethod
     def display_name(cls, cfg):
         return "Guess"
@@ -18,30 +14,23 @@ class GameGuess(GameMechanicsMixin):
         return f"Guess the correct number (1-{cfg.guess_number_range}) to win!"
 
     # ------------------------------------------------------------------
-    # Guess the Number
+    # Guess the Number - this was an initial test for parallel turns
     # ------------------------------------------------------------------
 
-    def _get_number_guess(self, player, turn_prompt, response_model):
-        response = player.take_turn_standard(turn_prompt, self.game_board, response_model)
+    def _get_number_guess(self, player, turn_prompt, action_fields):
+        response = self.turn_manager.take_turn(player, turn_prompt, action_fields = action_fields)
         return player, response
 
-    def _build_guess_the_number_result_string(self, correct, incorrect, invalid, number_range):
-        """Assemble a host broadcast summarising the round."""
+    def _build_guess_the_number_result_string(self, correct, incorrect, number_range):
         parts = []
 
         if correct:
             names = self.format_list([p.name for p in correct])
-            parts.append(f"CORRECT! {names} guessed the number and each earn {number_range} points!\n\n")
+            parts.append(f"CORRECT! {names} each earn *{number_range} points*!\n\n")
 
         if incorrect:
-            names = ", ".join(
-                f"{p.name} (guessed {g})" for p, g in incorrect
-            )
-            parts.append(f"WRONG! {names} missed the mark.\n\n")
-
-        if invalid:
-            names = self.format_list([p.name for p in invalid])
-            parts.append(f"⚠️  Invalid guess from: {names}. No points awarded.")
+            names = self.format_list([p.name for p in incorrect])
+            parts.append(f"FLOP! {names} missed the mark.\n\n")
 
         return "  ".join(parts) if parts else "No valid guesses this round."
 
@@ -58,7 +47,7 @@ class GameGuess(GameMechanicsMixin):
 
         # --- Host intro -------------------------------------------------------
         host_intro = (
-            f"🔢 GUESS THE NUMBER!\n"
+            f"GUESS THE NUMBER!\n"
             f"I'm thinking of a number between 1 and {number_range}.\n"
             f"Guess correctly and you'll win {points_for_correct} points!"
         )
@@ -74,7 +63,7 @@ class GameGuess(GameMechanicsMixin):
         player_prompt = (
             f"Guess a number between 1 and {number_range}. "
             f"A correct guess wins you {points_for_correct} points. "
-            f"Think carefully - what number feels right?"
+            f"What number feels right?"
         )
 
         
@@ -82,16 +71,9 @@ class GameGuess(GameMechanicsMixin):
         futures = []
         with ThreadPoolExecutor() as executor:
             for agent in self.simulationEngine.agents:
-                #TODO this will all refactor into take_turn
-                response_model = self.turn_manager._create_model(
-                    agent,
-                    model_name="GuessTheNumber",
-                    action_fields=action_fields,
-                )
                 future = executor.submit(
-                    self._get_number_guess, agent, player_prompt, response_model
+                    self._get_number_guess, agent, player_prompt, action_fields
                 )
-                
                 futures.append(future)
 
         results = [f.result() for f in futures]
@@ -99,32 +81,25 @@ class GameGuess(GameMechanicsMixin):
         # --- Publish each player's public words & guess -----------------------
         correct = []
         incorrect = []
-        invalid = []
 
         for player, response in results:
-            self.publicPrivateResponse(player, response, delay = 1)
+            self.turn_manager._output_response(player, response, pre_message_choice_reveal="choice", delay=1)
 
             raw_choice = getattr(response, "choice", None)
-            try:
-                guess = int(raw_choice)
-            except (TypeError, ValueError):
-                invalid.append(player)
-                continue
+            guess = int(raw_choice)
             
-            if guess not in valid_choices:
-                invalid.append(player)
-            elif guess == winning_number:
+            if guess == winning_number:
                 correct.append(player)
             else:
-                incorrect.append((player, guess))
+                incorrect.append(player)
 
         # --- Reveal and award points ------------------------------------------
         self.game_board.host_broadcast(
-            f"🎲 The number was... **{winning_number}**!"
+            f"The correct number was... **{winning_number}**!"
         )
 
         result_string = self._build_guess_the_number_result_string(
-            correct, incorrect, invalid, points_for_correct
+            correct, incorrect, points_for_correct
         )
         self.game_board.host_broadcast(result_string)
 
@@ -139,7 +114,7 @@ class GameGuess(GameMechanicsMixin):
         if len(correct) == 1:
             agents_for_response.append(correct[0])
         if len(incorrect) == 1:
-            agents_for_response.append(incorrect[0][0])
+            agents_for_response.append(incorrect[0])
         if agents_for_response:
             with ThreadPoolExecutor() as executor:
                 for player in agents_for_response:
@@ -149,4 +124,4 @@ class GameGuess(GameMechanicsMixin):
             
             for player, future in reaction_futures:
                 reaction = future.result()
-                self.publicPrivateResponse(player, reaction, delay = 1)
+                self.game_board.handle_public_private_output(player, reaction, delay = 1, is_reply=True)
