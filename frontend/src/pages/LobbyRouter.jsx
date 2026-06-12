@@ -31,7 +31,7 @@ export default function LobbyRouter(props) {
               THE CHAT SURVIVOR
             </div>
             <div style={{ fontSize: 13, color: '#d8d8d8', lineHeight: 1.6 }}>
-              Mobile version coming soon.<br />For now, this is best enjoyed on desktop.
+              Mobile version is a work in progress.<br />For now, the game is best enjoyed on desktop.
             </div>
             <button
               onClick={() => setDismissed(true)}
