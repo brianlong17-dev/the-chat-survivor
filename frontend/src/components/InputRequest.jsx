@@ -19,11 +19,22 @@ export default function InputRequest({ request, onSubmit, playerNames = [], tran
 
   useEffect(() => { resize() }, [value])
 
+  const prevLenRef = useRef(0)
+
   const resize = () => {
     const el = textareaRef.current
     if (!el) return
-    el.style.height = 'auto'
-    el.style.height = el.scrollHeight + 'px'
+    const grew = value.length >= prevLenRef.current
+    prevLenRef.current = value.length
+    // When the text only grew, the box can only get taller — measure against the
+    // current height and bump if needed, never collapsing to 'auto' (which causes
+    // a one-frame flicker on every keystroke). Only reset to 'auto' on shrink.
+    if (grew) {
+      if (el.scrollHeight > el.clientHeight) el.style.height = el.scrollHeight + 'px'
+    } else {
+      el.style.height = 'auto'
+      el.style.height = el.scrollHeight + 'px'
+    }
   }
 
   const toggleMic = async () => {

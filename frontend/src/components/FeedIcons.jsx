@@ -15,3 +15,21 @@ export function LockIcon({ size = 16 }) {
     </svg>
   )
 }
+
+export function InfoIcon({ size = 16 }) {
+  return (
+    <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="8" r="6.5" />
+      <path d="M8 7.3v4" />
+      <circle cx="8" cy="4.8" r="0.55" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+export function ListIcon({ size = 16 }) {
+  return (
+    <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1.5 4h1M4.5 4h10M1.5 8h1M4.5 8h10M1.5 12h1M4.5 12h7" />
+    </svg>
+  )
+}

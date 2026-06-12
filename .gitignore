@@ -8,7 +8,6 @@ changes.txt
 output/
 data/
 logs/
-docs/
 
 
 # Editor/System junk
@@ -25,6 +24,9 @@ __pycache__/
 #sometimes i generate the diff
 *.diff
 CLAUDE.md
+todo.txt
+README copy.md
+DEPLOY.md
 
 
 #frontend stuff

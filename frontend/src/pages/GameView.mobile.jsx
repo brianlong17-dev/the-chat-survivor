@@ -7,7 +7,7 @@ import RoundWidget from '../components/RoundWidget'
 import InputRequest from '../components/InputRequest'
 import SegmentTracker from '../components/SegmentTracker'
 import PrivateChatsPanel from '../components/PrivateChatsPanel'
-import { SpeechBubbleIcon, LockIcon } from '../components/FeedIcons'
+import { SpeechBubbleIcon, LockIcon, InfoIcon, ListIcon } from '../components/FeedIcons'
 
 export default function GameViewMobile({
   status, events, scores, evicted,
@@ -180,14 +180,14 @@ export default function GameViewMobile({
             onClick={() => setLeftSidebarOpen(o => !o)}
             title="Round info"
           >
-            ℹ
+            <InfoIcon size={16} />
           </button>
           <button
             className={`sidebar-toggle-btn-mobile${rightSidebarOpen ? ' active' : ''}`}
             onClick={() => setRightSidebarOpen(o => !o)}
             title="Scores"
           >
-            ◆
+            <ListIcon size={16} />
           </button>
           {(() => {
             const skipOrNext = isAnimating

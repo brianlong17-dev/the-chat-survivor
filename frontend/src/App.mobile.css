@@ -21,6 +21,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -282,6 +283,10 @@
   justify-content: center;
 }
 
+.sidebar-toggle-btn-mobile svg {
+  display: block;
+}
+
 .sidebar-toggle-btn-mobile:active {
   opacity: 1;
   color: var(--accent);
@@ -375,50 +380,57 @@
   margin-left: 0;
 }
 
-/* ── Input Adjustments ── */
+/* ── Input Adjustments (mobile only) ── */
 
-.input-bar {
-  padding: 6px 10px 8px;
-  border-top: 1px solid var(--border);
-  background: var(--bg2);
-  flex-shrink: 0;
-}
+@media (max-width: 767px) {
+  .input-bar {
+    padding: 6px 10px 8px;
+    border-top: 1px solid var(--border);
+    background: var(--bg2);
+    flex-shrink: 0;
+  }
 
-.input-prompt {
-  font-size: 9px;
-  margin-bottom: 4px;
-  letter-spacing: 0.1em;
-}
+  .input-prompt {
+    font-size: 9px;
+    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+  }
 
-.input-row {
-  gap: 4px;
-  align-items: flex-end;
-}
+  .input-row {
+    gap: 4px;
+    align-items: flex-end;
+  }
 
-.input-text {
-  font-size: 12px;
-  padding: 5px 8px;
-  min-height: 28px;
-  max-height: 120px;
-  line-height: 1.4;
-  resize: none;
-}
+  .input-text {
+    font-size: 16px;
+    padding: 5px 8px;
+    min-height: 28px;
+    max-height: 120px;
+    line-height: 1.4;
+    resize: none;
+  }
 
-.input-submit {
-  padding: 6px 10px;
-  font-size: 10px;
-  flex-shrink: 0;
-}
+  .input-text::placeholder {
+    font-size: 13px;
+    opacity: 0.5;
+  }
 
-.mic-btn {
-  padding: 6px 8px;
-  font-size: 12px;
-  flex-shrink: 0;
-}
+  .input-submit {
+    padding: 6px 10px;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
 
-.choice-btn {
-  padding: 4px 10px;
-  font-size: 10px;
+  .mic-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .choice-btn {
+    padding: 4px 10px;
+    font-size: 10px;
+  }
 }
 
 /* ── Scoreboard Mobile ── */
