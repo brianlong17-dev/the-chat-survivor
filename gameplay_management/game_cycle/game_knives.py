@@ -195,10 +195,10 @@ class GameKnives(CycleRound):
 
     def _optional_pitch(self, players):
         for p in players:
-            self.turn_manager._basic_turn(p.agent, "Before we head to the next round, would you like to say something to the group? ",
-                        "Speak to the group, or return an empty response to remain silent. ",
+            self.turn_manager.take_turn_optional(p.agent, "Before we head to the next round, would you like to say something to the group? ",
+                        public_response_prompt="Speak to the group, or return an empty response to remain silent. ",
                         private_thoughts_prompt="Could you direct the group? Or will you just draw attention? ",
-                        optional=True)
+                        broadcast=True)
 
     # ─────────────────────────── round mechanics ───────────────────────────
 
@@ -289,7 +289,7 @@ class GameKnives(CycleRound):
         """Run one round. Returns the surviving players, or None if the game ends."""
         #input("continue? ")  # TEMP: manual step-through
         self.game_board.host_broadcast(self._knives_count_string(players), delay = 1)
-        if self.optional_responses_in_use:
+        if self.optional_responses_in_use: #So if you're not using optional responses, no pitches
             self._optional_pitch(players)
         self.game_board.host_broadcast(f"Round {round_number}. Ready? Lights out...!", delay = 1)
 

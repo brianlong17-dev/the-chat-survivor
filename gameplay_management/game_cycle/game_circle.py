@@ -97,8 +97,9 @@ class GameCircle(CycleRound):
             public_response_prompt = "Do you stay silent, and hope to be ignored? Or do you speak up and plead? Your public response to them both, and to be heard by the group. "
             private_thoughts_prompt = "Do you protect yourself? Can you remind them of alliance? What is the best strategy here? Is it better to stay silent? "
             
-            self.turn_manager._basic_turn(player, turn_prompt, public_response_prompt, 
-                             private_thoughts_prompt=private_thoughts_prompt, optional = True)
+            self.turn_manager.take_turn_optional(player, turn_prompt,
+                             public_response_prompt=public_response_prompt,
+                             private_thoughts_prompt=private_thoughts_prompt, broadcast=True)
        
         
     def _handle_shot_choice(self, circle, shield_holder, gun_holder, shot_names):
@@ -139,8 +140,8 @@ class GameCircle(CycleRound):
                 #survivors = [random_survivor]
                 for survivor in survivors:
                     react_prompt = f"{player_to_remove.name} has been shot. React to what just happened- or stay silent."
-                    self.turn_manager._basic_turn(survivor, react_prompt, "Your reaction.", 
-                                 optional = True)
+                    self.turn_manager.take_turn_optional(survivor, react_prompt,
+                                 public_response_prompt="Your reaction.", broadcast=True)
 
    
     def run_game(self):

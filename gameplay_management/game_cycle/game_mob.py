@@ -367,8 +367,8 @@ class GameMob(BaseRound):
         # Reactions — target responds, then winning mob members
         target = self._agent_by_name(winner.target)
         if target:
-            self.turn_manager._basic_turn(target, "You've been mobbed. React.", "Your reaction.", optional=False)
-        self.turn_manager._basic_turn(winner.leader, "Your mob won. React.", "Your reaction.", optional=False)
+            self.turn_manager._basic_turn(target, "You've been mobbed. React.", "Your reaction.") #optional?
+        self.turn_manager._basic_turn(winner.leader, "Your mob won. React.", "Your reaction.") #optional?
         return points_value
 
     
