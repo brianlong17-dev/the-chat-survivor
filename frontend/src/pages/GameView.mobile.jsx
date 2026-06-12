@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
+import '../App.whatsapp.css'
 import { ThreadedFeed } from '../components/Messages'
 import Scoreboard from '../components/Scoreboard'
 import RoundTracker from '../components/RoundTracker'

@@ -279,35 +279,35 @@ export default function Lobby({ onStart }) {
       </div>
 
       <div className="lobby-footer">
-        <div className="lobby-mode">
-          <label className="mode-opt">
-            <input type="radio" name="mode" value="watch" checked={radioMode === 'watch'} onChange={() => setHumanIndex(null)} />
-            Watch only
-          </label>
-          <label className="mode-opt">
-            <input type="radio" name="mode" value="play" checked={radioMode === 'play'} onChange={() => setHumanIndex(0)} />
-            Play as:
-          </label>
-          {humanIndex !== null && (
-            <input
-              className={`lobby-name-input ${humanNameMissing ? 'invalid' : ''}`}
-              placeholder="Your name"
-              value={humanName}
-              onChange={e => setHumanName(e.target.value)}
-              autoFocus
-            />
-          )}
+        <input
+          className={`lobby-name-input lobby-name-input-wide ${humanNameMissing ? 'invalid' : ''}`}
+          placeholder="Your Name"
+          value={humanName}
+          disabled={humanIndex === null}
+          onChange={e => setHumanName(e.target.value)}
+        />
+        <div className="lobby-footer-btns">
+          <div className="mode-switch">
+            <button
+              className={`mode-switch-opt${radioMode === 'watch' ? ' active' : ''}`}
+              onClick={() => setHumanIndex(null)}
+            >Watch</button>
+            <button
+              className={`mode-switch-opt${radioMode === 'play' ? ' active' : ''}`}
+              onClick={() => setHumanIndex(0)}
+            >Play</button>
+          </div>
+          <button
+            className="lobby-start-btn"
+            disabled={!canStart}
+            onClick={() => {
+              const startData = { names: activeAINames, humanName: mode === 'play' ? humanName.trim() : null, levelId: selectedLevel, turnstileToken}
+              onStart(startData)
+            }}
+          >
+            {!gameEnabled ? 'Coming Soon' : humanNameMissing ? 'Enter Your Name' : activeCount < minPlayers ? `Select ${minPlayers - activeCount} more ${minPlayers - activeCount === 1 ? 'player' : 'players'}` : 'Start Game'}
+          </button>
         </div>
-        <button
-          className="lobby-start-btn"
-          disabled={!canStart}
-          onClick={() => {
-            const startData = { names: activeAINames, humanName: mode === 'play' ? humanName.trim() : null, levelId: selectedLevel, turnstileToken}
-            onStart(startData)
-          }}
-        >
-          {!gameEnabled ? 'Coming Soon' : activeCount < minPlayers ? `Select ${minPlayers - activeCount} more ${minPlayers - activeCount === 1 ? 'player' : 'players'}` : 'Start Game'}
-        </button>
       </div>
       {turnstileEnabled && <div ref={turnstileRef} style={{ display: 'flex', justifyContent: 'center' }} />}
     </div>

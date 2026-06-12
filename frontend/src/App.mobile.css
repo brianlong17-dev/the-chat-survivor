@@ -1,3 +1,20 @@
+/* ── Nav: desktop fixed bar vs. in-flow mobile nav ── */
+/* .mobile-nav is in-flow at the top of each page's scroll area; hidden on
+   desktop. The desktop .main-nav is hidden on mobile so the in-flow one takes
+   over and can scroll away with the content. */
+.mobile-nav { display: none; }
+
+@media (max-width: 767px) {
+  .main-nav { display: none; }
+  .mobile-nav {
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .mobile-nav .nav-btn { padding: 12px 24px; }
+}
+
 /* ── Mobile Layout ── */
 
 .app-mobile {
@@ -298,27 +315,42 @@
 /* ── Mobile Message Adjustments ── */
 
 .feed-mobile .msg {
-  padding: 1px 0;
+  padding: 0;
 }
 
-.feed-mobile .speaker {
-  min-width: 65px;
-  max-width: 110px;
+.feed-mobile .public-action {
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.feed-mobile .public-action:last-of-type {
+  border-bottom: none;
+}
+
+.feed-mobile .speaker,
+.feed-mobile .system-speaker {
+  min-width: unset;
+  max-width: unset;
   font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .feed-mobile .message-text {
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .feed-mobile .round-header {
-  margin: 6px 0 2px;
+  margin: 14px 0 4px;
   gap: 6px;
 }
 
 .feed-mobile .phase-header {
-  margin: 12px 0 4px;
+  margin: 16px 0 6px;
 }
 
 .feed-mobile .phase-label {
@@ -329,8 +361,18 @@
   font-size: 9px;
 }
 
-.feed-mobile .public-action {
-  gap: 8px;
+.feed-mobile .thread {
+  margin-bottom: 0;
+}
+
+.feed-mobile .thread-children {
+  padding-left: 0;
+}
+
+.feed-mobile .reply-block {
+  border-left: 2px solid var(--reply-color, var(--border));
+  padding-left: 10px;
+  margin-left: 0;
 }
 
 /* ── Input Adjustments ── */

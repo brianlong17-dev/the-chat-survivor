@@ -3,7 +3,7 @@ import './App.css'
 import './App.mobile.css'
 import { loadSettings, saveSettings } from './utils/settings'
 import { useGameSocket } from './hooks/useGameSocket'
-import Lobby from './pages/Lobby'
+import LobbyRouter from './pages/LobbyRouter'
 import DemosPage from './pages/DemosPage'
 import GameViewRouter from './pages/GameViewRouter'
 
@@ -42,7 +42,9 @@ export default function App() {
             <button className={`nav-btn ${view === 'lobby' ? 'active' : ''}`} onClick={() => setView('lobby')}>Game</button>
             <button className={`nav-btn ${view === 'demos' ? 'active' : ''}`} onClick={() => setView('demos')}>Demos</button>
           </nav>
-          {view === 'lobby' ? <Lobby onStart={startGame} /> : <DemosPage onStart={startDemo} />}
+          {view === 'lobby'
+            ? <LobbyRouter onStart={startGame} view={view} setView={setView} />
+            : <DemosPage onStart={startDemo} view={view} setView={setView} />}
         </div>
       )}
     </>

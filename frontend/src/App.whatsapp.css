@@ -1,0 +1,255 @@
+/* WhatsApp-style skin for the mobile game feed.
+   Applied by adding .wa-skin to the .feed-col-mobile wrapper. */
+
+.wa-skin .feed-mobile {
+  padding: 10px 8px;
+  gap: 3px;
+  background: #0a1014;
+}
+
+/* ── Bubble reset ── */
+.wa-skin .feed-mobile .msg {
+  padding: 0;
+}
+
+.wa-skin .feed-mobile .public-action {
+  display: block;
+  padding: 0;
+  border-bottom: none;
+  max-width: 88%;
+}
+
+/* All messages left-aligned by default */
+.wa-skin .feed-mobile .public-action {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+/* ── Bubble shell ── */
+.wa-skin .feed-mobile .public-action .bubble {
+  display: inline-block;
+  position: relative;
+  background: #1f2c34;
+  border-radius: 0px 8px 8px 8px;
+  padding: 6px 10px 18px 10px;
+  min-width: 60px;
+}
+
+/* HOST bubble slightly different bg */
+.wa-skin .feed-mobile .public-action.system .bubble {
+  background: #1a2730;
+}
+
+/* ── Speaker name inside bubble ── */
+.wa-skin .feed-mobile .speaker,
+.wa-skin .feed-mobile .system-speaker {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  min-width: unset;
+  max-width: unset;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wa-skin .feed-mobile .system-speaker {
+  color: #8696a0 !important;
+}
+
+/* ── Message text ── */
+.wa-skin .feed-mobile .message-text {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #e9edef;
+  display: block;
+}
+
+/* ── Fake timestamp bottom-right of bubble ── */
+.wa-skin .feed-mobile .public-action .bubble::after {
+  content: '·';
+  position: absolute;
+  bottom: 5px;
+  right: 8px;
+  font-size: 10px;
+  color: #8696a0;
+  pointer-events: none;
+}
+
+/* ── Thread / reply blocks ── */
+.wa-skin .feed-mobile .thread {
+  margin-bottom: 6px;
+}
+
+.wa-skin .feed-mobile .thread-children {
+  padding-left: 0;
+  padding-top: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wa-skin .feed-mobile .reply-block {
+  border-left: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+/* ── Phase / round headers ── */
+.wa-skin .feed-mobile .phase-header,
+.wa-skin .feed-mobile .round-header {
+  margin: 10px 0 6px;
+}
+
+.wa-skin .feed-mobile .round-header::after {
+  display: none;
+}
+
+.wa-skin .feed-mobile .phase-label {
+  font-size: 10px;
+  background: #1f2c34;
+  padding: 2px 10px;
+  border-radius: 8px;
+}
+
+.wa-skin .feed-mobile .phase-line {
+  display: none;
+}
+
+.wa-skin .feed-mobile .round-label {
+  font-size: 11px;
+  background: #182229;
+  color: #8696a0;
+  padding: 2px 10px;
+  border-radius: 8px;
+}
+
+.wa-skin .feed-mobile .round-scores {
+  font-size: 10px;
+  color: #8696a0;
+}
+
+/* ── Private thought ── */
+.wa-skin .feed-mobile .private-thought {
+  padding-left: 0;
+  max-width: 88%;
+}
+
+.wa-skin .feed-mobile .thought-toggle {
+  font-size: 12px;
+  color: #8696a0;
+}
+
+/* ── System messages (eviction notices etc) ── */
+.wa-skin .feed-mobile .system-public,
+.wa-skin .feed-mobile .system-private {
+  justify-content: center;
+}
+
+.wa-skin .feed-mobile .system-public .sys-text,
+.wa-skin .feed-mobile .system-private .sys-text {
+  background: #182229;
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  color: #8696a0;
+  text-align: center;
+}
+
+.wa-skin .feed-mobile .system-public .sys-icon,
+.wa-skin .feed-mobile .system-private .sys-icon {
+  display: none;
+}
+
+/* ── Round summary ── */
+.wa-skin .feed-mobile .round-summary {
+  max-width: 88%;
+}
+
+.wa-skin .feed-mobile .summary-toggle {
+  font-size: 12px;
+}
+
+/* ── Loading ── */
+.wa-skin .feed-mobile .loading-message {
+  font-size: 12px;
+  color: #8696a0;
+}
+
+/* ── Input bar ── */
+.wa-skin .input-bar {
+  background: #0a1014;
+  border-top: none;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.wa-skin .input-bar .input-prompt {
+  display: none;
+}
+
+.wa-skin .input-bar .input-row {
+  flex: 1;
+  background: #1f2c34;
+  border-radius: 24px;
+  padding: 6px 14px;
+  gap: 0;
+  align-items: center;
+  min-height: 40px;
+}
+
+.wa-skin .input-bar .input-text {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  padding: 0;
+  min-height: unset;
+  max-height: 100px;
+  line-height: 1.4;
+  color: #e9edef;
+  flex: 1;
+}
+
+.wa-skin .input-bar .input-text::placeholder {
+  color: #8696a0;
+}
+
+.wa-skin .input-bar .input-submit {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #00a884;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+
+.wa-skin .input-bar .input-submit::after {
+  content: '▶';
+}
+
+.wa-skin .input-bar .mic-btn {
+  display: none;
+}
+
+.wa-skin .input-choices {
+  padding: 4px 8px 0;
+  background: #0a1014;
+}
+
+.wa-skin .input-choices .choice-btn {
+  border-color: #00a884;
+  color: #00a884;
+  border-radius: 16px;
+  font-size: 13px;
+}

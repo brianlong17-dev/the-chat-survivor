@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import MobileNav from '../components/MobileNav'
 
 const DEMOS = [
   {
@@ -216,7 +217,7 @@ function DemoCard({ demo, onStart, turnstileEnabled }) {
   )
 }
 
-export default function DemosPage({ onStart }) {
+export default function DemosPage({ onStart, view, setView }) {
   const [turnstileEnabled, setTurnstileEnabled] = useState(null)
 
   useEffect(() => {
@@ -227,6 +228,7 @@ export default function DemosPage({ onStart }) {
 
   return (
     <div className="demos-page">
+      <MobileNav view={view} setView={setView} />
       <h1 className="lobby-title">Demos</h1>
       <p className="demos-subtitle">Pre-loaded game scenarios from real playthroughs.</p>
       <div className="demos-grid">

@@ -437,6 +437,12 @@
   padding: 4px 0;
 }
 
+.bubble {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
 .speaker {
   font-weight: bold;
   white-space: nowrap;
@@ -1368,28 +1374,63 @@
 
 .lobby-footer {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   border-top: 1px solid var(--border);
   padding-top: 20px;
+}
+
+.lobby-name-input-wide {
+  width: 100%;
+  max-width: 380px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.lobby-footer-btns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .lobby-mode {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
 }
 
-.mode-opt {
+.mode-switch {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-dim);
-  cursor: pointer;
+  border: 1px solid var(--accent);
 }
 
-.mode-opt input { accent-color: var(--accent); cursor: pointer; }
+.mode-switch-opt {
+  height: 40px;
+  padding: 0 18px;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mode-switch-opt + .mode-switch-opt {
+  border-left: 1px solid var(--accent);
+}
+
+.mode-switch-opt.active {
+  background: var(--accent);
+  color: #000;
+}
+
+.mode-switch-opt:not(.active):hover {
+  background: var(--accent);
+  color: #000;
+}
 
 .lobby-name-input {
   background: transparent;
@@ -1433,8 +1474,16 @@
   box-shadow: 0 0 0 2px rgba(224, 123, 84, 0.25);
 }
 
+.lobby-name-input:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
 .lobby-start-btn {
-  padding: 10px 32px;
+  width: 200px;
+  height: 40px;
+  padding: 0 8px;
+  box-sizing: border-box;
   background: transparent;
   border: 1px solid var(--accent);
   color: var(--accent);
