@@ -38,7 +38,8 @@ class DynamicModelFactory:
         game_logic_fields: Dict[str, tuple] = None,   # Logic fields prompted by the game
         round_specific_strategy=None,
         action_fields: Dict[str, tuple] = None,      # Actions required by the game (e.g. dropdowns),
-        action_post_response = False
+        action_post_response = False,
+        mobile_outputs=False
     ) -> Type[BaseModel]:
         if agent.is_human(): # and not agent.is_testing:
             return cls.create_human_model(public_response_prompt, action_fields)
@@ -88,6 +89,8 @@ class DynamicModelFactory:
             ordered_fields.update(action_fields)
         #...... public response
         pub_prompt = public_response_prompt or PromptLibrary.desc_message
+        if mobile_outputs:
+            pub_prompt += f"\nThe format is on a phone- keep to the length you would type in response to the situation. "
         
         ordered_fields["public_response"] = (str, Field(description=pub_prompt))
         #....action 

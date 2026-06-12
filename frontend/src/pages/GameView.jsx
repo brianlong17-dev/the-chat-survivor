@@ -14,10 +14,11 @@ export default function GameView({
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound
 }) {
-  const { showPrivate, autoRun, animateText, showPrivateChats } = settings
+  const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs } = settings
 
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false)
+  const [mobileOutputsInfoOpen, setMobileOutputsInfoOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('feed')
   const [seenPrivateCount, setSeenPrivateCount] = useState(0)
   const settingsRef = useRef(null)
@@ -199,6 +200,20 @@ export default function GameView({
                   <input type="checkbox" checked={showPrivateChats} onChange={e => updateSetting('showPrivateChats', e.target.checked)} />
                   Show private conversations
                 </label>
+                <div className="toggle-label-with-info">
+                  <label className="toggle-label">
+                    <input type="checkbox" checked={!!mobileOutputs} onChange={e => updateSetting('mobileOutputs', e.target.checked)} />
+                    Mobile outputs
+                  </label>
+                  <button
+                    className="setting-info-btn"
+                    onClick={e => { e.stopPropagation(); setMobileOutputsInfoOpen(o => !o) }}
+                    title="About mobile outputs"
+                  >ⓘ</button>
+                </div>
+                {mobileOutputsInfoOpen && (
+                  <p className="setting-info-text">Switch on for character output refined for mobile play.</p>
+                )}
               </div>
             )}
           </div>

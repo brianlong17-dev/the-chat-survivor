@@ -23,7 +23,8 @@ class WebSocketSink(GameEventSink):
         self._disconnected = False
         self._input_queue: queue.Queue = queue.Queue()
         self._round_gate = threading.Event()
-        self._round_gate.set() 
+        self._round_gate.set()
+        self.mobile_outputs: bool = False
 
     def _send(self, payload: dict):
         if self._disconnected:

@@ -15,9 +15,10 @@ export default function GameViewMobile({
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound
 }) {
-  const { showPrivate, autoRun, animateText, showPrivateChats } = settings
+  const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs } = settings
 
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [mobileOutputsInfoOpen, setMobileOutputsInfoOpen] = useState(false)
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('feed')
   const [seenPrivateCount, setSeenPrivateCount] = useState(0)
@@ -119,7 +120,49 @@ export default function GameViewMobile({
     <div className="app-mobile">
       <header className="app-header-mobile">
         <div className="header-left-mobile">
-          <h1 className="app-title-mobile app-title-clickable" onClick={() => setExitConfirmOpen(true)}>CHAT SURVIVOR</h1>
+          <div className="settings-menu" ref={settingsRef}>
+            <button className="hamburger-btn-mobile" onClick={() => setSettingsOpen(o => !o)} title="Menu">
+              <span /><span /><span />
+            </button>
+            {settingsOpen && (
+              <div className="settings-dropdown-mobile settings-dropdown-left-mobile">
+                <label className="toggle-label">
+                  <input type="checkbox" checked={showPrivate} onChange={e => updateSetting('showPrivate', e.target.checked)} />
+                  Show private thoughts
+                </label>
+                <label className="toggle-label">
+                  <input type="checkbox" checked={autoRun} onChange={e => updateSetting('autoRun', e.target.checked)} />
+                  Auto-run
+                </label>
+                <label className="toggle-label">
+                  <input type="checkbox" checked={animateText} onChange={e => updateSetting('animateText', e.target.checked)} />
+                  Animate text
+                </label>
+                <label className="toggle-label">
+                  <input type="checkbox" checked={showPrivateChats} onChange={e => updateSetting('showPrivateChats', e.target.checked)} />
+                  Show private conversations
+                </label>
+                <div className="toggle-label-with-info">
+                  <label className="toggle-label">
+                    <input type="checkbox" checked={!!mobileOutputs} onChange={e => updateSetting('mobileOutputs', e.target.checked)} />
+                    Mobile outputs
+                  </label>
+                  <button
+                    className="setting-info-btn"
+                    onClick={e => { e.stopPropagation(); setMobileOutputsInfoOpen(o => !o) }}
+                    title="About mobile outputs"
+                  >ⓘ</button>
+                </div>
+                {mobileOutputsInfoOpen && (
+                  <p className="setting-info-text">Switch on for character output refined for mobile play.</p>
+                )}
+                <div className="settings-divider-mobile" />
+                <button className="settings-lobby-btn-mobile" onClick={() => { setSettingsOpen(false); setExitConfirmOpen(true) }}>
+                  Return to Lobby
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <div className="header-controls-mobile">
           {showPrivateChats && (
@@ -145,29 +188,6 @@ export default function GameViewMobile({
           >
             ◆
           </button>
-          <div className="settings-menu" ref={settingsRef}>
-            <button className="gear-btn" onClick={() => setSettingsOpen(o => !o)}>⚙</button>
-            {settingsOpen && (
-              <div className="settings-dropdown-mobile">
-                <label className="toggle-label">
-                  <input type="checkbox" checked={showPrivate} onChange={e => updateSetting('showPrivate', e.target.checked)} />
-                  Show private thoughts
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={autoRun} onChange={e => updateSetting('autoRun', e.target.checked)} />
-                  Auto-run
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={animateText} onChange={e => updateSetting('animateText', e.target.checked)} />
-                  Animate text
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={showPrivateChats} onChange={e => updateSetting('showPrivateChats', e.target.checked)} />
-                  Show private conversations
-                </label>
-              </div>
-            )}
-          </div>
           {(() => {
             const skipOrNext = isAnimating
               ? { label: 'Skip', action: skipAnimation, active: true }

@@ -31,6 +31,7 @@ export function getSpeakerColor(name, colorMap) {
 }
 
 function renderBold(text) {
+  if (text == null) return null
   const parts = text.split(/(\*[^*\n]+\*)/g)
   return parts.map((part, i) => {
     if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {

@@ -161,7 +161,8 @@ class TurnManager:
             action_fields=action_fields,
             game_logic_fields=game_logic_fields,
             round_specific_strategy=round_specific_strategy,
-            action_post_response=action_post_response)
+            action_post_response=action_post_response,
+            mobile_outputs=self.game_board.mobile_outputs)
         return model
                       
     def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,

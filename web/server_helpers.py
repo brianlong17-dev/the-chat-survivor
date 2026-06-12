@@ -96,6 +96,9 @@ async def _run_game_thread(thread, api_client, websocket, sink):
                 sink._input_queue.put(str(msg.get("value", ""))[:MAX_INPUT_LENGTH])
             elif msg.get("type") == "next_round":
                 sink.set_round_gate_open()
+            elif msg.get("type") == "set_flag":
+                if msg.get("flag") == "mobile_outputs":
+                    sink.mobile_outputs = bool(msg.get("value"))
             elif msg.get("type") == "transcribe" and TRANSCRIPTION_ENABLED:
                 asyncio.create_task(handle_transcribe(websocket, api_client, msg))
         except asyncio.TimeoutError:

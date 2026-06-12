@@ -10,7 +10,7 @@ function isAnimatableEvent(evt, animateText) {
   return evt.animate_as_player === true || evt.speaker === 'HOST'
 }
 
-export function useGameSocket(autoRun, animateText) {
+export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const [status, setStatus] = useState('idle')
   const [events, setEvents] = useState([])
   const [scores, setScores] = useState(null)
@@ -35,6 +35,12 @@ export function useGameSocket(autoRun, animateText) {
 
   const animateTextRef = useRef(animateText)
   useEffect(() => { animateTextRef.current = animateText }, [animateText])
+
+  const mobileOutputsRef = useRef(mobileOutputs)
+  useEffect(() => {
+    mobileOutputsRef.current = mobileOutputs
+    if (wsRef.current) wsRef.current.send(JSON.stringify({ type: 'set_flag', flag: 'mobile_outputs', value: mobileOutputs }))
+  }, [mobileOutputs])
 
   const [isAnimatingState, setIsAnimatingState] = useState(false)
 
@@ -174,7 +180,11 @@ export function useGameSocket(autoRun, animateText) {
     const ws = new WebSocket(wsUrl)
     wsRef.current = ws
 
-    ws.onopen = () => { ws.send(JSON.stringify(initMsg)); setStatus('running') }
+    ws.onopen = () => {
+      ws.send(JSON.stringify(initMsg))
+      ws.send(JSON.stringify({ type: 'set_flag', flag: 'mobile_outputs', value: mobileOutputsRef.current }))
+      setStatus('running')
+    }
     ws.onmessage = handleMessage
     ws.onclose = () => { wsRef.current = null; setStatus(s => s === 'running' ? 'done' : s) }
     ws.onerror = () => {

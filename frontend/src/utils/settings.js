@@ -1,7 +1,7 @@
 export const MAX_INPUT_CHARS = 1500
 
 export const SETTINGS_KEY = 'game_settings'
-export const DEFAULT_SETTINGS = { showPrivate: true, autoRun: true, animateText: true, showPrivateChats: true }
+export const DEFAULT_SETTINGS = { showPrivate: true, autoRun: true, animateText: true, showPrivateChats: true, mobileOutputs: false }
 
 export function loadSettings() {
   try { return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY)) } }

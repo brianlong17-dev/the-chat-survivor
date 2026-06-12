@@ -27,7 +27,7 @@ export default function App() {
     })
   }
 
-  const socket = useGameSocket(settings.autoRun, settings.animateText)
+  const socket = useGameSocket(settings.autoRun, settings.animateText, settings.mobileOutputs)
   const { status, startGame, startDemo } = socket
 
   if (status !== 'idle') {

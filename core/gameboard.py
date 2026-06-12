@@ -27,6 +27,10 @@ class GameBoard:
         self.score_changed_in_round = False
         self.scores_at_round_start: dict[str, int] = {}
 
+    @property
+    def mobile_outputs(self) -> bool:
+        return getattr(self.game_sink, 'mobile_outputs', False)
+
     def _human_in_restriction(self, restricted_users):
         if not restricted_users:
             return False
