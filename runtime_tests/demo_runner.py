@@ -189,9 +189,14 @@ def run_demo_pd_finale(sink, api_client, human_name: str = None, fixture_choice:
 
 
 def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str = None):
-    """Game Phase: 11 real players, mid-game Knives + Vote round."""
+    """Game Phase: 11 real players, mid-game round dev testing."""
     from core.levels.phase_description import PhaseDescription
     from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
+    from gameplay_management.eliminations.voting_winner_chooses import VoteWinnerChooses
+    from gameplay_management.games.game_guess import GameGuess
+    from gameplay_management.game_cycle.game_knives import GameKnives
+    from gameplay_management.game_cycle.game_circle import GameCircle
+    from gameplay_management.game_cycle.game_mob import GameMob
 
     scores = {
         "Aang": 12, "Michael Jackson": 10, "HAL 9000": 9,
@@ -210,23 +215,23 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
         phase_number=3,
         human_name=human_name,
         human_is_dead=True,
-        eliminate_after=5,
+        eliminate_after=8,
     )
 
     cfg = engine.gameplay_config
     #cfg.pd_pairing_method = cfg.pd_pairing_choice_lowest
     #cfg.pd_pairing_method = cfg.pd_pairing_choice_none
     #cfg.pd_pairing_method = cfg.pd_pairing_choice_all
+    cfg.optional_responses_in_use = True
     cfg.pd_pairing_method = cfg.pd_pairing_choice_all
     cfg.vote_bottom_two_expand_ties = True
-    round_count = 0
-    #while len(engine.agents) > 2:
-    while round_count < 1:
-        round_count += 1
-        phase = PhaseDescription(rounds=[GamePerformComedyRoast, VoteLowestPoints, GamePerformComedyRoast],
-                                 should_summarise_phase=False)
-        engine.phase_runner.run_phase(phase)
 
+    phase = PhaseDescription(rounds=[GameKnives, VoteWinnerChooses], should_summarise_phase=False)
+    #phase = PhaseDescription(rounds=[GameKnives, VoteBottomTwo], should_summarise_phase=False)
+    # phase = PhaseDescription(rounds=[GameCircle, VoteBottomTwo], should_summarise_phase=False)
+    #phase = PhaseDescription(rounds=[GamePerformComedyRoast, VoteLowestPoints, GamePerformComedyRoast], should_summarise_phase=False)
+
+    engine.phase_runner.run_phase(phase)
     engine.api_client.print_and_write_summary()
 
 

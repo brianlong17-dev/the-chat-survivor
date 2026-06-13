@@ -90,7 +90,7 @@ class DynamicModelFactory:
         #...... public response
         pub_prompt = public_response_prompt or PromptLibrary.desc_message
         if mobile_outputs:
-            pub_prompt += f"\nThe format is on a phone- keep to the length you would type in response to the situation. "
+            pub_prompt += f"\nThe format is a phone groupchat- keep to the length you would type in response to the situation. "
         
         ordered_fields["public_response"] = (str, Field(description=pub_prompt))
         #....action 
