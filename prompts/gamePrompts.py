@@ -5,7 +5,6 @@ class GamePromptLibrary:
 
     model_field_error = "error_string"
     
-    model_field_choose_name = "target_name"
     invalid_target_message = (
         "{player_name} chose '{target_name}'... but that's an invalid target. No points changed hands."
     )

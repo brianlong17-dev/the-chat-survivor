@@ -119,7 +119,7 @@ class GameKnives(CycleRound):
             ),
         )
         if chatty:
-            self.game_board.handle_public_private_output(state.agent, result)
+            self.turn_manager._output_response(state.agent, result)
 
         targets = []
         

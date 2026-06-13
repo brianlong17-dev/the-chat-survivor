@@ -40,8 +40,9 @@ class VoteElectLeader(VoteMechanicsMixin):
 
         votes = []
         for agent, vote_response in zip(self.simulationEngine.agents, voting_results):
-            #I think all public private responses with action should probably take an action as well, to output it
-            self.publicPrivateResponse(agent, vote_response, delay = 1)
+            self.turn_manager._output_response(agent, vote_response, is_reply=True, delay=1,
+                        pre_message_choice_reveal=self.TARGET_NAME_FIELD)
+            
             target_name = self.turn_manager._get_target_name_from_response(vote_response)
             choice = self._agent_by_name(target_name)
             if choice:

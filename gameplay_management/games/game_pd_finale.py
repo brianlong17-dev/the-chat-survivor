@@ -113,7 +113,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             if False:
                 choice = 'steal'
                 
-            self.game_board.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{choice.upper()}*")
+            self.turn_manager._output_response(agent, res, pre_message_choice_reveal="action", is_reply=True)
             agent.clear_round_specific_strategy()
             choices.append(choice)
         return choices

@@ -43,5 +43,5 @@ class VoteWinnerChooses(VoteMechanicsMixin):
                                                     public_response_prompt, additional_thought_nudge=additional_thought_nudge)
         
         self.turn_manager._output_response(leading_player, response, 
-                    pre_message_choice_reveal=self._name_choice_field(), is_reply=True, delay=1)
+                    pre_message_choice_reveal=self.TARGET_NAME_FIELD, is_reply=True, delay=1)
         self.eliminate_player_by_name(self.turn_manager._get_target_name_from_response(response))

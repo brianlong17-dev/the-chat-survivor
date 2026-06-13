@@ -45,7 +45,7 @@ class GameTargetedChoiceGive(GameMechanicsMixin):
             
             self.game_board.host_broadcast(result, is_reply=True)
             reaction = self.turn_manager.respond_to(target_agent, result, is_reply=True)
-            self.game_board.handle_public_private_output(target_agent, reaction, is_reply=True)
+            self.turn_manager._output_response(target_agent, reaction, is_reply=True)
             self.game_board.system_broadcast(self.game_board.agent_scores, private=True)
             #needs to push after react, so they don't think it happened twice
             self.game_log._push_to_game_ledger(f"{player.name} gave points to {target_name}.")

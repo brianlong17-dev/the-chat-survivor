@@ -80,7 +80,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
 
             choices = []
             for agent, res in zip((agent0, agent1), results):
-                self.game_board.handle_public_private_output(agent, res, is_reply = True,  post_string=f"*{res.action.upper()}*")
+                self.turn_manager._output_response(agent, res, post_message_choice_reveal="action", is_reply=True)
                 choices.append(res.action.strip().lower())
 
             p0_gain, p1_gain, msg = self._calculate_outcome(choices[0], choices[1], agent0.name, agent1.name)

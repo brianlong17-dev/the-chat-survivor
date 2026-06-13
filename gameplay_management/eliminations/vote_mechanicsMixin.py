@@ -68,7 +68,7 @@ class VoteMechanicsMixin(BaseRound):
     def _handle_vote_response(self, votes, agent, vote_response):
         actual_vote = self.turn_manager._get_target_name_from_response(vote_response)
         votes.append(actual_vote)
-        self.game_board.handle_public_private_output(agent, vote_response, is_reply = True, delay = 2, pre_string = f"*{actual_vote.upper()}*")
+        self.turn_manager._output_response(agent, vote_response, is_reply=True, delay=2, pre_message_choice_reveal=self.TARGET_NAME_FIELD)
         self._update_voting_widget(agent.name, actual_vote or "—")
         return actual_vote #used in leader_chooses
         

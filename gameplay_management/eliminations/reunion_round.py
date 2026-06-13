@@ -110,7 +110,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
         if not result.public_response:
             self.private_system_message(agent, "You declined to say anything on this turn. ", )
         else:
-            self.game_board.handle_public_private_output(agent, result, is_reply = is_reply)
+            self.turn_manager._output_response(agent, result, is_reply=is_reply)
 
     def _get_highlights(self, player):
         return self.simulationEngine.game_master.create_host_script(

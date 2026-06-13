@@ -15,6 +15,7 @@ class BaseAgent:
         self._log_call_index = 0        # monotonic counter per agent instance
         self._log_path = None           # set on first write, reused within a run
         self.brevity_jail = False
+        self.last_message_id = None
 
     def __repr__(self):
         return f"<{type(self).__name__} {self.name}>"

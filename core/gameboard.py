@@ -53,7 +53,7 @@ class GameBoard:
             self.game_sink.system_private(header)
             self.game_sink.on_public_action(player_name, message, "RED")
             #####
-        return self.game_log._update_history(player_name, message, restricted_users)
+        return self.game_log._update_history(player_name, message, visibility_restriction=restricted_users)
 
     def log_message_to_conversation(self, conversation_id, player_name: str, message: str):
         entry = self._get_conversation_entry(conversation_id)
@@ -128,22 +128,17 @@ class GameBoard:
             if key not in excluded_keys
         ]
 
-    def handle_public_private_output(self, agent: BaseAgent, response, delay: float = 0.0, output_inner_workings=False, 
-                                     directed_to_name = None, is_reply: bool = False, pre_string = None, post_string = None):
+    def handle_public_private_output(self, agent: BaseAgent, public_resonse, private_thought, private_thoughts_brief, 
+            delay: float = 0.0, is_reply: bool = False, directed_to_name=None):
+        #TODO OOS, but directed to name should just come into backend-
+        message_id = self.broadcast_public_action_agent(agent, public_resonse, private_thoughts_brief=private_thoughts_brief,
+                                     directed_to_name=directed_to_name, is_reply=is_reply)
 
-        public_message, private_message = response.public_response, response.private_thoughts
-        if pre_string:
-            public_message = f"{pre_string}\n{public_message}"
-        if post_string:
-            public_message = f"{public_message}\n{post_string}"
+        agent.last_message_id = message_id
 
+        if private_thought:
+            self.game_sink.on_private_thought(agent, private_thought)
 
-        self.broadcast_public_action(agent, public_message, directed_to_name=directed_to_name, 
-                                     is_reply=is_reply, is_human=agent.is_human())
-        if not agent.is_human():
-            self.game_sink.on_private_thought(agent, private_message)
-        if output_inner_workings:
-            self.game_sink.on_inner_workings(agent, self._get_inner_thought_fields(response))
         self.game_sink.delay(delay)
 
     def _should_animate(self, speaker):
@@ -163,20 +158,26 @@ class GameBoard:
         is_repeated_host_message = isinstance(speaker, str) and speaker.upper() == self.HOST_NAME and self._was_last_message_from_host()
         return not (is_system_speaker or self._is_human(speaker) or is_repeated_host_message)
 
-    def broadcast_public_action(self, speaker: Union[str, BaseAgent], message: str, color: str = "", directed_to_name = None, is_reply = False, 
-                                should_animate_override = False, is_human=False):
-        display_name = self._as_display_name(speaker)
-        if display_name.upper() == self.SYSTEM:
-            raise ValueError("SYSTEM cannot broadcast a public_action; use system_broadcast instead")
+    def broadcast_public_action_agent(self, agent, message, private_thoughts_brief, color: str = "", directed_to_name = None, is_reply = False):
+        message_id = self.game_log._update_history(agent.name, message, private_thoughts_brief=private_thoughts_brief)
         
-        self.game_log._update_history(display_name, message)
-        animate_as_player = should_animate_override or self._should_animate(speaker)
-        should_hold = should_animate_override or self._should_hold(speaker)
-        self.game_sink.on_public_action(speaker, message, color=color, animate_as_player=animate_as_player, should_hold=should_hold,
-                                        directed_to_name = directed_to_name, is_reply = is_reply, is_human=is_human)
-        if should_hold:
-            self.first_message_send = True
+        self.game_sink.on_public_action(agent.name, message, color=color, animate_as_player=True, should_hold=True,
+                                        directed_to_name = directed_to_name, is_reply = is_reply, is_human=agent.is_human())
+        self.first_message_send = True
+        return message_id
 
+    def broadcast_public_action_non_player(self, speaker: str, message: str, color: str = "", directed_to_name = None, is_reply = False, 
+                                should_animate_override = False, is_human=False):
+        
+        if speaker.upper() == self.SYSTEM:
+            raise ValueError("SYSTEM cannot broadcast a public_action; use system_broadcast instead") 
+        #so its just host? and sys_admin // or is sys admin always private?
+        self.game_log._update_history(speaker, message)
+        is_repeated_host = speaker.upper() == self.HOST_NAME and self._was_last_message_from_host()
+        should_hold = should_animate_override or not is_repeated_host
+        self.game_sink.on_public_action(speaker, message, color=color, animate_as_player=should_animate_override, should_hold=should_hold,
+                    directed_to_name = directed_to_name, is_reply = is_reply, is_human=is_human)
+        
     def system_broadcast(self, message, private=False, border_bottom = False):
         if not private:
             self.game_log._update_history(self.SYSTEM, message)
@@ -193,12 +194,12 @@ class GameBoard:
     def host_broadcast(self, message, delay: float = 0.0, is_reply: bool = False,
                        animate_as_player=False):
         entry = self.game_log._current_round_most_recent_message_entry()
-        self.broadcast_public_action(self.HOST_NAME, message, is_reply=is_reply, should_animate_override=animate_as_player)
+        self.broadcast_public_action_non_player(self.HOST_NAME, message, is_reply=is_reply, should_animate_override=animate_as_player)
         self.game_sink.delay(delay)
 
     def environment_broadcast(self, message, delay):
         #TODO make this right - its just a frontend thing for BANG
-        self.broadcast_public_action("", message)
+        self.broadcast_public_action_non_player("", message)
         if delay:
             self.game_sink.delay(delay)
 

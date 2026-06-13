@@ -45,6 +45,6 @@ class HighestPointsImmunity(ImmunityMechanicsMixin):
             for agent_name in highest_players:
                 winner = self._agent_by_name(agent_name)
                 winner_response = self.turn_manager.respond_to(winner, host_string)
-                self.publicPrivateResponse(winner, winner_response)
+                self.turn_manager._output_response(winner, winner_response)
             
         return highest_players

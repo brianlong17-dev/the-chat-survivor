@@ -161,7 +161,7 @@ class GameMob(BaseRound):
             return None
         
         elif choice in valid_targets:
-            self.game_board.handle_public_private_output(agent, result)
+            self.turn_manager._output_response(agent, result)
             return Mob(agent, choice, [])
         else:
             self.private_system_message(agent, f"Invalid target choice '{choice}' — your nomination has been ignored.")
@@ -174,7 +174,7 @@ class GameMob(BaseRound):
             self._handle_mob_choice_response(follower, result)
 
     def _handle_mob_choice_response(self, follower, result):
-        self.game_board.handle_public_private_output(follower, result, delay = 1)
+        self.turn_manager._output_response(follower, result, delay=1)
         choice = result.mob_choice.strip()
         chosen_mob = next((m for m in self.mobs if self._mob_label(m, target_label='targetting') == choice), None)
         if not chosen_mob:
@@ -418,7 +418,7 @@ class GameMob(BaseRound):
         chosen_mob.followers.append(player)
         if get_a_point:
             self.game_board.append_agent_points(player.name, self.RECONSIDER_POINTS)
-        self.game_board.handle_public_private_output(player, result)
+        self.turn_manager._output_response(player, result)
         self._host_broadcast(f"{player.name} switches to {self._mob_label(chosen_mob)}!")
         
         

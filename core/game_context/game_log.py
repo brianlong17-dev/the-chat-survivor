@@ -54,10 +54,10 @@ class GameLog:
     def _get_conversation_entry(self, conversation_id) -> MessageEntry | None:
         return next((e for e in self.current_round.messageEntries if e.id == conversation_id), None)
 
-    def _update_history(self, player_name: str, message: str, visibility_restriction=None) -> int:
+    def _update_history(self, player_name: str, message: str, private_thought_brief=None, visibility_restriction=None) -> int:
         self.message_id += 1
         entry = MessageEntry(
-            messages=[{"speaker": player_name, "message": message}],
+            messages=[{"speaker": player_name, "message": message, "private_thought_brief": private_thought_brief}],
             id=self.message_id,
             visibility_restriction=visibility_restriction
         )

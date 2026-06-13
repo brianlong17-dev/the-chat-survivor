@@ -115,24 +115,22 @@ class GamePrisonersDilemma(GameMechanicsMixin):
 
         choices = []
         for agent, res in zip((agent0, agent1), results):
-            self.game_board.handle_public_private_output(agent, res, is_reply = True, pre_string = f"*{res.action.upper()}*")
+            self.turn_manager._output_response(agent, res, pre_message_choice_reveal="action", is_reply=True)
             choices.append(res.action)
 
         result_host_message = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
         self._host_broadcast(f"{result_host_message}\n")
 
         if self.cfg.pd_get_reactions and (self.cfg.pd_pairing_method != self.cfg.pd_pairing_choice_all):
-            #We don't want reactions for round robin pairing.
             if (choices[0] == 'steal' and choices[1] == 'steal'):
-                reactions = self._run_tasks([(agent0, result_host_message), (agent1, result_host_message)], 
+                reactions = self._run_tasks([(agent0, result_host_message), (agent1, result_host_message)],
                                             self.respond_to_return_sender)
-                for reaction in reactions:
-                    self.game_board.handle_public_private_output(reaction[0], reaction[1], is_reply = True)
-                
+                for agent, reaction in reactions:
+                    self.turn_manager._output_response(agent, reaction, is_reply=True)
+
             elif (choices[0] != choices[1]):
                 for agent in (agent0, agent1):
-                    reaction = self.turn_manager.respond_to(agent, result_host_message)
-                    self.game_board.handle_public_private_output(agent, reaction, is_reply = True)
+                    self.turn_manager.respond_to(agent, result_host_message, broadcast=True, is_reply=True)
                     
         self.game_log._push_to_game_ledger(self._game_ledger_message(agent0, agent1, choices[0], choices[1]))     
         

@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 class BaseRound:
 
+    TARGET_NAME_FIELD = "target_name"
+
     #####################
     #   Setup / Meta    #
     #####################
@@ -28,11 +30,7 @@ class BaseRound:
     @property
     def game_log(self):
         return self.game_board.game_log
-
-    def publicPrivateResponse(self, agent: BaseAgent, result, delay: float = 0.0, is_reply = False):
-        #TODO deprecate
-        self.game_board.handle_public_private_output(agent, result, delay, is_reply=is_reply)
-
+    
     @classmethod
     def is_discussion(cls):
         return False
@@ -62,7 +60,7 @@ class BaseRound:
         self.game_board.host_broadcast(self.cfg.pre_eviction_message.format(victim_name=victim.name.upper()))
         self.simulationEngine.eliminate_player(victim)
         final_words_result = self.turn_manager.respond_to(victim, PromptLibrary.final_words_prompt(), prefix_respond_to=False)
-        self.publicPrivateResponse(victim, final_words_result)
+        self.turn_manager._output_response(victim, final_words_result)
         
         self.game_board.system_broadcast(self.cfg.post_eviction_system_message.format(victim_name=victim.name), private = False)
 

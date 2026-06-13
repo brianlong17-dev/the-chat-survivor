@@ -57,7 +57,7 @@ class GameCircle(CycleRound):
         if self.double_shot:
             shot_names += [result.target_choice_2.strip()]
         
-        self.game_board.handle_public_private_output(gun_holder, result)
+        self.turn_manager._output_response(gun_holder, result)
         valid_shots = []
         for shot_name in shot_names:
             if shot_name not in targetable_names:

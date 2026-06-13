@@ -90,7 +90,7 @@ class GameTargetedChoiceSacrifice(GameMechanicsMixin):
 
             self.game_board.host_broadcast(result, is_reply=True)
             reaction = self.turn_manager.respond_to(reactor, result, is_reply=True)
-            self.game_board.handle_public_private_output(reactor, reaction, is_reply=True)
+            self.turn_manager._output_response(reactor, reaction, is_reply=True)
             self.game_board.system_broadcast(self.game_board.agent_scores, private=True)
             #needs to push after react, so they don't think it happened twice
             if ledger_message:

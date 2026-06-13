@@ -24,7 +24,7 @@ class TurnManager:
     # --- Model Creation ---
     
     def _get_target_name_from_response(self, response):
-        return getattr(response, GamePromptLibrary.model_field_choose_name, None)
+        return getattr(response, self.base_manager.TARGET_NAME_FIELD, None)
 
     def _make_model_optional(self, model, agent):
         #raise Exception("This needs to be turned on in player_system_prompt(cls, agent, include_optional_response = False)")
@@ -61,7 +61,7 @@ class TurnManager:
 
     def _choose_name_field(self, allowed_names, reason_for_choosing_prompt, field_name = None):
         if not field_name:
-            field_name = GamePromptLibrary.model_field_choose_name
+            field_name = self.base_manager.TARGET_NAME_FIELD
         choice_reason_prompt = f"The name of the player: {reason_for_choosing_prompt}"
         return self.create_choice_field(field_name, allowed_names, choice_reason_prompt)
 
@@ -167,7 +167,7 @@ class TurnManager:
                       
     def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,
                    private_thoughts_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False,
-                   prefix_respond_to: bool = True):
+                   prefix_respond_to: bool = True): #TODO prefix_respond_to - rename to incl prompt
 
         if prefix_respond_to:
             turn_prompt = f"Respond to: \n{turn_prompt}"
@@ -191,7 +191,7 @@ class TurnManager:
         response = self._targeted_turn(player, possible_target_names, target_field_description, turn_prompt,
                                public_response_prompt, additional_thought_nudge, broadcast=False)
         self._output_response(player, response, include_target_name=True, is_reply=is_reply)
-        return response
+        return response 
 
     def _targeted_turn(self, player, possible_target_names, target_field_description, turn_prompt,
                                public_response_prompt, additional_thought_nudge = None, broadcast = False,
@@ -235,10 +235,11 @@ class TurnManager:
             self.base_manager.debug_print(f"{agent.name} thoughts: {result.private_thoughts}")
         return result
 
-    def _output_response(self, player, response, pre_message_choice_reveal=None, post_message_choice_reveal=None, is_reply=False, delay=0,
-                         include_target_name=False):
+    def _format_public_response(self, response, pre_message_choice_reveal=None, post_message_choice_reveal=None, include_target_name=False):
+        public_response = response.public_response
         pre_string = None
         post_string = None
+        
         if pre_message_choice_reveal:
             choice_value = getattr(response, pre_message_choice_reveal, None)
             if choice_value is not None:
@@ -247,14 +248,30 @@ class TurnManager:
             choice_value = getattr(response, post_message_choice_reveal, None)
             if choice_value is not None:
                 post_string = f"*{str(choice_value).upper()}*"
-        
+    
+        if pre_string:
+            public_response = f"{pre_string}\n{public_response}"
+        if post_string:
+            public_response = f"{public_response}\n{post_string}"
+            
         directed_to_name = None
         if include_target_name:
             directed_to_name = self._get_target_name_from_response(response)
             directed_to_name = None if directed_to_name == 'Group' else directed_to_name
+        return public_response, directed_to_name
 
-        self.game_board.handle_public_private_output(player, response, pre_string=pre_string, post_string=post_string,
-                                                     directed_to_name=directed_to_name, is_reply=is_reply, delay=delay)
-
+                
+                
+    
+    def _output_response(self, player, response, pre_message_choice_reveal=None, post_message_choice_reveal=None, is_reply=False, delay=0,
+                         include_target_name=False):
+        
+        private_thoughts = None if player.is_human() else getattr(response, 'private_thoughts', None)
+        private_thoughts_brief = None if player.is_human() else getattr(response, 'private_thoughts_brief', None)
+        public_response, directed_to_name = self._format_public_response(response, pre_message_choice_reveal, post_message_choice_reveal, include_target_name)
+        self.game_board.handle_public_private_output(player,
+                public_response, private_thoughts, private_thoughts_brief, delay=delay,
+                is_reply=is_reply, directed_to_name=directed_to_name)
+        
     def _low_buffer_message(self, agent):
         self.base_manager.private_system_message(agent, "Your turn here was passed as your optional response buffer was too low.")

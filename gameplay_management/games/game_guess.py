@@ -124,4 +124,4 @@ class GameGuess(GameMechanicsMixin):
             
             for player, future in reaction_futures:
                 reaction = future.result()
-                self.game_board.handle_public_private_output(player, reaction, delay = 1, is_reply=True)
+                self.turn_manager._output_response(player, reaction, delay=1, is_reply=True)
