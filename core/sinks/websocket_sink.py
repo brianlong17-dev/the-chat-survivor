@@ -68,11 +68,15 @@ class WebSocketSink(GameEventSink):
 
     # -- Actions --------------------------------------------------------------
 
-    def on_public_action(self, speaker, message: str, color: str = "", animate_as_player: bool = True, should_hold: bool = True, directed_to_name=None, is_reply: bool = False):
+    def on_public_action(self, speaker, message: str, color: str = "", animate_as_player: bool = True, 
+                         should_hold: bool = True, directed_to_name=None, is_reply: bool = False, 
+                         is_human: bool = False):
         if directed_to_name:
             message = f"@{directed_to_name} - {message}"
         speaker_name = speaker.name if hasattr(speaker, "name") else str(speaker)
-        event = {"type": "public_action", "speaker": speaker_name, "message": message, "animate_as_player": animate_as_player, "should_hold": should_hold}
+        event = {"type": "public_action", "speaker": speaker_name, "message": message, 
+                 "animate_as_player": animate_as_player, "should_hold": should_hold,
+                 "is_human": is_human}
         if is_reply:
             event["child"] = True
         self._send(event)

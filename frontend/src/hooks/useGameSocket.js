@@ -6,7 +6,7 @@ const WS_DEMO_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://$
 function isAnimatableEvent(evt, animateText) {
   if (!animateText) return false
   if (evt.type === 'round_start') return true
-  if (evt.type !== 'public_action') return false
+  if (evt.type !== 'public_action' || evt.is_human) return false
   return evt.animate_as_player === true || evt.speaker === 'HOST'
 }
 
@@ -48,6 +48,8 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const isAnimating = useRef(false)
   const skipRef = useRef(false)
   const awaitingNextRef = useRef(false)
+  const releaseOneRef = useRef(false)
+  const firstPlayerMessageSeenRef = useRef(false)
   const awaitingNextRoundRef = useRef(false)
   const statusRef = useRef(status)
   useEffect(() => { statusRef.current = status }, [status])
@@ -62,9 +64,23 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
       if (awaitingNextRoundRef.current) break
       if (pacingRef.current) break
 
+      if (!autoRunRef.current && peek.type === 'public_action' && peek.should_hold && !peek.is_human) {
+        if (!firstPlayerMessageSeenRef.current) {
+          firstPlayerMessageSeenRef.current = true
+        } else if (releaseOneRef.current) {
+          releaseOneRef.current = false
+        } else {
+          awaitingNextRef.current = true
+          setAwaitingNext(true)
+          break
+        }
+      }
+
       const evt = pendingQueue.current.shift()
+      if (evt.type === 'input_request') { setInputRequest(evt); return }
 
       if (evt.type === 'points_update') { setScores(evt.scores); continue }
+      
       if (evt.type === 'evicted_update') { setEvicted(evt.evicted_names); continue }
       if (evt.type === 'widget_update') { setWidget(evt.widget ?? null); continue }
       if (evt.type === 'phase_rounds') { setPhaseRounds(evt.rounds); setCurrentRoundIndex(0); continue }
@@ -81,11 +97,6 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
         setAwaitingNextRound(true)
         setEvents(prev => [...prev, evt])
         break
-      }
-
-      if (!autoRunRef.current && evt.type === 'public_action' && evt.should_hold) {
-        awaitingNextRef.current = true
-        setAwaitingNext(true)
       }
 
       if (isAnimatableEvent(evt, animateTextRef.current)) {
@@ -142,7 +153,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
       return
     }
     if (evt.type === 'cast') { setPlayerNames(evt.names ?? []); return }
-    if (evt.type === 'input_request') { setInputRequest(evt); return }
+    //if (evt.type === 'input_request') { setInputRequest(evt); return }
     if (evt.type === 'loading') { setEvents(prev => [...prev, evt]); return }
     if (evt.type === 'loading_done') {
       setEvents(prev => prev.map(e => e.type === 'loading' ? { ...e, done: true, completed_message: evt.message ?? null } : e))
@@ -171,7 +182,8 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     setIsAnimatingState(false)
     skipRef.current = false
     awaitingNextRef.current = false
-    awaitingNextRoundRef.current = false   
+    awaitingNextRoundRef.current = false
+    firstPlayerMessageSeenRef.current = false
     setAwaitingNextRound(false)
     setAwaitingNext(false)
     drainDelayRef.current = 0
@@ -270,6 +282,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const sendNext = useCallback(() => {
     awaitingNextRef.current = false
     setAwaitingNext(false)
+    releaseOneRef.current = true
     drainQueue()
   }, [drainQueue])
 
