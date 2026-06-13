@@ -1050,6 +1050,11 @@
   border-color: var(--accent);
 }
 
+.input-text:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .mic-btn {
   padding: 8px 12px;
   background: transparent;

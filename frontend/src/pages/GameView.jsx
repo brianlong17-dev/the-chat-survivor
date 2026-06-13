@@ -312,7 +312,7 @@ export default function GameView({
               <div ref={privateBottomRef} />
             </main>
           )}
-          <InputRequest request={inputRequest} onSubmit={submitInput} playerNames={playerNames} transcribe={transcribe} transcriptionEnabled={transcriptionEnabled}/>
+          <InputRequest request={inputRequest} onSubmit={submitInput} playerNames={playerNames} transcribe={transcribe} transcriptionEnabled={transcriptionEnabled} awaitingNext={awaitingNext && !autoRun} sendNext={sendNext} skipAnimation={skipAnimation} isAnimating={isAnimating} awaitingNextRound={awaitingNextRound} sendNextRound={sendNextRound} />
         </div>
 
         <button

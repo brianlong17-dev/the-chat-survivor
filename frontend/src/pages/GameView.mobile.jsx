@@ -264,6 +264,12 @@ export default function GameViewMobile({
             playerNames={playerNames}
             transcribe={transcribe}
             transcriptionEnabled={transcriptionEnabled}
+            awaitingNext={awaitingNext && !autoRun}
+            sendNext={sendNext}
+            skipAnimation={skipAnimation}
+            isAnimating={isAnimating}
+            awaitingNextRound={awaitingNextRound}
+            sendNextRound={sendNextRound}
           />
         </div>
 

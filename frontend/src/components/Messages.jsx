@@ -15,7 +15,7 @@ const WORD_ANIM_SNAP_ENABLED = false       // when false, all sentences animate 
 const WORD_ANIM_SNAP_LIMIT = 3             // sentences animated word-by-word before rest is snapped instantly
 const WORD_ANIM_SNAP_PAUSE_MS = 400        // pause before flushing snapped sentences
 const WORD_ANIM_SNAP_FADE_S = 0.4          // CSS fade-in duration (seconds) for snapped text
-const WORD_ANIM_END_LINGER_CHOICES_MS = [1000, 1500, 2000, 2500]  // cursor linger at end; one picked at random per message
+const WORD_ANIM_END_LINGER_CHOICES_MS = [500, 1000, 1500]  // cursor linger at end; one picked at random per message
 
 const SPEAKER_COLORS = [
   '#e07b54', '#5b8dd9', '#67b37d', '#c97bc4',

@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from 'react' 
 import { MAX_INPUT_CHARS } from '../utils/settings'
 
-export default function InputRequest({ request, onSubmit, playerNames = [], transcribe, transcriptionEnabled = true }) {
+export default function InputRequest({ request, onSubmit, playerNames = [], transcribe, transcriptionEnabled = true, awaitingNext = false, sendNext, skipAnimation, isAnimating = false, awaitingNextRound = false, sendNextRound }) {
   const [value, setValue] = useState('')
   const [listening, setListening] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
   const recorderRef = useRef(null)
 
   const textareaRef = useRef(null)
-  const inactive = !request
+  const inactive = !request && !awaitingNext && !awaitingNextRound && !isAnimating
   const description = request?.description ?? 'Waiting...'
 
   const submit = (val) => { onSubmit(val); setValue(''); }
@@ -62,7 +62,7 @@ export default function InputRequest({ request, onSubmit, playerNames = [], tran
 
   return (
     <div className={`input-bar ${inactive ? 'inactive' : ''}`}>
-      <div className="input-prompt">{request?.field ? request.field.replace(/_/g, ' ') : 'your turn'} — {description}</div>
+      {request && <div className="input-prompt">{request.field ? request.field.replace(/_/g, ' ') : 'your turn'} — {description}</div>}
       {request?.choices ? (
         <div className="input-choices">
           {request.choices.map(c => (
@@ -78,7 +78,8 @@ export default function InputRequest({ request, onSubmit, playerNames = [], tran
             onChange={handleChange}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(value.trim()) } }}
             placeholder="Type your response..."
-            autoFocus={!inactive}
+            autoFocus={!inactive && !awaitingNext}
+            disabled={!request}
             rows={1}
           />
           {value.length > MAX_INPUT_CHARS && (
@@ -108,8 +109,8 @@ export default function InputRequest({ request, onSubmit, playerNames = [], tran
               )
             }
           </button>
-          <button className="input-submit" onClick={() => submit(value.trim())}>
-            Send
+          <button className={isAnimating || awaitingNextRound || (awaitingNext && !request) ? 'next-turn-btn' : 'input-submit'} onClick={isAnimating ? skipAnimation : awaitingNextRound ? sendNextRound : awaitingNext && !request ? sendNext : () => submit(value.trim())}>
+            {isAnimating ? 'Skip ›' : awaitingNextRound ? 'Next Round ›' : awaitingNext && !request ? 'Next ›' : 'Send'}
           </button>
         </div>
       )}
