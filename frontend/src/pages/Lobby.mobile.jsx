@@ -20,20 +20,28 @@ export default function LobbyMobile({ onStart, view, setView }) {
   const [tabs, setTabs] = useState({})
   const [activeTab, setActiveTab] = useState('')
   const [selected, setSelected] = useState(saved.selected || [])
-  const [playing, setPlaying] = useState(saved.humanIndex != null)
+  const [mode, setMode] = useState(null) // null = unchosen; 'watch' | 'play'
+  const [playing, setPlaying] = useState(false)
   const [humanName, setHumanName] = useState(saved.humanName || '')
   const [customNames, setCustomNames] = useState(saved.customNames || [])
   const [customInput, setCustomInput] = useState('')
   const [query, setQuery] = useState('')
   const [gameEnabled, setGameEnabled] = useState(false)
   const [levels, setLevels] = useState([])
-  const [selectedLevel, setSelectedLevel] = useState(saved.selectedLevel || null)
+  const [selectedLevel, setSelectedLevel] = useState(null) // TODO: restore saved.selectedLevel once testing done
   const [turnstileEnabled, setTurnstileEnabled] = useState(null)
   const [turnstileToken, setTurnstileToken] = useState(null)
-  const [nameSheet, setNameSheet] = useState(false)
-  const [draftName, setDraftName] = useState('')
-  const [hint, setHint] = useState(false)
+  const [playOpen, setPlayOpen] = useState(false)
   const turnstileRef = useRef(null)
+  const levelsRef = useRef(null)
+  const nameInputRef = useRef(null)
+
+  const scrollLevelToStart = (btn, behavior = 'smooth') => {
+    const c = levelsRef.current
+    if (!c || !btn) return
+    const delta = btn.getBoundingClientRect().left - c.getBoundingClientRect().left - 16
+    c.scrollTo({ left: c.scrollLeft + delta, behavior })
+  }
 
   // ── Turnstile (identical to desktop) ──
   useEffect(() => {
@@ -62,6 +70,14 @@ export default function LobbyMobile({ onStart, view, setView }) {
     }))
   }, [selected, playing, humanName, customNames, selectedLevel])
 
+  // ── On first reveal, scroll the stored level to the front ──
+  const didInitScroll = useRef(false)
+  useEffect(() => {
+    if (didInitScroll.current || mode === null || !levels.length || !selectedLevel) return
+    const btn = levelsRef.current?.querySelector(`[data-level="${selectedLevel}"]`)
+    if (btn) { scrollLevelToStart(btn, 'auto'); didInitScroll.current = true }
+  }, [mode, levels, selectedLevel])
+
   // ── Initial data ──
   useEffect(() => {
     fetch('/api/characters').then(r => r.json()).then(data => {
@@ -74,8 +90,8 @@ export default function LobbyMobile({ onStart, view, setView }) {
     })
     fetch('/api/levels').then(r => r.json()).then(data => {
       setLevels(data.levels)
-      const ids = data.levels.map(l => l.id)
-      if (!ids.includes(selectedLevel)) setSelectedLevel(data.levels[0]?.id ?? null)
+      const ids = data.levels.filter(l => !l.locked).map(l => l.id)
+      if (selectedLevel && !ids.includes(selectedLevel)) setSelectedLevel(null)
     }).catch(err => console.error('Error fetching levels:', err))
   }, [])
 
@@ -84,7 +100,9 @@ export default function LobbyMobile({ onStart, view, setView }) {
   const minPlayers = levelObj?.min_players || 2
 
   const aiCap = Math.min(HARD_CAP, maxPlayers) - (playing ? 1 : 0)
-  const count = selected.length + (playing ? 1 : 0)
+  const activeSelected = selected.slice(0, aiCap)
+  const inactiveCount = selected.length - activeSelected.length
+  const count = activeSelected.length + (playing ? 1 : 0)
   const need = Math.max(0, minPlayers - count)
 
   const toggle = (name) => setSelected(s =>
@@ -92,15 +110,13 @@ export default function LobbyMobile({ onStart, view, setView }) {
   const remove = (name) => setSelected(s => s.filter(n => n !== name))
 
   // ── Watch / Play fork ──
-  const goWatch = () => { setPlaying(false); setHint(false) }
+  const goWatch = () => { setMode('watch'); setPlaying(false); setPlayOpen(false) }
   const goPlay = () => {
-    if (playing) return
-    if (selected.length >= Math.min(HARD_CAP, maxPlayers)) { setHint(true); return } // table full
-    setHint(false); setDraftName(humanName); setNameSheet(true)
-  }
-  const confirmName = () => {
-    if (!draftName.trim()) return
-    setHumanName(draftName.trim()); setPlaying(true); setNameSheet(false)
+    setMode('play'); setPlaying(true); setPlayOpen(true)
+    if (!humanName.trim()) requestAnimationFrame(() => nameInputRef.current?.focus())
+    // Seat "You" first; if the table was full, push the tail AI out.
+    const aiRoom = Math.min(HARD_CAP, maxPlayers) - 1
+    setSelected(s => s.length > aiRoom ? s.slice(0, aiRoom) : s)
   }
 
   // ── Custom names ──
@@ -115,18 +131,26 @@ export default function LobbyMobile({ onStart, view, setView }) {
     setCustomInput('')
   }
   const removeCustom = (name) => { setCustomNames(customNames.filter(n => n !== name)); remove(name) }
+  const addFromSearch = () => {
+    const name = query.trim()
+    if (!name || selected.length >= aiCap) return
+    setCustomNames([...customNames, name])
+    setSelected([...selected, name])
+    setQuery('')
+  }
 
   const humanNameMissing = playing && !humanName.trim()
+  const bodyVisible = mode === 'watch' || (mode === 'play' && !!humanName.trim())
   const canStart = gameEnabled && count >= minPlayers && count <= maxPlayers
     && selectedLevel && !humanNameMissing && (!turnstileEnabled || turnstileToken)
 
   const q = query.trim().toLowerCase()
-  const allNames = [...Object.values(tabs).flat(), ...customNames]
-  const names = activeTab === 'Custom' ? customNames : (tabs[activeTab] || [])
+  const allNames = [...new Set([...Object.values(tabs).flat(), ...customNames])]
+  const names = [...new Set(activeTab === 'Custom' ? customNames : (tabs[activeTab] || []))]
   const filtered = q ? allNames.filter(n => n.toLowerCase().includes(q)) : names
 
   const handleStart = () => onStart({
-    names: selected,
+    names: activeSelected,
     humanName: playing ? humanName.trim() : null,
     levelId: selectedLevel,
     turnstileToken,
@@ -137,14 +161,32 @@ export default function LobbyMobile({ onStart, view, setView }) {
       <div className="ml-body">
         <MobileNav view={view} setView={setView} />
         <div className="ml-title">THE CHAT SURVIVOR</div>
+
+        {/* Watch / Play chooser — gates the rest of the lobby */}
+        <div className="ml-choose">
+          <button className={mode === 'watch' && !playOpen ? 'active' : ''} onClick={goWatch}>WATCH</button>
+          <button className={mode === 'play' || playOpen ? 'active' : ''} onClick={goPlay}>PLAY</button>
+        </div>
+        {playOpen && (
+          <div className="ml-play-row">
+            <input ref={nameInputRef} value={humanName} maxLength={40} placeholder="Your name"
+              onChange={e => setHumanName(e.target.value)} />
+          </div>
+        )}
+        {mode === null && !playOpen && (
+          <div className="ml-choose-hint">Choose WATCH or PLAY to set up your game.</div>
+        )}
+
+        {bodyVisible && <>
         {/* levels */}
-        <div style={{ padding: '2px 0 18px' }}>
+        <div style={{ padding: '18px 0' }}>
           <div className="ml-label" style={{ padding: '0 16px 9px' }}>Level</div>
-          <div className="ml-levels ml-hscroll">
+          <div className="ml-levels ml-hscroll" ref={levelsRef}>
+            {/* {levels.filter(level => !level.locked).map(level => ( */}
             {levels.map(level => (
-              <button key={level.id}
+              <button key={level.id} data-level={level.id}
                 className={`ml-level ${selectedLevel === level.id ? 'selected' : ''} ${level.locked ? 'locked' : ''}`}
-                onClick={() => !level.locked && setSelectedLevel(level.id)} disabled={level.locked}>
+                onClick={(e) => { if (level.locked) return; setSelectedLevel(level.id); scrollLevelToStart(e.currentTarget) }} disabled={level.locked}>
                 <div className="ml-level-head">
                   <span className="ml-level-name">{level.name}</span>
                   {level.locked && <span style={{ opacity: .6 }}>🔒</span>}
@@ -157,23 +199,25 @@ export default function LobbyMobile({ onStart, view, setView }) {
         </div>
 
         {/* player tray */}
-        <div className="ml-tray">
-          <div className="ml-label">Players ({count}/{maxPlayers})</div>
+        {selectedLevel && <div className="ml-tray">
+          <div className="ml-label">
+            Players ({count}/{maxPlayers}){inactiveCount > 0 && ` +${inactiveCount} inactive`}
+          </div>
           <div className="ml-chips">
             {playing && (
               <span className="ml-chip">{humanName || 'You'}<span className="you"> (you)</span>
                 <button className="ml-chip-x" onClick={goWatch}>×</button></span>
             )}
-            {selected.map(n => (
-              <span key={n} className="ml-chip">{n}
+            {selected.map((n, i) => (
+              <span key={n} className={`ml-chip ${i >= aiCap ? 'inactive' : ''}`}>{n}
                 <button className="ml-chip-x" onClick={() => remove(n)}>×</button></span>
             ))}
             {count === 0 && <span className="ml-hint">Select players below</span>}
           </div>
-        </div>
+        </div>}
 
         {/* cast */}
-        <div style={{ marginTop: 18 }}>
+        {selectedLevel && <div style={{ marginTop: 18 }}>
           <div className="ml-cast-sticky">
             <div className="ml-label" style={{ padding: '0 16px 9px' }}>Cast</div>
             <div style={{ padding: '0 16px 10px' }}>
@@ -205,10 +249,18 @@ export default function LobbyMobile({ onStart, view, setView }) {
             </div>
           )}
 
+          {q && filtered.length === 0 && (
+            <div className="ml-add-row">
+              <button className="ml-name ml-name-add" onClick={addFromSearch} disabled={selected.length >= aiCap}>
+                + Add “{query.trim()}”
+              </button>
+            </div>
+          )}
+
           <div className="ml-grid">
             {filtered.map(name => {
-              const sel = selected.includes(name)
-              const dis = !sel && selected.length >= aiCap
+              const sel = activeSelected.includes(name)
+              const dis = !selected.includes(name) && activeSelected.length >= aiCap
               const isCustom = !q && activeTab === 'Custom'
               return isCustom ? (
                 <span key={name} className="ml-name-wrap">
@@ -220,46 +272,20 @@ export default function LobbyMobile({ onStart, view, setView }) {
               )
             })}
             {!q && activeTab === 'Custom' && customNames.length === 0 && <span className="ml-hint">Add names above.</span>}
-            {q && filtered.length === 0 && <span className="ml-hint">No matches.</span>}
             {!q && activeTab !== 'Custom' && filtered.length === 0 && <span className="ml-hint">No matches.</span>}
           </div>
-        </div>
+        </div>}
 
         {turnstileEnabled && <div className="ml-turnstile" ref={turnstileRef} />}
+        </>}
       </div>
 
       {/* footer */}
-      <div className="ml-footer">
-        <div className="ml-footer-row">
-          <div className="ml-toggle">
-            <button className={!playing ? 'active' : ''} onClick={goWatch}>WATCH</button>
-            <button className={playing ? 'active' : ''} onClick={goPlay}>PLAY</button>
-          </div>
-          <span className={`ml-meta ${hint ? 'error' : ''}`}>
-            {hint ? 'Table full — remove a player first' : (levelObj?.name || '')}
-          </span>
-        </div>
-        <button className="ml-start" disabled={!canStart} onClick={handleStart}>
-          {!gameEnabled ? 'COMING SOON' : count < minPlayers ? `SELECT ${need} MORE` : 'START GAME'}
-        </button>
-      </div>
-
-      {/* name sheet */}
-      {nameSheet && (
-        <div className="ml-sheet-overlay">
-          <div className="ml-sheet-backdrop" onClick={() => setNameSheet(false)} />
-          <div className="ml-sheet">
-            <div className="ml-grabber" />
-            <div className="ml-label">Play as yourself</div>
-            <div className="ml-sheet-sub">You'll join as a contestant and take a seat at the table.</div>
-            <input className="ml-sheet-input" autoFocus value={draftName} maxLength={40}
-              placeholder="Your name"
-              onChange={e => setDraftName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') confirmName() }} />
-            <button className="ml-sheet-btn" disabled={!draftName.trim()} onClick={confirmName}>
-              ADD ME TO THE GAME
-            </button>
-          </div>
+      {bodyVisible && (
+        <div className="ml-footer">
+          <button className="ml-start" disabled={!canStart} onClick={handleStart}>
+            {!gameEnabled ? 'COMING SOON' : count < minPlayers ? `SELECT ${need} MORE` : 'START GAME'}
+          </button>
         </div>
       )}
     </div>
