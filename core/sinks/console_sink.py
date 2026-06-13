@@ -68,7 +68,8 @@ class ConsoleGameEventSink(GameEventSink):
         ConsoleRenderer.print_private("SUMMARY", f"{summary}\n", color_name="YELLOW")
 
     def on_public_action(self, speaker: Speaker, message: str, color: str = "",
-                         animate_as_player = False, should_hold: bool = True, directed_to_name = None, is_reply: bool = False) -> None:
+                         animate_as_player = False, should_hold: bool = True, directed_to_name = None, 
+                         is_reply: bool = False, is_human: bool = False) -> None:
         if directed_to_name:
             message = f"@{directed_to_name} - {message}"
         ConsoleRenderer.print_public_action(speaker, message, color)

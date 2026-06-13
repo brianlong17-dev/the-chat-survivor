@@ -26,6 +26,8 @@ class GameBoard:
         self.game_over = False
         self.score_changed_in_round = False
         self.scores_at_round_start: dict[str, int] = {}
+        
+        self.first_message_send = False
 
     @property
     def mobile_outputs(self) -> bool:
@@ -136,8 +138,10 @@ class GameBoard:
             public_message = f"{public_message}\n{post_string}"
 
 
-        self.broadcast_public_action(agent, public_message, directed_to_name=directed_to_name, is_reply=is_reply)
-        self.game_sink.on_private_thought(agent, private_message)
+        self.broadcast_public_action(agent, public_message, directed_to_name=directed_to_name, 
+                                     is_reply=is_reply, is_human=agent.is_human())
+        if not agent.is_human():
+            self.game_sink.on_private_thought(agent, private_message)
         if output_inner_workings:
             self.game_sink.on_inner_workings(agent, self._get_inner_thought_fields(response))
         self.game_sink.delay(delay)
@@ -151,22 +155,27 @@ class GameBoard:
         entry = self.game_log._current_round_most_recent_message_entry()
         return entry is not None and self.game_log._is_host_message(entry, self.HOST_NAME)
 
+    def _is_human(self, speaker):
+        return hasattr(speaker, 'is_human') and speaker.is_human()
+        
     def _should_hold(self, speaker):
         is_system_speaker = isinstance(speaker, str) and speaker.upper() in (self.RESERVED_NAMES - {self.HOST_NAME})
-        is_human_speaker = hasattr(speaker, 'is_human') and speaker.is_human()
         is_repeated_host_message = isinstance(speaker, str) and speaker.upper() == self.HOST_NAME and self._was_last_message_from_host()
-        return not (is_system_speaker or is_human_speaker or is_repeated_host_message)
+        return not (is_system_speaker or self._is_human(speaker) or is_repeated_host_message)
 
     def broadcast_public_action(self, speaker: Union[str, BaseAgent], message: str, color: str = "", directed_to_name = None, is_reply = False, 
-                                should_animate_override = False):
+                                should_animate_override = False, is_human=False):
         display_name = self._as_display_name(speaker)
         if display_name.upper() == self.SYSTEM:
             raise ValueError("SYSTEM cannot broadcast a public_action; use system_broadcast instead")
+        
         self.game_log._update_history(display_name, message)
         animate_as_player = should_animate_override or self._should_animate(speaker)
         should_hold = should_animate_override or self._should_hold(speaker)
         self.game_sink.on_public_action(speaker, message, color=color, animate_as_player=animate_as_player, should_hold=should_hold,
-                                        directed_to_name = directed_to_name, is_reply = is_reply,)
+                                        directed_to_name = directed_to_name, is_reply = is_reply, is_human=is_human)
+        if should_hold:
+            self.first_message_send = True
 
     def system_broadcast(self, message, private=False, border_bottom = False):
         if not private:
