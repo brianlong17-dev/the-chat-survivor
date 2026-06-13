@@ -24,16 +24,6 @@
 }
 
 /* header — single line, sized to fit phone widths */
-.ml-title {
-  text-align: center;
-  font-family: var(--font-ui);
-  font-size: 14px;
-  letter-spacing: 0.24em;
-  color: var(--accent);
-  line-height: 1.2;
-  padding: 12px 12px 12px calc(12px + 0.24em);
-  white-space: nowrap;
-}
 
 /* scroll body */
 .ml-body { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
@@ -50,7 +40,7 @@
 /* watch / play chooser (top) — fused switch */
 .ml-choose {
   display: flex;
-  margin: 4px 16px 0;
+  margin: 16px 16px 0;
   border: 1px solid var(--border);
   overflow: hidden;
 }
@@ -66,6 +56,14 @@
   cursor: pointer;
   transition: color .12s, background .12s;
 }
+.ml-choose.pulse { animation: mlChoosePulse 1.8s ease-in-out infinite; }
+@keyframes mlChoosePulse {
+  0%, 100% { border-color: var(--border); box-shadow: 0 0 0 0 rgba(224,123,84,0); }
+  50%      { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(224,123,84,.18); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ml-choose.pulse { animation: none; border-color: var(--accent); }
+}
 .ml-choose button + button { border-left: 1px solid var(--border); }
 .ml-choose button.active { color: var(--accent); background: var(--bg3); }
 .ml-choose-hint {
@@ -80,6 +78,21 @@
   display: flex;
   gap: 8px;
   margin: 10px 16px 0;
+  overflow: hidden;
+  transform-origin: top;
+  animation: mlPlayRowDown .24s ease;
+}
+@keyframes mlPlayRowDown {
+  from { opacity: 0; max-height: 0; margin-top: 0; transform: translateY(-6px); }
+  to   { opacity: 1; max-height: 80px; margin-top: 10px; transform: translateY(0); }
+}
+.ml-play-row.closing { animation: mlPlayRowUp .24s ease forwards; }
+@keyframes mlPlayRowUp {
+  from { opacity: 1; max-height: 80px; margin-top: 10px; transform: translateY(0); }
+  to   { opacity: 0; max-height: 0; margin-top: 0; transform: translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ml-play-row { animation: none; }
 }
 .ml-play-row input {
   flex: 1; min-width: 0;
@@ -136,7 +149,7 @@
   background: var(--bg2);
   padding: 12px 13px;
 }
-.ml-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.ml-chips { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; margin-top: 10px; min-height: 72px; }
 .ml-chip {
   display: inline-flex;
   align-items: center;

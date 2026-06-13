@@ -63,6 +63,7 @@ class PhaseRunner:
         host_intro_human_only = self.simulation_engine.game_design.human_only_game_intro()
         if host_intro_human_only:
             self.game_board.game_sink.on_game_intro(host_intro_human_only) 
+            self.game_board.game_sink.on_linebreak() 
     
     def _use_round_gate(self):
         return self.game_board.first_message_send and not self._dev_mode

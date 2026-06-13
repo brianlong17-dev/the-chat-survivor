@@ -40,6 +40,9 @@ class WebSocketSink(GameEventSink):
     def on_game_intro(self, message: str):
         self._send({"type": "game_intro", "message": message})
 
+    def on_linebreak(self):
+        self._send({"type": "linebreak"})
+
     def on_game_over(self, winner_names: list[str]):
         self._send({"type": "game_over", "winners": winner_names})
 

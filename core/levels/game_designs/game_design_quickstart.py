@@ -15,7 +15,8 @@ class GameDesignQuickStart(GameDesign):
 
     @classmethod
     def human_only_game_intro(cls):
-        return "This is a demonstration game- a round of Rock Paper Scissors, and the loser gets eliminated! "
+        return ("Hello human! This is a demonstration game. \n"
+        "It shows the basic format- discussion, game, elimination.")
     
     @classmethod
     def pre_eviction_message(cls):
@@ -25,12 +26,6 @@ class GameDesignQuickStart(GameDesign):
     def post_eviction_system_message(cls):
         return "{victim_name} has been removed from the chat."
     
-    @classmethod 
-    def human_only_game_intro(cls):
-        topicString = super().human_only_game_intro()
-        topicString += cls.server_timeout_string()
-        return topicString
-
 
     @classmethod
     def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):

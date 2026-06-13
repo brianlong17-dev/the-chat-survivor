@@ -32,6 +32,7 @@ export default function LobbyMobile({ onStart, view, setView }) {
   const [turnstileEnabled, setTurnstileEnabled] = useState(null)
   const [turnstileToken, setTurnstileToken] = useState(null)
   const [playOpen, setPlayOpen] = useState(false)
+  const [playClosing, setPlayClosing] = useState(false)
   const turnstileRef = useRef(null)
   const levelsRef = useRef(null)
   const nameInputRef = useRef(null)
@@ -110,13 +111,16 @@ export default function LobbyMobile({ onStart, view, setView }) {
   const remove = (name) => setSelected(s => s.filter(n => n !== name))
 
   // ── Watch / Play fork ──
-  const goWatch = () => { setMode('watch'); setPlaying(false); setPlayOpen(false) }
+  const goWatch = () => {
+    setMode('watch'); setPlaying(false)
+    if (playOpen) {
+      setPlayOpen(false); setPlayClosing(true)
+      setTimeout(() => setPlayClosing(false), 240)
+    }
+  }
   const goPlay = () => {
-    setMode('play'); setPlaying(true); setPlayOpen(true)
+    setMode('play'); setPlaying(true); setPlayOpen(true); setPlayClosing(false)
     if (!humanName.trim()) requestAnimationFrame(() => nameInputRef.current?.focus())
-    // Seat "You" first; if the table was full, push the tail AI out.
-    const aiRoom = Math.min(HARD_CAP, maxPlayers) - 1
-    setSelected(s => s.length > aiRoom ? s.slice(0, aiRoom) : s)
   }
 
   // ── Custom names ──
@@ -160,15 +164,14 @@ export default function LobbyMobile({ onStart, view, setView }) {
     <div className="ml-lobby">
       <div className="ml-body">
         <MobileNav view={view} setView={setView} />
-        <div className="ml-title">THE CHAT SURVIVOR</div>
 
         {/* Watch / Play chooser — gates the rest of the lobby */}
-        <div className="ml-choose">
+        <div className={`ml-choose ${mode === null ? 'pulse' : ''}`}>
           <button className={mode === 'watch' && !playOpen ? 'active' : ''} onClick={goWatch}>WATCH</button>
           <button className={mode === 'play' || playOpen ? 'active' : ''} onClick={goPlay}>PLAY</button>
         </div>
-        {playOpen && (
-          <div className="ml-play-row">
+        {(playOpen || playClosing) && (
+          <div className={`ml-play-row ${playClosing ? 'closing' : ''}`}>
             <input ref={nameInputRef} value={humanName} maxLength={40} placeholder="Your name"
               onChange={e => setHumanName(e.target.value)} />
           </div>

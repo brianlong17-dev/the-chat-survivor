@@ -506,6 +506,8 @@ export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, sk
       return <SystemPublic {...event} />
     case 'game_intro':
       return <PublicAction speaker="HOST" message={event.message} color="#aaa" />
+    case 'linebreak':
+      return <div className="feed-linebreak" />
     case 'game_over':
       return <GameOver winners={event.winners} />
     case 'error':

@@ -386,6 +386,12 @@
   position: relative;
 }
 
+.feed-linebreak {
+  margin: 10px 0 4px;
+  height: 1px;
+  background: var(--text-dim);
+}
+
 .round-header::after {
   content: '';
   position: absolute;
