@@ -146,8 +146,9 @@ class PhaseRunner:
             if cfg.should_dead_players_summarise:
                 agents = agents + self.simulation_engine.dead_agents
             
-            if self._dev_mode and not agents:
-                agents = self.simulation_engine.dead_agents[-2:]
+            if self._dev_mode and len(agents) < 2:
+                num_dead_agents = 2 - len(agents)
+                agents = agents + self.simulation_engine.dead_agents[-num_dead_agents:]
             if agents: 
                 with ThreadPoolExecutor(max_workers=min(32, len(agents))) as executor:
                     for agent in agents:
