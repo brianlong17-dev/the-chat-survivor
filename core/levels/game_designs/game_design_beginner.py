@@ -59,6 +59,6 @@ class GameDesignBeginner(GameDesign):
         if agent_number == 2:
             rounds = [GamePrisonersDilemmaFinale]
             cfg.set_pd_pairing_all()
-            return PhaseDescription(rounds=rounds, should_summarise_phase=True) #we want this for betrayal analysis
+            return PhaseDescription(rounds=rounds, should_summarise_phase=True) #we want this for analysis
         
 
