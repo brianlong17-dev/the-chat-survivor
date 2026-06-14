@@ -25,7 +25,7 @@ class APIClient:
                  token_budget: int = None, model_3 = None) -> None:
         if token_budget is None:
             raise ValueError("token_budget is required")
-        self._mock_output = True
+        self._mock_output = False
         self._client = client
         self.default_model = model
         self.higher_model = higher_model_name
