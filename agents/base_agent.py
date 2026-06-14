@@ -41,6 +41,8 @@ class BaseAgent:
         "not applicable",
         "n/a",
         "none",
+        "null"
+        "(empty)"
         "nothing",
         "no lesson",
         "perfection",
@@ -54,7 +56,7 @@ class BaseAgent:
     def _check_if_empty(self, text: str):
         if not text:
             return True
-        clean_text = text.strip().rstrip('.').lower()
+        clean_text = text.strip().strip('[](){}').strip().rstrip('.').lower()
         if clean_text in self.lazy_responses():
             return True
         # Catch "no change" commentary — check both exact match and containment
