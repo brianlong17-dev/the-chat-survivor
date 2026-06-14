@@ -28,7 +28,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         
     def _pre_game_exchange(self, player, is_tie = False):
         game_logic_fields = {
-            "can_you_win": (str, Field(description="There is only one game left. Is it possible for you to win on final scores?")),
+            "can_you_win": (str, Field(description="There is only one game left. Is it possible for you to win on final scores? Is it possible for you to lose?")),
             "goal": (str, Field(description="What is the outcome you want?")),
             "method": (str, Field(description="Do you want to influence your opponent WITHOUT revealing your choice? If so, how?")),
         }
