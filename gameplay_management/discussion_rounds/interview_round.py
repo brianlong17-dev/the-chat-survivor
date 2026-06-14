@@ -33,7 +33,7 @@ class InterviewRound(BaseRound):
             result = self.turn_manager.take_turn(player, "Continue the conversation. ",
                 model_name="basic_turn",
                 public_response_prompt="This is your public response to the host. ")
-            self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
+            self.game_board.log_message_to_conversation(conversation_id, player, result.public_response)
             print(f"{player.name}: {result.public_response} \n")
 
             action = self.game_board.game_sink.get_user_input_multiple_choice(

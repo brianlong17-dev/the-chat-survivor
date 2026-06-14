@@ -55,10 +55,13 @@ class GameBoard:
             #####
         return self.game_log._update_history(player_name, message, visibility_restriction=restricted_users)
 
-    def log_message_to_conversation(self, conversation_id, player_name: str, message: str):
+    def log_message_to_conversation(self, conversation_id, speaker: Union[str, BaseAgent], message: str):
+        player_name = self._as_display_name(speaker)
         message_block = self._get_conversation_entry(conversation_id)
         if message_block:
             message_block.message_entries.append(MessageEntry(speaker=player_name, public_output=message))
+            if not isinstance(speaker, str):
+                speaker.last_message_id = (message_block.id, len(message_block.message_entries) - 1)
             if self._human_in_restriction(message_block.visibility_restriction):
                 #TODO
                 #if a human involved - we need to print it! normal - do we need a header?
@@ -133,7 +136,7 @@ class GameBoard:
         message_id = self.broadcast_public_action_agent(agent, public_resonse, private_thought_brief=private_thought_brief,
                                      directed_to_name=directed_to_name, is_reply=is_reply)
 
-        agent.last_message_id = message_id
+        agent.last_message_id = (message_id, 0)
 
         if private_thought:
             self.game_sink.on_private_thought(agent, private_thought)

@@ -54,7 +54,7 @@ class IntroRound(BaseRound):
         result = self.turn_manager.take_turn(player, "Continue the conversation. ",
             model_name="basic_turn",
             public_response_prompt="This is your message of response to the host. ")
-        self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
+        self.game_board.log_message_to_conversation(conversation_id, player, result.public_response)
         self._host_back_and_forth(player, qa, conversation_id = conversation_id)
         player.initialising = False
         self.game_board.system_broadcast(f"{player.name} has entered the chat.", private = True)
