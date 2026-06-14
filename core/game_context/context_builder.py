@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 from core.game_context.dashboard import Dashboard
-from core.game_context.models import RoundEntry
+from core.game_context.models import RoundBlock
 
 if TYPE_CHECKING:
     from core.gameboard import GameBoard
@@ -76,12 +76,12 @@ class ContextBuilder:
         inner = " | ".join(f"{name}: {score}" for name, score in sorted_scores)
         return Dashboard.header(f"{label}: {inner}")
 
-    def _round_after_id(self, round, message_id):
+    def _round_after_id(self, round_block, message_id):
         round_messages = []
-        for message in round.messageEntries:
-            if message.id > message_id:
-                round_messages.append(message)
-        return RoundEntry(phase_number=round.phase_number, round_number=round.round_number, messageEntries=round_messages)
+        for message_block in round_block.conversation_entries:
+            if message_block.id > message_id:
+                round_messages.append(message_block)
+        return RoundBlock(phase_number=round_block.phase_number, round_number=round_block.round_number, conversation_entries=round_messages)
 
     def _previous_round_entries_for_context(self):
         rounds = self.game_log.completed_phase_rounds(self.game_board.phase_number)
@@ -114,12 +114,12 @@ class ContextBuilder:
             return "This is the first round. There is no prior history."
 
         history_blocks = []
-        for i, round in enumerate(rounds):
-            history_blocks.append(self._formatted_round(round, agent))
+        for i, round_block in enumerate(rounds):
+            history_blocks.append(self._formatted_round(round_block, agent))
         return "\n\n".join(history_blocks)
 
-    def _round_header(self, round):
-        return f"--- Phase: {round.phase_number}, Round: {round.round_number} ---"
+    def _round_header(self, round_block):
+        return f"--- Phase: {round_block.phase_number}, Round: {round_block.round_number} ---"
 
     def _recency_anchor(self, agent):
         if agent.name in self.game_board.RESERVED_NAMES:
@@ -132,25 +132,24 @@ class ContextBuilder:
             
         other_player_message_found = False
         
-        for round in rounds:
-            for entry in reversed(round.messageEntries):
-                for message in reversed(entry.messages):
-                    if message["speaker"] == agent.name:
-                        if entry.visibility_restriction is not None:
-                            #if they're in a private convo, anchor not relevent
-                            return None, False 
+        for round_block in rounds:
+            for message_block in reversed(round_block.conversation_entries):
+                for message_entry in reversed(message_block.message_entries):
+                    if message_entry.speaker == agent.name:
+                        if message_block.visibility_restriction is not None:
+                            return None, False
                         else:
-                            return message, other_player_message_found
-                    if message["speaker"] not in self.game_board.RESERVED_NAMES:
+                            return message_entry, other_player_message_found
+                    if message_entry.speaker not in self.game_board.RESERVED_NAMES:
                         other_player_message_found = True
                     
         return None, False  
     
-    def _formatted_round(self, round: 'RoundEntry', agent: 'BaseAgent', anchor = None, other_player_message_found = False, incl_header=True):
-        
-        output = f"\n{self._round_header(round)}\n" if incl_header else ""
-        
-        if len(round.messageEntries) == 0:
+    def _formatted_round(self, round_block: 'RoundBlock', agent: 'BaseAgent', anchor = None, other_player_message_found = False, incl_header=True):
+
+        output = f"\n{self._round_header(round_block)}\n" if incl_header else ""
+
+        if len(round_block.conversation_entries) == 0:
             return output + "No messages yet for round."
 
         anchor_message = f"\n[Your internal thought]: {agent.most_recent_internal_thought}\n" if agent.most_recent_internal_thought else ""
@@ -159,31 +158,31 @@ class ContextBuilder:
         else:
             anchor_message += "\n===[ ^^^ This was your last message — it's already been said. Your turn now is a fresh action, not a reaction. Don't repeat or recap the above; respond only to what the host says below. ]===\n"
 
-        for entry in round.messageEntries:
-            if entry.visibility_restriction is None:
-                for message in entry.messages:
+        for message_block in round_block.conversation_entries:
+            if message_block.visibility_restriction is None:
+                for message_entry in message_block.message_entries:
 
-                    output += (f"\n{message['speaker']}: {message['message']}")
-                    if message is anchor:
+                    output += (f"\n{message_entry.speaker}: {message_entry.public_output}")
+                    if message_entry is anchor:
                         #TODO - this check should be more solid
                         output += anchor_message
 
             else:
-                if agent.name in entry.visibility_restriction:
-                    if self.game_board.SYS_ADMIN in entry.visibility_restriction:
+                if agent.name in message_block.visibility_restriction:
+                    if self.game_board.SYS_ADMIN in message_block.visibility_restriction:
                         #We dont need the tags for a sys_admin message
-                        for message in entry.messages:
-                            output += f"\n [Private System Message] {message['message']} [End Private Message]"
+                        for message_entry in message_block.message_entries:
+                            output += f"\n [Private System Message] {message_entry.public_output} [End Private Message]"
                     else:
-                        names = ", ".join(entry.visibility_restriction)
+                        names = ", ".join(message_block.visibility_restriction)
                         output += f"\n=== Private Conversation between {names} ===\n"
-                        for message in entry.messages:
-                            output += (f"\n{message['speaker']}: {message['message']}")
-                        if entry.closed:
+                        for message_entry in message_block.message_entries:
+                            output += (f"\n{message_entry.speaker}: {message_entry.public_output}")
+                        if message_block.closed:
                             output += f"\n=== END OF Private Conversation between {names} ===\n"
-        if round.game_ledger:
+        if round_block.game_ledger:
             output += "\n\n===ROUND SUMMARY LEDGER===\n"
-            output += round.game_ledger
+            output += round_block.game_ledger
         return output
 
     def get_dashboard_string(self, agent: 'BaseAgent') -> str:

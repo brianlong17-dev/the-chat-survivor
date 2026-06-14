@@ -2,7 +2,7 @@ from typing import Union
 from agents.base_agent import BaseAgent
 from core.game_context.context_builder import ContextBuilder
 from core.game_context.game_log import GameLog
-from core.game_context.models import RoundEntry
+from core.game_context.models import MessageEntry, RoundBlock
 
 
 class GameBoard:
@@ -56,10 +56,10 @@ class GameBoard:
         return self.game_log._update_history(player_name, message, visibility_restriction=restricted_users)
 
     def log_message_to_conversation(self, conversation_id, player_name: str, message: str):
-        entry = self._get_conversation_entry(conversation_id)
-        if entry:
-            entry.messages.append({"speaker": player_name, "message": message})
-            if self._human_in_restriction(entry.visibility_restriction):
+        message_block = self._get_conversation_entry(conversation_id)
+        if message_block:
+            message_block.message_entries.append(MessageEntry(speaker=player_name, public_output=message))
+            if self._human_in_restriction(message_block.visibility_restriction):
                 #TODO
                 #if a human involved - we need to print it! normal - do we need a header?
                 #self.game_sink._on_user_private_conversation(restricted_users, player_name, message)
@@ -67,18 +67,18 @@ class GameBoard:
                 self.game_sink.on_public_action(player_name, message, "RED")
 
     def _get_conversation_entry(self, conversation_id):
-        entry = self.game_log._get_conversation_entry(conversation_id)
-        if not entry:
+        message_block = self.game_log._get_conversation_entry(conversation_id)
+        if not message_block:
             self.game_sink.on_warning(f"Conversation {conversation_id} not found.")
-        return entry
+        return message_block
 
     def close_private_conversation(self, conversation_id, silent=False):
-        entry = self._get_conversation_entry(conversation_id)
-        if entry:
-            entry.closed = True
-            if not self._human_in_restriction(entry.visibility_restriction):
+        message_block = self._get_conversation_entry(conversation_id)
+        if message_block:
+            message_block.closed = True
+            if not self._human_in_restriction(message_block.visibility_restriction):
                 if not silent:
-                    self.game_sink.on_private_conversation(entry)
+                    self.game_sink.on_private_conversation(message_block)
                 
     def get_agent_score(self, agent_name: str) -> int:
         if agent_name not in self.agent_scores:
@@ -128,10 +128,9 @@ class GameBoard:
             if key not in excluded_keys
         ]
 
-    def handle_public_private_output(self, agent: BaseAgent, public_resonse, private_thought, private_thoughts_brief, 
+    def handle_public_private_output(self, agent: BaseAgent, public_resonse, private_thought, private_thought_brief,
             delay: float = 0.0, is_reply: bool = False, directed_to_name=None):
-        #TODO OOS, but directed to name should just come into backend-
-        message_id = self.broadcast_public_action_agent(agent, public_resonse, private_thoughts_brief=private_thoughts_brief,
+        message_id = self.broadcast_public_action_agent(agent, public_resonse, private_thought_brief=private_thought_brief,
                                      directed_to_name=directed_to_name, is_reply=is_reply)
 
         agent.last_message_id = message_id
@@ -147,8 +146,8 @@ class GameBoard:
         return not (is_system_speaker or is_human_speaker)
     
     def _was_last_message_from_host(self):
-        entry = self.game_log._current_round_most_recent_message_entry()
-        return entry is not None and self.game_log._is_host_message(entry, self.HOST_NAME)
+        message_block = self.game_log._current_round_most_recent_conversation_entry()
+        return message_block is not None and self.game_log._is_host_message(message_block, self.HOST_NAME)
 
     def _is_human(self, speaker):
         return hasattr(speaker, 'is_human') and speaker.is_human()
@@ -158,8 +157,8 @@ class GameBoard:
         is_repeated_host_message = isinstance(speaker, str) and speaker.upper() == self.HOST_NAME and self._was_last_message_from_host()
         return not (is_system_speaker or self._is_human(speaker) or is_repeated_host_message)
 
-    def broadcast_public_action_agent(self, agent, message, private_thoughts_brief, color: str = "", directed_to_name = None, is_reply = False):
-        message_id = self.game_log._update_history(agent.name, message, private_thoughts_brief=private_thoughts_brief)
+    def broadcast_public_action_agent(self, agent, message, private_thought_brief, color: str = "", directed_to_name = None, is_reply = False):
+        message_id = self.game_log._update_history(agent.name, message, private_thought_brief=private_thought_brief)
         
         self.game_sink.on_public_action(agent.name, message, color=color, animate_as_player=True, should_hold=True,
                                         directed_to_name = directed_to_name, is_reply = is_reply, is_human=agent.is_human())
@@ -185,15 +184,15 @@ class GameBoard:
         else:
             self.game_sink.system_private(message, border_bottom = border_bottom)
 
-    def _is_sys_host_message(self, message_entry):
-        if len(message_entry.messages) == 1:
-            msg = message_entry.messages[0]
-            return msg.get('speaker') in self.RESERVED_NAMES
+    def _is_sys_host_message(self, message_block):
+        if len(message_block.message_entries) == 1:
+            msg = message_block.message_entries[0]
+            return msg.speaker in self.RESERVED_NAMES
         return False
         
     def host_broadcast(self, message, delay: float = 0.0, is_reply: bool = False,
                        animate_as_player=False):
-        entry = self.game_log._current_round_most_recent_message_entry()
+        entry = self.game_log._current_round_most_recent_conversation_entry()
         self.broadcast_public_action_non_player(self.HOST_NAME, message, is_reply=is_reply, should_animate_override=animate_as_player)
         self.game_sink.delay(delay)
 

@@ -100,13 +100,13 @@ class PhaseRunner:
         current_round = self.game_board.game_log.current_round
         message_lengths = {}
 
-        for message_entry in current_round.messageEntries:
-            for message in message_entry.messages:
-                speaker = message["speaker"]
+        for message_block in current_round.conversation_entries:
+            for message_entry in message_block.message_entries:
+                speaker = message_entry.speaker
                 if speaker not in self.game_board.RESERVED_NAMES:
                     if speaker not in message_lengths:
                         message_lengths[speaker] = []
-                    message_lengths[speaker].append(len(message["message"]))
+                    message_lengths[speaker].append(len(message_entry.public_output))
 
         averages = {
             speaker: sum(lengths) / len(lengths)

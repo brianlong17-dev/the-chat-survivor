@@ -1,16 +1,25 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
 
 
 @dataclass
 class MessageEntry:
-    messages: list[dict]  # [{"speaker": name, "message": text}] #TODO should also be dataclass since now it has ptb
-    id: int #sequential number, allow you to append / access specific convos
-    visibility_restriction: set[str] | None = None  # None = public
+    speaker: str
+    public_output: str
+    private_thought_brief: Optional[str] = None
+
+
+@dataclass
+class MessageBlock:
+    #Typically just one message, but can be a private conversation
+    message_entries: list[MessageEntry] 
+    id: int
+    visibility_restriction: set[str] | None = None
     closed: bool = False
 
 @dataclass
-class RoundEntry:
+class RoundBlock:
     phase_number: int
     round_number: int
-    messageEntries: list[MessageEntry]
+    conversation_entries: list[MessageBlock]
     game_ledger: str = ""

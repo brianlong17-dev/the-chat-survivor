@@ -42,9 +42,9 @@ class CycleRound(BaseRound):
                 
     def _format_messages(self, messages):
         lines = []
-        for entry in messages:
-            for msg in entry.messages:
-                lines.append(f"{msg['speaker']}: {msg['message']}")
+        for message_block in messages:
+            for message_entry in message_block.message_entries:
+                lines.append(f"{message_entry.speaker}: {message_entry.public_output}")
         return "\n".join(lines)
 
     def _generate_summary(self, context, message_to_summarise):

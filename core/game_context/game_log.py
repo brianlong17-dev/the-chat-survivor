@@ -1,5 +1,5 @@
 from collections import deque
-from core.game_context.models import MessageEntry, RoundEntry
+from core.game_context.models import MessageEntry, MessageBlock, RoundBlock
 
 
 SYS_ADMIN = "SYS_ADMIN"
@@ -8,8 +8,8 @@ SYS_ADMIN = "SYS_ADMIN"
 class GameLog:
     def __init__(self):
         self.message_id = 0
-        self.current_round: RoundEntry = None
-        self.completed_round_entries: list[RoundEntry] = []
+        self.current_round: RoundBlock = None
+        self.completed_round_entries: list[RoundBlock] = []
         self._current_round_summarisation: str = ""
         self._current_round_summarisation_until: int = None
 
@@ -23,54 +23,54 @@ class GameLog:
         self._current_round_summarisation = summary
         self._current_round_summarisation_until = last_message_id
 
-    def _is_sys_admin_message(self, message: MessageEntry) -> bool:
+    def _is_sys_admin_message(self, message: MessageBlock) -> bool:
         return bool(message.visibility_restriction and SYS_ADMIN in message.visibility_restriction)
 
-    def messages_since(self, message_id: int) -> list[MessageEntry]:
-        return [m for m in self.current_round.messageEntries if m.id > message_id and not self._is_sys_admin_message(m)]
+    def messages_since(self, message_id: int) -> list[MessageBlock]:
+        return [m for m in self.current_round.conversation_entries if m.id > message_id and not self._is_sys_admin_message(m)]
 
-    def _current_round_messages_up_to(self, message_id: int) -> list[MessageEntry]:
-                return [m for m in self.current_round.messageEntries if m.id <= message_id and not self._is_sys_admin_message(m)]
+    def _current_round_messages_up_to(self, message_id: int) -> list[MessageBlock]:
+                return [m for m in self.current_round.conversation_entries if m.id <= message_id and not self._is_sys_admin_message(m)]
 
     def _current_round_most_recent_player_entry(self, reserved_names):
-        for entry in reversed(self.current_round.messageEntries):
-            if len(entry.messages) == 1 and entry.messages[0]['speaker'] not in reserved_names:
-                return entry
+        for message_block in reversed(self.current_round.conversation_entries):
+            if len(message_block.message_entries) == 1 and message_block.message_entries[0].speaker not in reserved_names:
+                return message_block
         return None
 
 
-    def _current_round_most_recent_message_entry(self):
-        entries = [
-            entry for entry in self.current_round.messageEntries 
-            if entry.visibility_restriction is None
-        ] # we dont care about pvt messages
-        return entries[-1] if entries else None
+    def _current_round_most_recent_conversation_entry(self):
+        message_blocks = [
+            message_block for message_block in self.current_round.conversation_entries
+            if message_block.visibility_restriction is None
+        ]
+        return message_blocks[-1] if message_blocks else None
 
-    def _is_host_message(self, message_entry, host_name: str) -> bool:
-        if not message_entry.messages or len(message_entry.messages) != 1:
+    def _is_host_message(self, message_block, host_name: str) -> bool:
+        if not message_block.message_entries or len(message_block.message_entries) != 1:
             return False
-        return message_entry.messages[0]['speaker'] == host_name
+        return message_block.message_entries[0].speaker == host_name
 
-    def _get_conversation_entry(self, conversation_id) -> MessageEntry | None:
-        return next((e for e in self.current_round.messageEntries if e.id == conversation_id), None)
+    def _get_conversation_entry(self, conversation_id) -> MessageBlock | None:
+        return next((mb for mb in self.current_round.conversation_entries if mb.id == conversation_id), None)
 
     def _update_history(self, player_name: str, message: str, private_thought_brief=None, visibility_restriction=None) -> int:
         self.message_id += 1
-        entry = MessageEntry(
-            messages=[{"speaker": player_name, "message": message, "private_thought_brief": private_thought_brief}],
+        message_block = MessageBlock(
+            message_entries=[MessageEntry(speaker=player_name, public_output=message, private_thought_brief=private_thought_brief)],
             id=self.message_id,
             visibility_restriction=visibility_restriction
         )
-        self.current_round.messageEntries.append(entry)
+        self.current_round.conversation_entries.append(message_block)
         return self.message_id
 
-    def completed_phase_rounds(self, phase_number: int) -> list[RoundEntry]:
+    def completed_phase_rounds(self, phase_number: int) -> list[RoundBlock]:
         return [r for r in self.completed_round_entries if r.phase_number == phase_number]
 
     def start_round(self, phase_number: int, round_number: int):
         self._current_round_summarisation = ""
         self._current_round_summarisation_until = None
-        self.current_round = RoundEntry(phase_number=phase_number, round_number=round_number, messageEntries=[])
+        self.current_round = RoundBlock(phase_number=phase_number, round_number=round_number, conversation_entries=[])
 
     def close_round(self):
         self.completed_round_entries.append(self.current_round)

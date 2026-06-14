@@ -4,7 +4,7 @@ from typing import Iterable
 import questionary
 
 from core.sinks.console_renderer import ConsoleRenderer
-from core.game_context.models import MessageEntry
+from core.game_context.models import MessageBlock
 from core.sinks.game_sink import GameEventSink, Speaker
 
 
@@ -77,13 +77,13 @@ class ConsoleGameEventSink(GameEventSink):
     def on_private_thought(self, speaker: Speaker, message: str) -> None:
         ConsoleRenderer.print_private(speaker, message, print_name=False)
 
-    def on_private_conversation(self, entry: MessageEntry):
-        names = ' & '.join(entry.visibility_restriction) if entry.visibility_restriction else 'Unknown'
+    def on_private_conversation(self, message_block: MessageBlock):
+        names = ' & '.join(message_block.visibility_restriction) if message_block.visibility_restriction else 'Unknown'
         ConsoleRenderer.print_system_private(f"[Private: {names}]")
-        for message in entry.messages:
-            speaker = message['speaker']
+        for message_entry in message_block.message_entries:
+            speaker = message_entry.speaker
             color = "SYS" if speaker.lower() == 'system' else "RED"
-            ConsoleRenderer.print_public_action(speaker, message['message'], color)
+            ConsoleRenderer.print_public_action(speaker, message_entry.public_output, color)
         ConsoleRenderer.print_system_private(f"[End Private]")
        
 
