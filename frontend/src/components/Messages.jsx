@@ -297,8 +297,9 @@ function RoundSummary({ summary }) {
   )
 }
 
-function PrivateThought({ speaker, message, color }) {
-  const [open, setOpen] = useState(false)
+function PrivateThought({ speaker, message, color, autoExpand }) {
+  const [open, setOpen] = useState(autoExpand)
+  useEffect(() => { setOpen(autoExpand) }, [autoExpand])
   return (
     <div className="msg private-thought">
       <button className="thought-toggle" onClick={() => setOpen(o => !o)}>
@@ -437,7 +438,7 @@ function railColor(msg, colorMap) {
   return getSpeakerColor(msg.speaker, colorMap)
 }
 
-export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplete, skipRef, sendNextRound, awaitingNextRound}) {
+export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts, onAnimationComplete, skipRef, sendNextRound, awaitingNextRound}) {
   const groups = groupThread(events)
   const lastEvent = events[events.length - 1]
   const lastNextRoundIdx = events.reduce((acc, e, i) => e.type === 'next_round_request' ? i : acc, -1)
@@ -456,6 +457,7 @@ export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplet
         onRoundHeaderComplete={onRoundHeaderComplete}
         skipRef={isLast ? skipRef : undefined}
         animateText={animateText}
+        autoExpandThoughts={autoExpandThoughts}
         sendNextRound={sendNextRound}
         awaitingNextRound={awaitingNextRound && events.indexOf(evt) === lastNextRoundIdx}
       />
@@ -487,7 +489,7 @@ export function ThreadedFeed({ events, colorMap, animateText, onAnimationComplet
   })
 }
 
-export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, skipRef, animateText, sendNextRound, awaitingNextRound }) {
+export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, skipRef, animateText, autoExpandThoughts, sendNextRound, awaitingNextRound }) {
   switch (event.type) {
     case 'phase_header':
       return <PhaseHeader {...event} />
@@ -499,7 +501,7 @@ export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, sk
     case 'round_summary':
       return <RoundSummary {...event} />
     case 'private_thought':
-      return <PrivateThought {...event} color={getSpeakerColor(event.speaker, colorMap)} />
+      return <PrivateThought {...event} color={getSpeakerColor(event.speaker, colorMap)} autoExpand={autoExpandThoughts} />
     case 'system_private':
       return <SystemPrivate {...event} />
     case 'system_public':

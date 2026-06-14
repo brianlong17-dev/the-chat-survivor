@@ -14,7 +14,7 @@ export default function GameView({
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound
 }) {
-  const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs } = settings
+  const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs, autoExpandThoughts } = settings
 
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false)
@@ -197,6 +197,10 @@ export default function GameView({
                   Animate text
                 </label>
                 <label className="toggle-label">
+                  <input type="checkbox" checked={!!autoExpandThoughts} onChange={e => updateSetting('autoExpandThoughts', e.target.checked)} />
+                  Auto-expand thoughts
+                </label>
+                <label className="toggle-label">
                   <input type="checkbox" checked={showPrivateChats} onChange={e => updateSetting('showPrivateChats', e.target.checked)} />
                   Show private conversations
                 </label>
@@ -296,6 +300,7 @@ export default function GameView({
               events={visibleEvents}
               colorMap={colorMapRef.current}
               animateText={animateText}
+              autoExpandThoughts={!!autoExpandThoughts}
               onAnimationComplete={onAnimationComplete}
               skipRef={skipRef}
               sendNextRound={sendNextRound}
