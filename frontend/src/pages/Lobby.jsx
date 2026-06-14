@@ -9,7 +9,7 @@ export default function Lobby({ onStart }) {
   const [tabs, setTabs] = useState({})
   const [activeTab, setActiveTab] = useState('')
   const [selected, setSelected] = useState(saved.selected || [])
-  const [humanIndex, setHumanIndex] = useState(saved.humanIndex ?? (saved.mode === 'play' ? 0 : null))
+  const [humanIndex, setHumanIndex] = useState(saved.humanIndex !== undefined ? saved.humanIndex : 0)
   const [humanName, setHumanName] = useState(saved.humanName || '')
   const [customNames, setCustomNames] = useState(saved.customNames || [])
   const [customInput, setCustomInput] = useState('')
@@ -80,10 +80,11 @@ export default function Lobby({ onStart }) {
   const minPlayers = selectedLevelObj?.min_players || 2
 
   const clampedHumanIndex = humanIndex !== null ? Math.min(humanIndex, selected.length) : null
-  const humanShown = clampedHumanIndex !== null && humanName.trim().length > 0
-  const hardSelectableAI = HARD_CAP - (humanShown ? 1 : 0)
+  const humanSlotActive = clampedHumanIndex !== null
+  const humanShown = humanSlotActive && humanName.trim().length > 0
+  const hardSelectableAI = HARD_CAP - (humanSlotActive ? 1 : 0)
 
-  const displayChips = humanShown
+  const displayChips = humanSlotActive
     ? [
         ...selected.slice(0, clampedHumanIndex).map(name => ({ type: 'ai', name })),
         { type: 'human', name: humanName.trim() },
@@ -196,7 +197,7 @@ export default function Lobby({ onStart }) {
                 onDrop={() => onChipDrop(i)}
                 onDragEnd={() => { setDragIndex(null); setDragOverIndex(null) }}
               >
-                {isHuman ? `${c.name} (you)` : c.name}
+                {isHuman ? (c.name ? `${c.name} (you)` : '(you)') : c.name}
                 <button
                   className="chip-remove"
                   onClick={() => isHuman ? setHumanIndex(null) : toggle(c.name)}
