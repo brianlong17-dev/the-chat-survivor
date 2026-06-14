@@ -39,7 +39,8 @@ class DynamicModelFactory:
         round_specific_strategy=None,
         action_fields: Dict[str, tuple] = None,      # Actions required by the game (e.g. dropdowns),
         action_post_response = False,
-        mobile_outputs=False
+        mobile_outputs=False,
+        multi_answer_model=False
     ) -> Type[BaseModel]:
         if agent.is_human(): # and not agent.is_testing:
             return cls.create_human_model(public_response_prompt, action_fields)
@@ -82,7 +83,9 @@ class DynamicModelFactory:
             base_thought = private_thoughts_prompt
      
         ordered_fields["private_thoughts"] = (str, Field(description=base_thought))
-        ordered_fields["private_thoughts_brief"] = (str, Field(description="Give a one line sum up of your private thoughts."))
+        if not multi_answer_model:
+            #we dont went bcz it wont make sense to apend them under multiple answers
+            ordered_fields["private_thoughts_brief"] = (str, Field(description="Give a one line sum up of your private thoughts."))
         
         #....action 
         if action_fields and not action_post_response:

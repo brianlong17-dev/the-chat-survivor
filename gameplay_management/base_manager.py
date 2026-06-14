@@ -187,7 +187,7 @@ class BaseRound:
             model_name="basic_turn",
             public_response_prompt=public_response_prompt,
             instruction_override=instruction_override)
-        self.game_board.log_message_to_conversation(conversation_id, player.name, result.public_response)
+        self.game_board.log_message_to_conversation(conversation_id, player, result.public_response)
         return result
     
     def _host_back_and_forth(self, player, questions, instruction_override=None, conversation_id = None):
@@ -202,6 +202,7 @@ class BaseRound:
             action_fields=action_fields,
             action_post_response=True,
             instruction_override=instruction_override,
+            multi_answer_model=True
         )
         for key, value in questions.items():
             answer = getattr(result, key, "")
@@ -209,7 +210,7 @@ class BaseRound:
                 conversation_id = self._initialise_private_host_conversation(player, value)
             else:
                 self._private_host_conversation_host_message(conversation_id, value)
-            self.game_board.log_message_to_conversation(conversation_id, player.name, answer)
+            self.game_board.log_message_to_conversation(conversation_id, player, answer)
         return conversation_id
 
 
