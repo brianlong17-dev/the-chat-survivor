@@ -150,7 +150,7 @@ class ContextBuilder:
                 output += f"\n[YOUR INTERNAL PRIVATE THOUGHT]: {message_entry.private_thought_brief} [/END THOUGHT] \n"
 
             if agent.last_message_id and message_block.id == agent.last_message_id[0] and i == agent.last_message_id[1]:
-                if self._player_message_block_after(round_block, message_block, i):
+                if self._player_message_after(round_block, message_block, i):
                     output += anchor_message_normal
                 else:
                     output += anchor_message_successive_turn
@@ -172,34 +172,26 @@ class ContextBuilder:
             output += f"\n=== END OF Private Conversation between {names} ===\n"
         return output
 
-    def _next_round_block(self, round_block):
-        rounds = self.game_log.completed_round_entries
-        for i, a_round_block in enumerate(rounds):
-            if a_round_block is round_block:
-                if i + 1 < len(rounds):
-                    return rounds[i + 1]
-                return self.game_log.current_round #if round_block is in completed rounds it never gets here - returns None
-            
-        return None
-                
-    def _player_message_in_message_block_after(self, message_block: 'MessageBlock', index):
-        for i, message_entry in enumerate(message_block.message_entries):
-            if i > index and message_entry.speaker not in self.game_board.RESERVED_NAMES:
+    
+    def _player_message_after(self, round_block, anchor_message_block, index) -> bool:
+        for message_entry in self._messages_after_id(round_block, anchor_message_block, index):
+            if message_entry.speaker not in self.game_board.RESERVED_NAMES:
                 return True
         return False
+            
+    def _messages_after_id(self, round_block, message_block, message_entry_index):
+        messages = list(message_block.message_entries[message_entry_index + 1:])
+        for mb in round_block.conversation_entries:
+            if mb.id > message_block.id:
+                messages.extend(mb.message_entries)
+        all_rounds = self.game_log.all_round_entries()
+        start = next(i for i, rb in enumerate(all_rounds) if rb is round_block) 
+        #all_rounds[all_rounds.index(round_block) + 1:]: -- this uses == , we want to use 'is' - just good pactice
+        for rb in all_rounds[start + 1:]:
+            for mb in rb.conversation_entries:
+                messages.extend(mb.message_entries)
+        return messages
         
-    def _player_message_block_after(self, round_block: 'RoundBlock', anchor_message_block: 'MessageBlock', index) -> bool:
-        if self._player_message_in_message_block_after(anchor_message_block, index):
-            return True
-        else:
-            while round_block:
-                for message_block in round_block.conversation_entries:
-                    if message_block.id > anchor_message_block.id:
-                        for message_entry in message_block.message_entries:
-                            if message_entry.speaker not in self.game_board.RESERVED_NAMES:
-                                return True
-                round_block = self._next_round_block(round_block)
-            return False
 
     def get_dashboard_string(self, agent: 'BaseAgent') -> str:
         return Dashboard.render(agent, self.game_board)

@@ -13,6 +13,11 @@ class GameLog:
         self._current_round_summarisation: str = ""
         self._current_round_summarisation_until: int = None
 
+    def all_round_entries(self):
+        if self.current_round:
+            return self.completed_round_entries + [self.current_round]
+        return self.completed_round_entries
+        
     def _push_to_game_ledger(self, log):
         self.current_round.game_ledger += f" - {log}\n"
         
