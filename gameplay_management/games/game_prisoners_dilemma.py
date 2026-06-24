@@ -47,10 +47,10 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         cfg = self.cfg
         #SCAF
         return ("Game points:\n"
-            f"Both Split: +{cfg.pd_points_split} | +{cfg.pd_points_split}\n"
-            f"Both steal:  +{cfg.pd_points_both_steal} | +{cfg.pd_points_both_steal}\n"
-            f"Steal | Split : {cfg.pd_points_steal} | 0\n"
-            f"Split | Steal : 0 | {cfg.pd_points_steal}\n"
+            f"Both Split: Both get +{cfg.pd_points_split} points each.\n"
+            f"Both Steal: Both only get +{cfg.pd_points_both_steal} points each.\n"
+            f"You steal | They trust and Split : You get +{cfg.pd_points_steal} points | They get 0\n"
+            f"You trust and Split | They Steal : You get 0 | They get +{cfg.pd_points_steal} points\n"
         )
 
     

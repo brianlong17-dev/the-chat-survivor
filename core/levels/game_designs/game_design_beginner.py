@@ -30,7 +30,11 @@ class GameDesignBeginner(GameDesign):
             cfg.set_pd_pairing_random()
             cfg.allow_revote = False
             cfg.set_discussion_settings(
-                DiscussionRoundSettings(),
+                DiscussionRoundSettings(loops=[
+                    DiscussionLoop(
+                        turn_prompt=("You are now entering the game and meeting the other players for the first time. "
+                        "Everyone has a chance to speak so you can get to know other players. "
+                        "You can either address the group or directly to one specific player, which they will be able to respond to- but everything in this round is public. "),)]),
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
                         host_message="Wow- what a game! How is everyone feeling after that? ",

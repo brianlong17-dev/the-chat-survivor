@@ -2,17 +2,26 @@ import asyncio
 import queue
 import time
 import json
+import os
+import uuid
 import threading
+from datetime import datetime, timezone
 
 from fastapi import WebSocket
 
 from core.sinks.game_sink import GameEventSink
+from core import backend_config
 from core.shared_web_game_functionality import INACTIVITY_TIMEOUT
 INACTIVITY_MESSAGE = f"Session timed out due to inactivity ({INACTIVITY_TIMEOUT//60} minutes)"
 
 class InactivityTimeout(Exception):
     def __init__(self):
         super().__init__("Session timed out due to inactivity")
+
+def _prune_logs(log_dir: str, keep: int) -> None:
+    logs = sorted(os.path.join(log_dir, f) for f in os.listdir(log_dir) if f.endswith(".jsonl"))
+    for old in logs[:-keep]:
+        os.remove(old)
 
 class WebSocketSink(GameEventSink):
     """Serialises game events to JSON and broadcasts over a websocket."""
@@ -25,10 +34,28 @@ class WebSocketSink(GameEventSink):
         self._round_gate = threading.Event()
         self._round_gate.set()
         self.mobile_outputs: bool = False
+        self.log_file = None
+        if backend_config.GAME_LOGGING_ENABLED:
+            self._initialise_log_file()
+            
+    def _initialise_log_file(self):
+        log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "logs", "gamelogs")
+        os.makedirs(log_dir, exist_ok=True)
+        _prune_logs(log_dir, keep=30)
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        suffix = uuid.uuid4().hex[:6]
+        self.log_file = os.path.join(log_dir, f"game_{timestamp}_{suffix}.jsonl")
+
+    def _record_payload(self, payload):
+        with open(self.log_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
     def _send(self, payload: dict):
+        
         if self._disconnected:
             return
+        if self.log_file:
+            self._record_payload(payload)
         future = asyncio.run_coroutine_threadsafe(
             self.websocket.send_text(json.dumps(payload)),
             self.loop,

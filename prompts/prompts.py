@@ -2,10 +2,7 @@ class PromptLibrary:
     #Agent
     line_break = (f"\n{"="*50}")
     
-    desc_agent_updated_game_strategy = ("Only populate if you want to update your game strategy. "
-                                          "Based on how the game works, what is the smartest strategy?")
     desc_message = "Say what you want- Your thoughts and feelings should come through. (Don't repeat other messages. Say little if you have nothing new to say.)"
-    desc_agent_lifeLessons = ("A new lesson to you mind that you will take forward. This will shape your future descisions. Take key lessons only, so you don't cloud your decision making.")
     desc_agent_position_assessment = ("Based on your position in the scoreboard, what do you need to do? If it's a discussion round, what is your position in the upcoming round? Can you help yourself in some way?")
     desc_agent_speaking_style = (
         "Only populate if your speaking style has evolved or shifted during this round — "
@@ -14,8 +11,7 @@ class PromptLibrary:
         "NO specific word or phrases. "
         "Approximately as long and detailed as the previous speaking style."
     )
-    desc_basic_thought = "Your internal thoughts. Strategy, feelings, and private observations."
-    desc_basic_public_response = "What you actually say out loud to the group. Stay in character!"
+    desc_basic_thought = "Your internal thoughts. Think in voice. Strategy, feelings, and private observations. "
    
 
     @staticmethod

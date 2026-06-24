@@ -43,16 +43,9 @@ class SimulationEngine:
         self.game_board.remove_agent_state(agent.name)
         
     def _select_debug_targets(self):
-        debug_targets = ['Morty Smith', 'Lady Macbeth']
-        target_found = False
-
-        for agent in self.agents:
-            if True: #agent.name in debug_targets:
+        if not self.api_client._mock_output:
+            for agent in self.agents:
                 agent.debug_log = True
-                target_found = True
-                
-        if not target_found and self.agents:
-            self.agents[0].debug_log = True
                     
 
     def run(self):
@@ -70,17 +63,4 @@ class SimulationEngine:
         
     def _post_game_interview(self):
         pass
-        #Would you like to select a player to speak to?
-        #human input, select a name-
-        #here you can ask them a question
-        #we put the question to them via private conversation- 
-        #the conversation is added to a dictionary with agent- conv id keys
-        #Between host and player- maybe host should get a different name.
-        #or we could drum up a new human agent.
-        #ask them a question:
-        #the person responds
-        #ask another question - yes - no
-        #if no select another name - outer loop
-        #if yes continue inner loop
-  
            

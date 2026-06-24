@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, Optional
 from pydantic import Field, create_model
-from models.player_models import DynamicModelFactory
+from agents.player_models import DynamicModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 
 if TYPE_CHECKING:
@@ -267,8 +267,12 @@ class TurnManager:
                 
                 
     
-    def _output_response(self, player, response, pre_message_choice_reveal=None, post_message_choice_reveal=None, is_reply=False, delay=0,
+    def _output_response(self, player, response, single_message_overwrite=None, pre_message_choice_reveal=None, post_message_choice_reveal=None, is_reply=False, delay=0,
                          include_target_name=False):
+        
+        if single_message_overwrite:
+            #In case of multiple turns being included in a single response model- we will only have public output.
+            return self.game_board.broadcast_public_action_agent(player, single_message_overwrite, is_reply=is_reply)
         
         private_thoughts = None if player.is_human() else getattr(response, 'private_thoughts', None)
         private_thoughts_brief = None if player.is_human() else getattr(response, 'private_thoughts_brief', None)

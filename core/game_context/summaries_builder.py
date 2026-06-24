@@ -3,11 +3,6 @@ class SummariesStringBuilder:
     DETAILED_SUMMARIES_REQUIRED = 2
     
     @classmethod
-    def render(cls, agent) -> str:
-        return ""
-    
-    
-    @classmethod
     def detailed_summaries_string(cls, agent):
         string = ""
         keys = agent.phase_summaries_detailed.keys()

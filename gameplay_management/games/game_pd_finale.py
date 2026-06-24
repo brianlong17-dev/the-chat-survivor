@@ -43,7 +43,8 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             game_logic_fields=game_logic_fields,
             broadcast=True,
             is_reply = True,
-            thinking = True)
+            thinking = False,
+            use_higher_model=True)
         
     def _pre_game_exchange_2(self, player, is_coronation=False, is_tie = False):
         coronation_string = "If you have nothing new to add, keep it brief. " if is_coronation else ""
@@ -300,18 +301,20 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         "If you split, we will have two champions today. Both of you will win. And if you both steal? Well then, you both lose. "
         "However, if only one player steals- they will be our reigning champion alone, while the other goes home empty-handed. \n\n"
         "After everything you've been through, with nothing left to lose- can you finally trust each other and share the victory? \n"
-        "Will it be salted earth, shared glory, or one last thorn in the side?")
+        "Will it be salted earth, shared glory, or one last thorn in the side?\n\n"
+        "A double win is on the table- all it requires is a double *trust*. Do you have it in you?")
         return f"{intro}{rules}"
     
     def _reg_intro(self, is_coronation, tie_possible, leader):
         intro =  (f"Our two finalists stand here before us: {self.format_list(self._names(self.agents))}.\n\n")
+        points_rules = "If you both split each player gets 3 points. Both steal- each player gets 1 point. If only player steals, they get 5 points while their opponent gets 0. "
         if is_coronation:
             intro += (f"With {leader.name}'s score so far ahead, it seems the outcome is a foregone conclusion. "
             "This game is a matter of sportsmanship- will you Split as a sign of respect, or Steal to the last? ")
         elif tie_possible:
-            intro += ("The prize points remain the same as before. However, if the final score ends in a tie- both players could take home the crown! ")
+            intro += (f"One last prisoner's dilemma. {points_rules} However, if the final score ends in a tie- both players could take home the crown! ")
         else: 
-            intro += ("The prize points remain the same as before. "
+            intro += (f"The game works as before. {points_rules}"
             "The player with the most points will win, while the loser will be our final evictee. ")
             
         return intro
