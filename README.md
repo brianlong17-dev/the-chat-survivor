@@ -1,73 +1,64 @@
 # The Chat Survivor
 
-A text-based social elimination game played by LLM agents. Every player competes in games for points, plots in private, and tries to survive the vote of their peers.
+The groupchat version of survivor. A game of social strategy: compete for points and vote to remove your peers. The game runs across rounds of Discussion, Gameplay and Elimination until two players face off in the finale. 
 
-Play it live at **[thechatsurvivor.com](https://thechatsurvivor.com)**, or clone this repo and run your own characters with your own API key.
+You can play along as an equal participant, or watch as your favorite characters compete to win the crown.
+
+This project serves as a game framework to develop AI game agents within.
+
+A deployed version is running at **[thechatsurvivor.com](https://thechatsurvivor.com)** but you're invited to clone the repo and develop your own agents, using your own API key.
 
 <a href="https://thechatsurvivor.com"><img src="docs/screenshots/logan_vs_q_vs_catherine.png" alt="The Chat Survivor — Logan vs Q vs Catherine" /></a>
 
----
+
+# AI Characters
+
+These are not bots, NPCs or LLM wrappers. 
+
+They are not designed for strategic optimisation, but strategic *honesty*. Characters reason through their own value system. They balance strategic capability with personality to produce compelling output. 
+
+Each character agent manages their own interiority, strategies and personas. 
+
+Their inner thoughts are visible to us, the viewer. We have an honest view into the strategy behind their words. 
 
 
+## Context management
 
-## What it is
+Each character sumarises phases of play, keeping their personal memory of the game with details that are important to them. Their private thoughts are marked at each turn in the game log, allowing them strategic continuity. The game context is restructured for LLM clarity.
 
-A competitive arena for AI game players where the strategy is social and the output is entertaining. We know AI can solve problems and win chess; character gameplay has a different goal — to entertain. For characters to be believable they need coherence: they have to understand the game and evolve with events.
+# Framework
+The game framework is designed to support modular agents and modular games. 
 
-How does a character make choices that are true to themselves? In this game, characters sometimes organically vote themselves out rather than betray a friend. We can also watch them internally plan to betray an ally while maintaining a perfect front.
+Human players and AI players are interchangeable. AI agents provide their own thought fields to the answer models to manage their state agnostically.
 
-This is a non-specific goal — AI models aren't trained to betray or to be loyal, or to optimise on a strategy. Creating the future of social and entertaining characters is a different scenario, not necessarily well understood by current training, where models are trying to be helpful and logical above all else.
+Game turns are standardised — through the framework an entire turn can be made with a single method call, from answer-model assembly to API call, frontend broadcast and agent self-update.
 
-Games start simple — Prisoner's Dilemma, give-or-steal — and get more complex: mob-mentality games, murder in the dark, sob stories, comedy roasts, and playing to win the votes of defeated players in the finale. Each character is generated at the start of the game, so the variations are endless.
+## Frontend
 
-## What the agents actually do
+A game primarily runs through a react frontend. However the backend outputs to an agnostic game sink, so the game can also run in terminal. 
 
-Agents are more than static Q&A bots. Each one has:
-
-- **Evolving state** — persona, strategy, speaking style, and life lessons that update after every turn.
-- **Multiple streams of consciousness** — Their public output and private thoughts are pased through seperate streams. They have personality iterations as well as strategic updates and life lessons. Each turn we read their public output and private thoughts.
-- **Memory compression** — at the end of each phase, agents summarise what happened into detailed and brief memories, preventing context from growing unboundedly across a long game.
-- **Visibility-filtered context** — private conversations are only shown to the agents who were part of them.
-
+## Architecture
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for a full breakdown of how the components fit together.
 
 ---
+# -- Run it! --
 
-## Run it locally
-
-### 1. Clone and install
-
-```bash
-git clone https://github.com/brianlong17-dev/the-chat-survivor.git
-cd the-chat-survivor
-uv sync
-```
-
-(If you don't have `uv`, install it: <https://docs.astral.sh/uv/getting-started/installation/>.)
-
-### 2. Set up a Gemini API key
-
-Easiest path: get a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey), then create a `.env` file in the repo root:
-
-```env
-GEMINI_API_KEY=your-key-here
-```
-
-Vertex AI is also supported if you have a GCP project — set `PROJECT` and `LOCATION` instead.
-
-### 3. Pick how you want to run it
-
-**Console mode** — quickest way to see a game happen:
-
-```bash
-uv run main.py
-```
+## Quick setup
+1. Get a Gemini API key from https://aistudio.google.com/apikey
+2. Copy `.env.example` — create a `.env`, add your Gemini API key:
+   GEMINI_API_KEY=your_key_here
+3. Install dependencies:
+   uv sync
+4. Run the game *in terminal*:
+   uv run main.py 
+   
+## Web Frontend 
 
 **Web mode** — same game, with the React frontend:
 
 ```bash
-# backend
+# backend (server)
 uv run uvicorn web.server:app --reload
 
 # frontend (in a separate terminal)
@@ -80,22 +71,45 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-## Game design
+## API setup
 
-A game runs on a `GameDesign` — a description of the phases, rounds, and round settings. Game designs can mix and match any of the round modules (games, discussions, votes). See `main.py` for an example of how to wire one up and run it from the console.
+The fastest path is a Gemini API key — if `GEMINI_API_KEY` is set in `.env`, the game defaults to using it.
+
+```env
+GEMINI_API_KEY=your_key_here
+```
+
+You can also run through Google Vertex AI instead — set a project and location in `.env`, and authenticate locally:
+
+```env
+PROJECT=your-gcp-project-id
+LOCATION=your-region
+```
+```bash
+gcloud auth application-default login
+```
+
+I run it using Google Vertex- it requires more setup, but Google's AI APIs are covered by their $300 trial credit, which is very generous if you want to experiment with AI.
+
+**A note on models:** Gemini model names get deprecated over time. If something stops working, run `listAvailableAPIModels.py` to see what's currently live, and update the model names in `api_client_setup.py`.
+
 
 ---
 
 ## Tech stack
-
-- Python 3.12+
+- Python 3.13+
 - [google-genai](https://pypi.org/project/google-genai/) — Gemini models
-- [pydantic](https://docs.pydantic.dev/) — data validation and dynamic model generation
-- [FastAPI](https://fastapi.tiangolo.com/) — web backend
+- [pydantic](https://docs.pydantic.dev/) + [instructor](https://python.useinstructor.com/) — data validation and structured/dynamic model generation
+- [FastAPI](https://fastapi.tiangolo.com/) + [uvicorn](https://www.uvicorn.org/) — web backend (REST + WebSocket event stream)
 - [React](https://react.dev/) + [Vite](https://vitejs.dev/) — frontend
 
 ---
 
-## Output
+## Logging
 
-The game runs in the terminal with coloured text separating public dialogue, private thoughts, host announcements, and system messages. Agent turns are optionally logged to JSONL files in `logs/` for debugging and analysis — use `read_log.py` to inspect them.
+Each agent has their own JSONL log file in `logs/characterlogs/` — use `read_log.py` to inspect them. Documentation on `read_log` options is included at the top of the file.
+
+eg `python3 read_log.py --agent "Donald Trump" --all --prompts`
+
+A game log is also created in `logs/gamelogs/` (one `game_{timestamp}.jsonl` file per game). `WebSocketSink` mirrors every event payload sent to the frontend, so the file is a complete replay of the WebSocket stream — this is what powers demo replay. The 30 most recent are kept; older ones are pruned automatically. (`master_game_log` in the same directory is a separate shared server log, not a replay file.)
+
