@@ -30,6 +30,6 @@ MAX_NAME_LENGTH = 40
 MAX_INPUT_LENGTH = 1500
 #INACTIVITY_TIMEOUT - imported
 
-RATE_LIMITS_DB_PATH = os.getenv("RATE_LIMITS_DB_PATH", "data/rate_limits.db")
+RATE_LIMITS_DB_PATH = "data/rate_limits.db"
 
 DEMO_TOKEN_BUDGET = 500_000

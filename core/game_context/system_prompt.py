@@ -22,6 +22,11 @@ class SystemPrompt:
         "Be specific. Commit to details. Vague answers are wrong answers. "
 
         "These become your permanent memory. ")
+        
+    
+    @classmethod
+    def persona_string(cls, agent):
+        return agent.persona + '\n' + '\n'.join(agent.persona_additions)
     
     @classmethod
     def player_system_prompt(cls, agent, include_optional_response = False):
@@ -37,7 +42,7 @@ class SystemPrompt:
         output_string = (f"You are {agent.name}.\n\n"
             
             f"=== YOUR PROFILE ===\n"
-            f"Persona: {agent.persona_string()}\n"
+            f"Persona: {cls.persona_string(agent)}\n"
             f"Speaking Style: {agent.speaking_style}\n\n"
 
             f"=== LIFE LESSONS ===\n"

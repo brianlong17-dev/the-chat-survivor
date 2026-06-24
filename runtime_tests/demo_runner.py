@@ -197,6 +197,8 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
     from gameplay_management.game_cycle.game_knives import GameKnives
     from gameplay_management.game_cycle.game_circle import GameCircle
     from gameplay_management.game_cycle.game_mob import GameMob
+    from gameplay_management.games.game_wisdom import GameWisdom
+    from gameplay_management.eliminations.voting_elect_leader2 import VoteElectLeader2
 
     scores = {
         "Aang": 12, "Michael Jackson": 10, "HAL 9000": 9,
@@ -226,7 +228,9 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
     cfg.pd_pairing_method = cfg.pd_pairing_choice_all
     cfg.vote_bottom_two_expand_ties = True
 
-    phase = PhaseDescription(rounds=[GameKnives, VoteWinnerChooses], should_summarise_phase=False)
+    phase = PhaseDescription(rounds=[VoteElectLeader2], should_summarise_phase=False)
+    #phase = PhaseDescription(rounds=[GameWisdom], should_summarise_phase=False)
+    #phase = PhaseDescription(rounds=[GameKnives, VoteWinnerChooses], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GameKnives, VoteBottomTwo], should_summarise_phase=False)
     # phase = PhaseDescription(rounds=[GameCircle, VoteBottomTwo], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GamePerformComedyRoast, VoteLowestPoints, GamePerformComedyRoast], should_summarise_phase=False)
