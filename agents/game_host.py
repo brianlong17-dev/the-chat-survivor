@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, create_model
 from agents.base_agent import BaseAgent
 from models.game_models import DynamicGameModelFactory, SummariseRoundComplex
-from models.player_models import BaseResponse
+from agents.player_models import BaseResponse
 from prompts.prompts import PromptLibrary
 
 class GameMaster(BaseAgent):

@@ -33,7 +33,7 @@ class Human(Debater):
             except ValidationError as e:
                 self._handle_validation_error(e, game_board.game_sink)
 
-    def process_turn_cognitive_fields(self, turn):
+    def process_evolution_fields(self, turn):
         pass 
     
     def _collect_answers(self, fields: dict, game_board) -> dict:

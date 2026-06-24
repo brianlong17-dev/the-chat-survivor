@@ -25,6 +25,11 @@ class GameEventSink(ABC):
         ...
 
     @abstractmethod
+    def on_linebreak(self) -> None:
+        """Structural separator in the feed. On console: a blank line/divider."""
+        ...
+
+    @abstractmethod
     def on_game_over(self, winner_names: list[str]) -> None:
         """Final survivor(s) declared. Fired once at the end."""
         ...
@@ -271,6 +276,8 @@ class CapturingGameSink(GameEventSink):
 
     def on_game_intro(self, message):
         self.game_intros.append(message)
+
+    def on_linebreak(self): pass
 
     def on_game_over(self, winner_names):
         self.game_overs.append(winner_names)

@@ -6,14 +6,16 @@ from core.api_client.api_client import APIClient
 
 MODEL_3 = "gemini-3.1-flash-lite-preview" 
 MODEL_2 = "gemini-2.5-flash-lite"
-DEFAULT_MODEL_NAME = MODEL_2
+DEFAULT_MODEL_NAME = MODEL_3
 DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
 
 
 def create_api_client(game_sink, token_budget,
                   model_name=DEFAULT_MODEL_NAME, higher_model_name=DEFAULT_HIGHER_MODEL_NAME):
+    if os.getenv("GEMINI_API_KEY"):
+        return create_gemini_api_client(game_sink, token_budget, model_name, higher_model_name)
     return create_vertex_api_client(game_sink, token_budget, model_name, higher_model_name)
-    
+
 def create_vertex_api_client(game_sink, token_budget, model_name, higher_model_name):
 
     project=os.getenv("PROJECT")
@@ -38,5 +40,6 @@ def create_vertex_api_client(game_sink, token_budget, model_name, higher_model_n
     return APIClient(client, model_name, higher_model_name, game_sink, token_budget=token_budget, model_3 = MODEL_3)
 
 
-def create_gemini_api_client():
-    pass
+def create_gemini_api_client(game_sink, token_budget, model_name, higher_model_name):
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    return APIClient(client, model_name, higher_model_name, game_sink, token_budget=token_budget, model_3=MODEL_3)

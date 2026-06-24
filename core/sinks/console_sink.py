@@ -34,6 +34,10 @@ class ConsoleGameEventSink(GameEventSink):
     def on_game_intro(self, message: str) -> None:
         ConsoleRenderer.print_public_action("HOST", message)
 
+    def on_linebreak(self) -> None:
+        from prompts.prompts import PromptLibrary
+        ConsoleRenderer.print_system_private(PromptLibrary.line_break)
+
     def on_game_over(self, winner_names: list[str]) -> None:
         if not winner_names:
             result = "No one wins :("

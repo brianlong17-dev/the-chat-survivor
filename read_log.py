@@ -5,6 +5,7 @@ Usage:
     python read_log.py --agent GLaDOS                                    # most recent log for GLaDOS
     python read_log.py --agent GLaDOS --run 2                            # second most recent for GLaDOS
     python read_log.py logs/GLaDOS_20260319_140000.jsonl                 # specific file
+    python read_log.py --dir saved/catherine_and_heathcliff --agent "Catherine Earnshaw"
     python read_log.py --all                                             # all response fields
     python read_log.py --prompts                                         # show field prompts too
     python read_log.py --brief                                           # response only, no system/user context
@@ -108,7 +109,9 @@ def main() -> None:
     parser.add_argument("logfile", nargs="?", default=None,
                         help="Path to the .jsonl log file (optional)")
     parser.add_argument("--agent", default=None, metavar="NAME",
-                        help="Agent name — finds logs for that agent in logs/")
+                        help="Agent name — finds logs for that agent in the log directory")
+    parser.add_argument("--dir", default=None, metavar="PATH",
+                        help="Log directory to search (default: logs/characterlogs)")
     parser.add_argument("--run", type=int, default=1, metavar="N",
                         help="Which run to show — 1 is most recent (default), 2 is second most recent, etc.")
     parser.add_argument("--all", action="store_true", dest="show_all",
@@ -121,7 +124,14 @@ def main() -> None:
 
     logfile = args.logfile
     if logfile is None:
-        result = find_log(agent_name=args.agent, run=args.run)
+        if args.dir:
+            if os.path.isdir(args.dir):
+                log_dir = args.dir
+            else:
+                log_dir = os.path.join("logs/characterlogs", args.dir)
+        else:
+            log_dir = "logs/characterlogs"
+        result = find_log(log_dir=log_dir, agent_name=args.agent, run=args.run)
         logfile, total = result if isinstance(result, tuple) else (result, 0)
 
         if logfile is None:
@@ -129,9 +139,9 @@ def main() -> None:
                 if total:
                     print(f"Only {total} log file(s) for '{args.agent}' — can't get run {args.run}.")
                 else:
-                    print(f"No log files found for agent '{args.agent}' in logs/")
+                    print(f"No log files found for agent '{args.agent}' in {log_dir}")
             else:
-                print("No .jsonl files found in logs/")
+                print(f"No .jsonl files found in {log_dir}")
             sys.exit(1)
 
         agent_label = f"for '{args.agent}'" if args.agent else "overall"

@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING
 
 from gameplay_management.immunities.immunity_mechanicsMixin import ImmunityMechanicsMixin
+from gameplay_management.discussion_rounds.discussion_settings import DiscussionRoundSettings
 
 
 
@@ -154,7 +155,7 @@ class PhaseRunner:
                     for agent in agents:
                         executor.submit(agent.summarise_phase, self.game_board)
                     
-            
+        self._cfg.set_discussion_settings(DiscussionRoundSettings())
         self.game_board.endPhase()
   
     
