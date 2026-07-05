@@ -2,6 +2,8 @@ from typing import List, Optional
 from core.levels.level_definition import LevelDefinition
 from core.levels.game_designs.game_design import GameDesign
 from core.levels.game_designs.game_design_beginner import GameDesignBeginner
+from core.levels.game_designs.game_design_beginner8 import GameDesignBeginner8
+from core.levels.game_designs.game_design_bumper import GameDesignBumper
 from core.levels.game_designs.game_design_quickstart import GameDesignQuickStart
 from core.levels.game_designs.game_design_comedy_roast import GameDesignComedyRoast
 from core.levels.game_designs.game_design_parlor import GameDesignParlor
@@ -21,11 +23,27 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
     ),
     LevelDefinition(
         id="beginner",
-        name="Game One",
-        description="A six person, six phase game. The bottom two of each phase face the group vote. Longer alliances, longer strategies. ",
+        name="Six on the Beach",
+        description="A six player, six phase game. A quick 10 minute game, with enough space for emergent strategic behavior. ",
         token_budget=15000000,
         game_design=GameDesignBeginner,
         locked=False
+    ),
+    LevelDefinition(
+        id="8p",
+        name="Game One: Eight",
+        description="An eight person game. Players elect leaders and protect allies. More space for emergent social strategy in groups dynamics.",
+        token_budget=15000000,
+        game_design=GameDesignBeginner8,
+        locked=False
+    ),
+    LevelDefinition(
+        id="bumper",
+        name="Bumper",
+        description="An eleven person game. The longest road yet- more players, more alliances, more room for strategy.",
+        token_budget=15000000,
+        game_design=GameDesignBumper,
+        locked=True
     ),
     LevelDefinition(
         id="perform",
