@@ -238,6 +238,17 @@ class BaseRound:
     
     def _copy_without(self, a_list, an_item):
         return [o for o in a_list if o != an_item]
+    
+    def _push_voting_widget_winners(self, winner_names):
+        self._voting_dictionary["winners"] = list(winner_names)
+        self._voting_dictionary["is_final"] = True
+        self.game_board.game_sink.on_widget_update(self._voting_dictionary)
+
+    
+    def _push_voting_widget_losers(self, loser_names):
+        self._voting_dictionary["losers"] = list(loser_names)
+        self._voting_dictionary["is_final"] = True
+        self.game_board.game_sink.on_widget_update(self._voting_dictionary)
                     
     def _initialise_voting_widget(self, nominee_names, voter_names, theme="gold"):
         self._voting_dictionary = {

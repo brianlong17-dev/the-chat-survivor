@@ -10,8 +10,14 @@
  *       nominees: [{ name, votes }],
  *       voters_done: [{ name, voted_for } | string],
  *       voters_pending: string[],
- *       is_final: boolean,  // true → winner gets gold + sparks
+ *       is_final: boolean,  // true → leader gets gold + sparks (count-based)
+ *       winners: string[],  // optional override: these names go gold + sparks
+ *       losers: string[],   // optional override: these names go red (executed)
  *     }
+ *
+ *   When `winners`/`losers` are present they take over highlighting entirely —
+ *   count-based leading/winner coloring is ignored and only the listed names
+ *   are colored (gold for winners, red/blood for losers, neutral otherwise).
  */
 
 import { useEffect, useRef, useState } from 'react'
@@ -190,11 +196,16 @@ function VoterSection({ voters_done, voters_pending, totalVoters }) {
   )
 }
 
-function VotingWidget({ nominees = [], voters_done = [], voters_pending = [], is_final = false, theme = 'gold' }) {
+function VotingWidget({ nominees = [], voters_done = [], voters_pending = [], is_final = false, theme = 'gold', winners = [], losers = [] }) {
   const totalVoters = voters_done.length + voters_pending.length
   const sorted = [...nominees].sort((a, b) => (b.votes || 0) - (a.votes || 0))
   const maxVotes = sorted[0]?.votes || 1
   const t = THEME[theme] || THEME.gold
+  const blood = THEME.blood
+
+  const hasOverride = winners.length > 0 || losers.length > 0
+  const winnerSet = new Set(winners)
+  const loserSet = new Set(losers)
 
   return (
     <div className="round-widget">
@@ -202,13 +213,28 @@ function VotingWidget({ nominees = [], voters_done = [], voters_pending = [], is
         <h3 className="rw-label">Vote</h3>
         <div className="rw-nominees">
           {sorted.map(({ name, votes = 0 }) => {
-            const pct = maxVotes > 0 ? (votes / maxVotes) * 100 : 0
-            const isLeading = votes === maxVotes && votes > 0
-            const isWinner = is_final && isLeading
-            const winnerColor = isWinner ? t.winner : undefined
+            let pct = maxVotes > 0 ? (votes / maxVotes) * 100 : 0
+
+            let isWinner, isLoser, isLeading
+            if (hasOverride) {
+              // explicit lists take over — ignore count-based coloring
+              isWinner = winnerSet.has(name)
+              isLoser = loserSet.has(name)
+              isLeading = false
+            } else {
+              isLeading = votes === maxVotes && votes > 0
+              isWinner = is_final && isLeading
+              isLoser = false
+            }
+
+            // a pushed winner/loser always shows a full bar, even at 0 votes
+            if (isWinner || isLoser) pct = 100
+
+            const highlightColor = isLoser ? blood.winner : (isWinner ? t.winner : undefined)
+            const cls = isLoser ? 'loser' : (isWinner ? 'winner' : (isLeading ? 'leading' : ''))
             return (
-              <div key={name} className={`rw-nominee ${isWinner ? 'winner' : (isLeading ? 'leading' : '')}`}
-                   style={winnerColor ? { '--winner-color': winnerColor } : {}}>
+              <div key={name} className={`rw-nominee ${cls}`}
+                   style={highlightColor ? { '--winner-color': highlightColor } : {}}>
                 <div className="rw-nominee-header">
                   <span className="rw-nominee-name">{name}</span>
                   <span className="rw-nominee-count">{votes}</span>
@@ -217,6 +243,7 @@ function VotingWidget({ nominees = [], voters_done = [], voters_pending = [], is
                   <div className="rw-bar-fill" style={{ width: `${pct}%` }} />
                 </div>
                 {isWinner && <SparkCanvas colors={t.sparks} />}
+                {isLoser && <SparkCanvas colors={blood.sparks} />}
               </div>
             )
           })}

@@ -838,7 +838,8 @@
   color: var(--text);
 }
 
-.rw-nominee.winner .rw-nominee-name {
+.rw-nominee.winner .rw-nominee-name,
+.rw-nominee.loser .rw-nominee-name {
   color: var(--text);
 }
 
@@ -854,7 +855,8 @@
   color: var(--accent);
 }
 
-.rw-nominee.winner .rw-nominee-count {
+.rw-nominee.winner .rw-nominee-count,
+.rw-nominee.loser .rw-nominee-count {
   color: var(--winner-color, #c9a84c);
 }
 
@@ -876,7 +878,8 @@
   background: var(--accent);
 }
 
-.rw-nominee.winner .rw-bar-fill {
+.rw-nominee.winner .rw-bar-fill,
+.rw-nominee.loser .rw-bar-fill {
   background: var(--winner-color, #c9a84c);
 }
 
