@@ -23,8 +23,6 @@ class GameConfig:
         self.directed_discussion_group_allowed = True
         
         
-        self.inject_host_question = True
-        
         #..... level setup ....#
         self.intro_round_welcome_message = None
         self.intro_round_QA = None

@@ -53,6 +53,12 @@ class APIClient:
                     values[name] = [f"test [{name}]"]
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
                 values[name] = self._mock_response(annotation)
+            elif annotation is bool:
+                values[name] = random.choice([True, False])
+            elif annotation is int:
+                values[name] = 0
+            elif annotation is float:
+                values[name] = 0.0
             else:
                 values[name] = f"{long_text}  [{name}]"
         return response_model(**values)
@@ -89,9 +95,10 @@ class APIClient:
                     continue
                 raise
             except Exception as e:
-                if attempt < max_429_retries - 1 and _is_rate_limit(e):
+                if attempt < max_429_retries - 1 and (_is_rate_limit(e) or _is_transient_server_error(e)):
                     wait = backoff * (2 ** attempt)
-                    error_message = (f"server 429 rate limit — waiting {wait}s before retry {attempt + 1}/{max_429_retries - 1}")
+                    reason = "429 rate limit" if _is_rate_limit(e) else "5xx server error"
+                    error_message = (f"server {reason} — waiting {wait}s before retry {attempt + 1}/{max_429_retries - 1}")
                     print(error_message)
                     if attempt > 1:
                         self.sink.system_private(error_message)
@@ -154,6 +161,11 @@ _SKIP = {"core.api_client", "agents.base_agent"}
 def _is_rate_limit(exc: Exception) -> bool:
     msg = str(exc)
     return "429" in msg or "RESOURCE_EXHAUSTED" in msg
+
+
+def _is_transient_server_error(exc: Exception) -> bool:
+    msg = str(exc)
+    return any(code in msg for code in ("500", "502", "503", "504"))
 
 
 def _caller() -> str:

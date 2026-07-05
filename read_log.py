@@ -41,7 +41,7 @@ def field(label: str, value: str, color: str = WHITE) -> None:
     print()
 
 
-def render_entry(entry: dict, show_all: bool, show_prompts: bool, brief: bool) -> None:
+def render_entry(entry: dict, show_all: bool, show_prompts: bool, brief: bool, no_user: bool = False) -> None:
     call_num  = entry.get("call", "?")
     timestamp = entry.get("timestamp", "")
     agent     = entry.get("agent", "?")
@@ -56,7 +56,7 @@ def render_entry(entry: dict, show_all: bool, show_prompts: bool, brief: bool) -
             field("", system_prompt, DIM)
 
         user_prompt = entry.get("user_prompt", "")
-        if user_prompt:
+        if user_prompt and not no_user:
             divider("USER PROMPT", MAGENTA)
             field("", user_prompt, WHITE)
 
@@ -120,6 +120,8 @@ def main() -> None:
                         help="Show field prompts (what the model was asked for each field)")
     parser.add_argument("--brief", action="store_true", dest="brief",
                         help="Show response only — skip system prompt and user prompt")
+    parser.add_argument("--no-user", action="store_true", dest="no_user",
+                        help="Skip the user prompt — show system prompt and response only")
     args = parser.parse_args()
 
     logfile = args.logfile
@@ -167,7 +169,7 @@ def main() -> None:
         except json.JSONDecodeError as e:
             print(f"{YELLOW}Could not parse line: {e}{RESET}")
             continue
-        render_entry(entry, show_all=args.show_all, show_prompts=args.show_prompts, brief=args.brief)
+        render_entry(entry, show_all=args.show_all, show_prompts=args.show_prompts, brief=args.brief, no_user=args.no_user)
 
     print(f"\n{DIM}{'─' * 80}{RESET}\n")
 

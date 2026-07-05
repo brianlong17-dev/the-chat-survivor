@@ -43,6 +43,12 @@ const DEMOS = [
         description: 'Princess Bubblegum (18) vs Avatar Aang (11).',
         cast: ['Avatar Aang', 'Princess Bubblegum', 'Finn the Human', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
       },
+      {
+        id: 'quirrell_morty_pre_finale',
+        label: 'Quirrell vs Morty',
+        description: 'Professor Quirrell (19) vs Morty Smith (17).',
+        cast: ['Professor Quirrell', 'Morty Smith', 'Elle Woods', 'Lumpy Space Princess', 'Gollum', 'Logan Roy', 'Amy March', 'Lady Macbeth'],
+      },
     ],
   },
   {
@@ -73,6 +79,12 @@ const DEMOS = [
         label: 'Aang vs PB',
         description: 'Princess Bubblegum (18) vs Avatar Aang (11).',
         cast: ['Avatar Aang', 'Princess Bubblegum', 'Finn the Human', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
+      },
+      {
+        id: 'quirrell_morty_pre_finale',
+        label: 'Quirrell vs Morty',
+        description: 'Professor Quirrell (19) vs Morty Smith (17).',
+        cast: ['Professor Quirrell', 'Morty Smith', 'Elle Woods', 'Lumpy Space Princess', 'Gollum', 'Logan Roy', 'Amy March', 'Lady Macbeth'],
       },
       {
         id: 'game_3',

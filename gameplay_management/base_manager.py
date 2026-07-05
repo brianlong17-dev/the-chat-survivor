@@ -236,7 +236,8 @@ class BaseRound:
     #   Widgets         #
     #####################
     
-    
+    def _copy_without(self, a_list, an_item):
+        return [o for o in a_list if o != an_item]
                     
     def _initialise_voting_widget(self, nominee_names, voter_names, theme="gold"):
         self._voting_dictionary = {

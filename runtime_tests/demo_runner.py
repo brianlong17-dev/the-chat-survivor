@@ -12,6 +12,8 @@ from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 from gameplay_management.eliminations.voting_lowest_points import VoteLowestPoints
 from tests.helpers.testing_game_design import TestingGameDesign
 
+from gameplay_management.game_targeted.game_targeted_give_or_take import GameTargetedChoiceGiveOrTake
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from gameplay_management.discussion_rounds.discussion_round import DiscussionRound
@@ -68,6 +70,12 @@ REUNION_FIXTURES = {
         "elimination_order": ["BMO", "Jake the Dog", "Finn the Human", "Lumpy Space Princess"],
         "phase_number": 4,
     },
+    "quirrell_morty_pre_finale": {
+        "fixture_filename": "quirrell_morty_pre_finale.json",
+        "finalist_scores": {"Professor Quirrell": 19, "Morty Smith": 17},
+        "elimination_order": ["Lady Macbeth", "Amy March", "Logan Roy", "Gollum", "Lumpy Space Princess", "Elle Woods"],
+        "phase_number": 8,
+    },
 }
 
 
@@ -101,6 +109,11 @@ PD_FINALE_FIXTURES = {
         "fixture_filename": "aang_pb_pre_finale.json",
         "finalist_scores": {"Avatar Aang": 11, "Princess Bubblegum": 18},
         "phase_number": 5,
+    },
+    "quirrell_morty_pre_finale": {
+        "fixture_filename": "quirrell_morty_pre_finale.json",
+        "finalist_scores": {"Professor Quirrell": 19, "Morty Smith": 17},
+        "phase_number": 8,
     },
 }
 
@@ -228,10 +241,10 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
     cfg.pd_pairing_method = cfg.pd_pairing_choice_all
     cfg.vote_bottom_two_expand_ties = True
 
-    phase = PhaseDescription(rounds=[VoteElectLeader2], should_summarise_phase=False)
+    #phase = PhaseDescription(rounds=[GameTargetedChoiceGiveOrTake], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GameWisdom], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GameKnives, VoteWinnerChooses], should_summarise_phase=False)
-    #phase = PhaseDescription(rounds=[GameKnives, VoteBottomTwo], should_summarise_phase=False)
+    phase = PhaseDescription(rounds=[GameKnives, VoteBottomTwo], should_summarise_phase=False)
     # phase = PhaseDescription(rounds=[GameCircle, VoteBottomTwo], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GamePerformComedyRoast, VoteLowestPoints, GamePerformComedyRoast], should_summarise_phase=False)
 

@@ -16,8 +16,12 @@ class CharacterProfile(BaseModel):
                                 "If Baddie: what is their other side- what makes them relatable, understandable, wounded, longing, secretly warm? What line in them draws compassion and understanding? "
                                 "If Hero: What makes them less perfect and more fun? What is their other side: their cheeky hypocrisy, good humour, the challenge in their personality, their sadness? "
                                 "If Sweet: where is the shrewdness or dry side?"
-                                "Otherwise: What's a countervailing depth or compassion? "
-                                )
+                                "Otherwise: What's a countervailing depth or compassion? ")
+    non_verbal: bool = Field(description="Is this a non-verbal character that speaks only in a catchphrase or noise? Not a silent character but one noise rather than language. Ex: R2D2, Chewbacca, Grogu, Wall-e ")
+    simplicity: bool = Field(default=False, description=(
+    "Only True for cases characters are better as simple, inpusilve, transparent thinkers - they're not especially coherent, or complex reasoners. "
+    "Examples :(Gollum, Patrick Star). False for characters who sound vapid, but scheme (Elle Woods, Lumpy Space Princess)."
+))
 class CharacterGenerator:
 
     def __init__(self, game_sink, api_client):
