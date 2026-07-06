@@ -115,6 +115,11 @@ PD_FINALE_FIXTURES = {
         "finalist_scores": {"Professor Quirrell": 19, "Morty Smith": 17},
         "phase_number": 8,
     },
+    "danny_diana_pre_finale": {
+        "fixture_filename": "danny_diana_pre_finale.json",
+        "finalist_scores": {"Danny Healy-Rae": 22, "Lady Diana": 17},
+        "phase_number": 7,
+    },
 }
 
 
@@ -244,7 +249,8 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
     #phase = PhaseDescription(rounds=[GameTargetedChoiceGiveOrTake], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GameWisdom], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GameKnives, VoteWinnerChooses], should_summarise_phase=False)
-    phase = PhaseDescription(rounds=[GameKnives, VoteBottomTwo], should_summarise_phase=False)
+    phase = PhaseDescription(rounds=[VoteElectLeader2], should_summarise_phase=False)
+    #phase = PhaseDescription(rounds=[GameKnives, VoteBottomTwo], should_summarise_phase=False)
     # phase = PhaseDescription(rounds=[GameCircle, VoteBottomTwo], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GamePerformComedyRoast, VoteLowestPoints, GamePerformComedyRoast], should_summarise_phase=False)
 

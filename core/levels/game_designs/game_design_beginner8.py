@@ -17,7 +17,7 @@ class GameDesignBeginner8(GameDesignBeginner):
     @classmethod
     def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):
         if agent_number == 8:
-            rounds = [IntroRound, DiscussionRoundDirected, GameGuess , VoteElectLeader2]
+            rounds = [IntroRound, DiscussionRoundDirectedShort, GameGuess , VoteElectLeader2]
             cfg.set_directed_discussion_group_allowed(False)
             cfg.pd_get_reactions = False
             cfg.set_pd_pairing_random()

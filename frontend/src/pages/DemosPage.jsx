@@ -87,6 +87,12 @@ const DEMOS = [
         cast: ['Professor Quirrell', 'Morty Smith', 'Elle Woods', 'Lumpy Space Princess', 'Gollum', 'Logan Roy', 'Amy March', 'Lady Macbeth'],
       },
       {
+        id: 'danny_diana_pre_finale',
+        label: 'Danny vs Diana',
+        description: 'Danny Healy-Rae (22) vs Lady Diana (17).',
+        cast: ['Danny Healy-Rae', 'Lady Diana'],
+      },
+      {
         id: 'game_3',
         label: 'Game 3',
         description: 'Tied 39–39. Avatar Aang vs Morty Smith.',

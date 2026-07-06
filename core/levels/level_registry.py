@@ -23,7 +23,7 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
     ),
     LevelDefinition(
         id="beginner",
-        name="Six on the Beach",
+        name="Six",
         description="A six player, six phase game. A quick 10 minute game, with enough space for emergent strategic behavior. ",
         token_budget=15000000,
         game_design=GameDesignBeginner,
