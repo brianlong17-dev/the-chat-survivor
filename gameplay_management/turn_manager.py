@@ -74,7 +74,6 @@ class TurnManager:
                   additional_thought_nudge: str = None,
                   action_fields = None,
                   game_logic_fields = None,
-                  round_specific_strategy = None,
                   action_post_response: bool = False,
                   broadcast: bool = False,
                   is_reply = False,
@@ -97,7 +96,6 @@ class TurnManager:
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
             game_logic_fields=game_logic_fields,
-            round_specific_strategy=round_specific_strategy,
             action_post_response=action_post_response,
         )
 
@@ -114,7 +112,6 @@ class TurnManager:
                   additional_thought_nudge: str = None,
                   action_fields = None,
                   game_logic_fields = None,
-                  round_specific_strategy = None,
                   action_post_response: bool = False,
                   instruction_override = None,
                   broadcast: bool = False,
@@ -131,7 +128,6 @@ class TurnManager:
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
             game_logic_fields=game_logic_fields,
-            round_specific_strategy=round_specific_strategy,
             action_post_response=action_post_response,
             multi_answer_model=multi_answer_model
         )
@@ -151,27 +147,27 @@ class TurnManager:
             additional_thought_nudge: str = None,
             action_fields = None,
             game_logic_fields = None,
-            round_specific_strategy = None,
             action_post_response: bool = False,
             multi_answer_model=False
         ):
         model = DynamicModelFactory.create_model_(
             player,
-            model_name,
+            game_board=self.game_board,
+            model_name=model_name,
             public_response_prompt=public_response_prompt,
             private_thoughts_prompt=private_thoughts_prompt,
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
             game_logic_fields=game_logic_fields,
-            round_specific_strategy=round_specific_strategy,
             action_post_response=action_post_response,
             mobile_outputs=self.game_board.mobile_outputs,
             multi_answer_model=multi_answer_model)
         return model
                       
     def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,
-                   private_thoughts_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False,
-                   prefix_respond_to: bool = True): #TODO prefix_respond_to - rename to incl prompt
+                   private_thoughts_prompt: str = None, additional_thought_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False,
+                   prefix_respond_to: bool = True): #TODO prefix_respond_to - rename to incl prompt 
+        #TODO 2-  shuld broadcast not default to true?
 
         if prefix_respond_to:
             turn_prompt = f"Respond to: \n{turn_prompt}"
@@ -179,12 +175,13 @@ class TurnManager:
                               public_response_prompt=public_response_prompt,
                               private_thoughts_prompt=private_thoughts_prompt,
                               instruction_override=instruction_override,
+                              additional_thought_nudge=additional_thought_prompt,
                               broadcast = broadcast,
                               is_reply = is_reply)
 
-    def get_response(self, player, model_name, context_msg, action_fields = None, additional_thought_nudge = None, broadcast = False):
+    def get_response(self, player, context_msg, action_fields = None, additional_thought_nudge = None, broadcast = False):
+        #safe to remove?
         return self.take_turn(player, context_msg,
-                              model_name=model_name,
                               additional_thought_nudge=additional_thought_nudge,
                               action_fields=action_fields,
                               broadcast = broadcast)

@@ -50,8 +50,6 @@ class BaseAgent:
         "already perfect",
     }
     
-    def round_specific_strategy_name(self):
-        return None
     
     def _check_if_empty(self, text: str):
         if not text:

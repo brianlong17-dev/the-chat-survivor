@@ -31,12 +31,12 @@ class DynamicModelFactory:
     def create_model_(
         cls, 
         agent: 'Debater', 
+        game_board,
         model_name: str = "DynamicTurnModel",
         public_response_prompt: str = None, 
         private_thoughts_prompt: str = None, 
         additional_thought_nudge: str = None, 
         game_logic_fields: Dict[str, tuple] = None,   # Logic fields prompted by the game
-        round_specific_strategy=None,
         action_fields: Dict[str, tuple] = None,      # Actions required by the game (e.g. dropdowns),
         action_post_response = False,
         mobile_outputs=False,
@@ -82,7 +82,7 @@ class DynamicModelFactory:
         #...... public response
         pub_prompt = public_response_prompt or PromptLibrary.desc_message
         if mobile_outputs:
-            pub_prompt += f"\nThe format is a phone groupchat- keep to the length you would type in response to the situation. "
+            pub_prompt += f"\n Responses SMS message length. Short answers preferred, long answers should be 2 - 3 max. "
         
         ordered_fields["public_response"] = (str, Field(description=pub_prompt))
         #....action 
@@ -95,12 +95,23 @@ class DynamicModelFactory:
             ordered_fields.update(agent_evolution_fields)
             
             
-        #......... round specific strategy  #TODO this needs to be folder elsewhere
-        if round_specific_strategy and agent.round_specific_strategy_name():
-            ordered_fields[agent.round_specific_strategy_name()] = (str, Field(description=round_specific_strategy))
-
+        ordered_fields = cls._add_character_fields(ordered_fields, game_board, agent)
         return create_model(model_name, **ordered_fields)
-    
 
-     
-    
+
+    @staticmethod
+    def impression_field(name):
+        return f"impression_{name.replace(' ', '_')}"
+
+    @classmethod
+    def _add_character_fields(cls, ordered_fields, game_board, agent):
+        for name in game_board.agent_names():
+            if name == agent.name:
+                continue
+            field_name = cls.impression_field(name)
+            ordered_fields[field_name] = (
+                Optional[str], 
+                Field(default=None,description=f"OPTIONAL: Since last turn, your updated impression of {name} - don't lose any existing key memories, but update with any new noticings. "),
+            )
+        return ordered_fields
+

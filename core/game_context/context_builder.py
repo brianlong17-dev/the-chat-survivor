@@ -140,7 +140,7 @@ class ContextBuilder:
         return output
 
     def _formatted_public_block(self, round_block: 'RoundBlock', message_block: 'MessageBlock', agent: 'BaseAgent') -> str:
-        anchor_message_normal = "\n===[ ^^^ This was your last message — react to what's happened since. Don't repeat above message. ]===\n"
+        anchor_message_normal = "\n===[ ^^^ YOUR LAST TURN — Don't repeat above message. React to what's happened since, below. ]===\n"
         anchor_message_successive_turn = "\n===[ ^^^ This was your last message — it's already been said. Your turn now is a fresh action, not a reaction. Don't repeat or recap the above; respond only to what the host says below. ]===\n"
 
         output = ""

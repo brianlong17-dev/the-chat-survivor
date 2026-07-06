@@ -17,14 +17,26 @@ def apply_agent_state(agents: dict, agent_state: dict):
         agent = agents[name]
         agent.debug_log = True
 
-        if state["persona"]:
-            agent.persona = state["persona"]
-        if state["speaking_style"]:
-            agent.speaking_style = state["speaking_style"]
-        if state["strategy"]:
+        if state.get("initial_persona"):
+            agent.initial_persona = state["initial_persona"]
+        if state.get("additional_persona_coloring"):
+            agent.additional_persona_coloring = state["additional_persona_coloring"]
+        if state.get("persona_unique_detail"):
+            agent.persona_unique_detail = state["persona_unique_detail"]
+        if state.get("initial_speaking_style"):
+            agent.initial_speaking_style = state["initial_speaking_style"]
+        if state.get("speaking_style_update"):
+            agent.speaking_style_update = state["speaking_style_update"]
+        if state.get("strategy"):
             agent.game_strategy = state["strategy"]
-        if state["math_assessment"]:
+        if state.get("character_strategy"):
+            agent.character_strategy = state["character_strategy"]
+        if state.get("math_assessment"):
             agent.position_assessment = state["math_assessment"]
+        if state.get("position_assessment"):
+            agent.position_assessment = state["position_assessment"]
+        if state.get("character_dictionary"):
+            agent.character_dictionary = dict(state["character_dictionary"])
 
         agent.life_lessons.clear()
         for lesson in state["life_lessons"]:

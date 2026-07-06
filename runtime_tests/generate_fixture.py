@@ -16,11 +16,16 @@ import sys
 
 
 EMPTY_AGENT = {
-    "persona": "",
-    "speaking_style": "",
+    "initial_persona": "",
+    "additional_persona_coloring": "",
+    "persona_unique_detail": "",
+    "initial_speaking_style": "",
+    "speaking_style_update": "",
     "strategy": "",
-    "math_assessment": "",
+    "character_strategy": "",
+    "position_assessment": "",
     "life_lessons": [],
+    "character_dictionary": {},
     "summaries_brief": {},
     "summaries_detailed": {},
 }
@@ -40,13 +45,15 @@ def _slice(text: str, start_marker: str, end_markers: list) -> str:
 
 
 def parse_system_prompt(system_prompt: str) -> dict:
-    """Extract agent state from a rendered system prompt (see core/game_context/system_prompt.py)."""
-    persona = _slice(system_prompt, "Persona: ", ["\nSpeaking Style:"])
-    speaking_style = _slice(
-        system_prompt, "Speaking Style: ", ["\n\n=== ", "\n=== "]
-    )
-    strategy = _slice(system_prompt, "Current Strategy: ", ["\nPosition Assessment:"])
-    math_assessment = _slice(
+    """Extract agent state from a rendered system prompt (see core/game_context/system_content.py)."""
+    initial_persona = _slice(system_prompt, "Core Persona: ", ["\nAdditional Persona Coloring:", "\nUnique persona detail:", "\n\nCore Speaking Style:"])
+    additional_persona_coloring = _slice(system_prompt, "\nAdditional Persona Coloring: ", ["\nUnique persona detail:", "\n\nCore Speaking Style:"])
+    persona_unique_detail = _slice(system_prompt, "\nUnique persona detail: ", ["\n\nCore Speaking Style:"])
+    initial_speaking_style = _slice(system_prompt, "Core Speaking Style: ", ["\nSpeaking Style Additional Consideration:", "\n\n=== ", "\n=== "])
+    speaking_style_update = _slice(system_prompt, "\nSpeaking Style Additional Consideration: ", ["\n\n=== ", "\n=== "])
+    strategy = _slice(system_prompt, "Current Strategy: ", ["\nCharacter Strategy:", "\nPosition Assessment:"])
+    character_strategy = _slice(system_prompt, "\nCharacter Strategy: ", ["\nPosition Assessment:"])
+    position_assessment = _slice(
         system_prompt,
         "Position Assessment: ",
         ["\n\nCurrent round strategy:", "\n\n=== ", "\n=== ", "\n\n"],
@@ -65,27 +72,77 @@ def parse_system_prompt(system_prompt: str) -> dict:
                 life_lessons.append(line[2:].strip())
     life_lessons = life_lessons[-8:]
 
+    impressions_block = _slice(system_prompt, "=== CHARACTER IMPRESSIONS ===\n", ["\n\n=== ", "\n=== "])
+    character_dictionary = {}
+    if impressions_block and "No impressions yet" not in impressions_block:
+        for line in impressions_block.splitlines():
+            line = line.strip()
+            if line.startswith("- ") and ": " in line:
+                name, impression = line[2:].split(": ", 1)
+                character_dictionary[f"impression_{name.strip()}"] = impression.strip()
+
     return {
-        "persona": persona,
-        "speaking_style": speaking_style,
+        "initial_persona": initial_persona,
+        "additional_persona_coloring": additional_persona_coloring,
+        "persona_unique_detail": persona_unique_detail,
+        "initial_speaking_style": initial_speaking_style,
+        "speaking_style_update": speaking_style_update,
         "strategy": strategy,
-        "math_assessment": math_assessment,
+        "character_strategy": character_strategy,
+        "position_assessment": position_assessment,
         "life_lessons": life_lessons,
+        "character_dictionary": character_dictionary,
     }
+
+
+def truncate_to_phase_start(lines: list, phase: int) -> list:
+    """Return lines through the FIRST turn after the (phase-1)th summary.
+
+    Summary turns (response.brief_summary present) mark phase ends, since the logs
+    don't record phase_number. To reconstruct state as an agent *entered* phase N,
+    we keep everything through their (N-1)th summary PLUS the first turn after it.
+
+    That trailing turn is essential: the summary turn's own evolution fields
+    (compressed_life_lessons, persona_unique_detail, speaking_style_update, ...) are
+    applied AFTER it responds, so they only appear in the *next* turn's system_prompt
+    (agents/player.py process_evolution_fields / _process_summary_turn). Cutting at
+    the summary turn itself would capture the PRE-compression state (e.g. 8 lessons
+    instead of the compressed 3). This yields summaries 1..N-1 and the post-summary
+    live state the agent actually entered phase N with.
+    """
+    lines = sorted(lines, key=lambda l: l["timestamp"])
+    summaries_needed = phase - 1
+    if summaries_needed <= 0:
+        return []
+    seen = 0
+    for i, l in enumerate(lines):
+        if (l.get("response") or {}).get("brief_summary"):
+            seen += 1
+            if seen == summaries_needed:
+                # keep the summary turn AND the first turn after it (if any)
+                return lines[: i + 2]
+    # Fewer than N-1 summaries exist (agent eliminated before phase N); keep all.
+    return lines
 
 
 def reconstruct_agent(lines: list) -> dict:
     lines = sorted(lines, key=lambda l: l["timestamp"])
     # Walk lines in reverse, per-field: first non-empty wins.
     # Eliminated agents lose the strategy/assessment section in their later prompts
-    # (core/game_context/system_prompt.py:37), so we need to look further back for those.
-    state = {"persona": "", "speaking_style": "", "strategy": "", "math_assessment": "", "life_lessons": []}
+    # (core/game_context/system_content.py:37), so we need to look further back for those.
+    state = {"initial_persona": "", "additional_persona_coloring": "", "persona_unique_detail": "",
+             "initial_speaking_style": "", "speaking_style_update": "",
+             "strategy": "", "character_strategy": "", "position_assessment": "",
+             "life_lessons": [], "character_dictionary": {}}
     for line in reversed(lines):
         parsed = parse_system_prompt(line["system_prompt"])
         for k, v in parsed.items():
-            if not state[k] and v:
+            if k == "character_dictionary":
+                if not state[k] and v:
+                    state[k] = v
+            elif not state[k] and v:
                 state[k] = v
-        if all(state[k] for k in ("persona", "speaking_style", "strategy", "math_assessment")) and state["life_lessons"]:
+        if all(state[k] for k in ("initial_persona", "initial_speaking_style", "strategy", "position_assessment")) and state["life_lessons"]:
             break
 
     summary_lines = [
@@ -96,7 +153,7 @@ def reconstruct_agent(lines: list) -> dict:
         for i, l in enumerate(summary_lines)
     }
     state["summaries_detailed"] = {
-        str(i + 1): l["response"].get("public_response", "")
+        str(i + 1): l["response"].get("personal_detailed_phase_summary", "")
         for i, l in enumerate(summary_lines)
     }
     return state
@@ -117,6 +174,7 @@ def main():
     ap.add_argument("--files", nargs="+", required=True, help="JSONL log files for one game session")
     ap.add_argument("--output", required=True, help="Path to write the fixture JSON")
     ap.add_argument("--include-empty", nargs="*", default=[], help="Agent names to add as empty-state entries (eliminated/jury)")
+    ap.add_argument("--phase", type=int, default=None, help="Reconstruct state as agents ENTERED this phase (keeps summaries 1..phase-1). Omit for final state.")
     ap.add_argument("--demo-snippet", action="store_true", help="Print a suggested demo_runner block to stderr")
     args = ap.parse_args()
 
@@ -131,8 +189,13 @@ def main():
     fixture = {}
     last_ts_by_agent = {}
     for name, lines in by_agent.items():
-        fixture[name] = reconstruct_agent(lines)
         last_ts_by_agent[name] = max(l["timestamp"] for l in lines)
+        if args.phase is not None:
+            lines = truncate_to_phase_start(lines, args.phase)
+            if not lines:
+                print(f"WARNING: {name} has no turns before phase {args.phase}; skipping", file=sys.stderr)
+                continue
+        fixture[name] = reconstruct_agent(lines)
 
     for name in args.include_empty:
         if name not in fixture:
