@@ -28,15 +28,16 @@ class DiscussionRoundDirected(BaseRound):
 
                 names = [agent.name for agent in self.agents if agent != player]
 
-                turn_prompt = "You can directly address another player and get a response. Be direct and specific, not performative. "
+                turn_prompt = "You can directly address another player and get a response. Be direct and specific, not performative. All messages are public. "
                 if group_allowed:
                     names.append("Group")
-                    turn_prompt += "Choose Group if you want to address the group. Directing questions is often key to building alliances and building strategy."
+                    turn_prompt += "Choose Group to address everyone. "
                 
                     
                 public_response_prompt = "Your statement to the group or person. Can be a one liner. Doesn't need to be a question. "
                 additional_thought_nudge = "Have you already spoken in this round? What new can you say? You only want to speak if it avoids repetition. "
-                public_response_prompt += loop.directed_public_response_prompt
+                if loop.directed_public_response_prompt:
+                    public_response_prompt += loop.directed_public_response_prompt
                 additional_thought_nudge += loop.directed_additional_thought_prompt
                 turn_prompt += loop.directed_turn_prompt
                 

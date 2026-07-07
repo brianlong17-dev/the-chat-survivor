@@ -76,6 +76,12 @@ REUNION_FIXTURES = {
         "elimination_order": ["Lady Macbeth", "Amy March", "Logan Roy", "Gollum", "Lumpy Space Princess", "Elle Woods"],
         "phase_number": 8,
     },
+    "elle_morty_pre_finale": {
+        "fixture_filename": "elle_morty_pre_finale.json",
+        "finalist_scores": {"Elle Woods": 17, "Morty Smith": 16},
+        "elimination_order": ["Frank Underwood", "Professor Quirrell", "Lumpy Space Princess", "Norman Bates"],
+        "phase_number": 5,
+    },
 }
 
 
@@ -113,12 +119,17 @@ PD_FINALE_FIXTURES = {
     "quirrell_morty_pre_finale": {
         "fixture_filename": "quirrell_morty_pre_finale.json",
         "finalist_scores": {"Professor Quirrell": 19, "Morty Smith": 17},
-        "phase_number": 8,
+        "phase_number": 7,
     },
     "danny_diana_pre_finale": {
         "fixture_filename": "danny_diana_pre_finale.json",
         "finalist_scores": {"Danny Healy-Rae": 22, "Lady Diana": 17},
         "phase_number": 7,
+    },
+    "elle_morty_pre_finale": {
+        "fixture_filename": "elle_morty_pre_finale.json",
+        "finalist_scores": {"Elle Woods": 17, "Morty Smith": 16},
+        "phase_number": 5,
     },
 }
 
@@ -153,7 +164,8 @@ def run_demo_reunion(sink, api_client, human_name: str = None, fixture_choice: s
 
     for name, score in finalist_scores.items():
         engine.game_board.agent_scores[name] = score
-        
+    engine.game_board.game_sink.on_points_update(dict(engine.game_board.agent_scores))
+
     apply_agent_state(agents, agent_state)
     for name in elimination_order:
         agent = agents[name]
@@ -190,6 +202,7 @@ def run_demo_pd_finale(sink, api_client, human_name: str = None, fixture_choice:
     agents_by_name = {a.name: a for a in engine.agents}
     for name, score in cfg["finalist_scores"].items():
         engine.game_board.agent_scores[name] = score
+    engine.game_board.game_sink.on_points_update(dict(engine.game_board.agent_scores))
     apply_agent_state(agents_by_name, agent_state)
     
     for agent in list(engine.agents):
@@ -216,7 +229,7 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
     from gameplay_management.game_cycle.game_circle import GameCircle
     from gameplay_management.game_cycle.game_mob import GameMob
     from gameplay_management.games.game_wisdom import GameWisdom
-    from gameplay_management.eliminations.voting_elect_leader2 import VoteElectLeader2
+    from gameplay_management.eliminations.voting_elect_leader import VoteElectLeader
 
     scores = {
         "Aang": 12, "Michael Jackson": 10, "HAL 9000": 9,
@@ -224,6 +237,9 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
         "Morty Smith": 2, "Amy March": 12, "Benoit Blanc": 11,
         "Gollum": 9, "Buffy Summers": 10,
     }
+    for key in scores:
+        pass
+        #scores[key] = 0
     if human_name:
         scores[human_name] = 9
 
@@ -249,7 +265,7 @@ def run_demo_game(sink, api_client, human_name: str = None, fixture_choice: str 
     #phase = PhaseDescription(rounds=[GameTargetedChoiceGiveOrTake], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GameWisdom], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GameKnives, VoteWinnerChooses], should_summarise_phase=False)
-    phase = PhaseDescription(rounds=[VoteElectLeader2], should_summarise_phase=False)
+    phase = PhaseDescription(rounds=[GameWisdom], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GameKnives, VoteBottomTwo], should_summarise_phase=False)
     # phase = PhaseDescription(rounds=[GameCircle, VoteBottomTwo], should_summarise_phase=False)
     #phase = PhaseDescription(rounds=[GamePerformComedyRoast, VoteLowestPoints, GamePerformComedyRoast], should_summarise_phase=False)

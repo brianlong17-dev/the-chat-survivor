@@ -19,26 +19,30 @@ class GameDesignBeginner(GameDesign):
     def max_players(cls) -> int:
         return 6
     
+    
+    
     @classmethod
     def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games = True, speed=1):
         cfg.vote_bottom_two_expand_ties = True
         
-        if agent_number == 6: #IntroRound, DiscussionRoundDirectedPreVote
+        if agent_number == 6:
+            
             rounds = [IntroRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirectedShort , VoteBottomTwo]
-            cfg.set_directed_discussion_group_allowed(False)
+            cfg.set_directed_discussion_group_allowed(True)
             cfg.pd_get_reactions = False
             cfg.set_pd_pairing_random()
             cfg.allow_revote = False
             cfg.set_discussion_settings(
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
-                        turn_prompt=("You are now entering the game and meeting the other players for the first time. "
-                        "Everyone has a chance to speak so you can get to know other players. "
-                        "You can either address the group or directly to one specific player, which they will be able to respond to- but everything in this round is public. "),)]),
+                        directed_turn_prompt="You meeting the other players for the first time! Direct messages can build early alliances. ",
+                        directed_public_response_prompt="Be conversational, chatty and reactive. "
+                    )]),
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
                         host_message="Wow- what a game! How is everyone feeling after that? ",
                         additional_thought_prompt="Do you need to react to the what happened in prisoner's dilemma?",
+                        directed_public_response_prompt="Be conversational and reactive- heated if appropriate. "
                     )
                 ]),
             )

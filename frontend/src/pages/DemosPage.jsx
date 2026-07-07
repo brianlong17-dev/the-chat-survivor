@@ -49,6 +49,12 @@ const DEMOS = [
         description: 'Professor Quirrell (19) vs Morty Smith (17).',
         cast: ['Professor Quirrell', 'Morty Smith', 'Elle Woods', 'Lumpy Space Princess', 'Gollum', 'Logan Roy', 'Amy March', 'Lady Macbeth'],
       },
+      {
+        id: 'elle_morty_pre_finale',
+        label: 'Elle vs Morty',
+        description: 'Elle Woods (17) vs Morty Smith (16).',
+        cast: ['Elle Woods', 'Morty Smith', 'Norman Bates', 'Lumpy Space Princess', 'Professor Quirrell', 'Frank Underwood'],
+      },
     ],
   },
   {
@@ -91,6 +97,12 @@ const DEMOS = [
         label: 'Danny vs Diana',
         description: 'Danny Healy-Rae (22) vs Lady Diana (17).',
         cast: ['Danny Healy-Rae', 'Lady Diana'],
+      },
+      {
+        id: 'elle_morty_pre_finale',
+        label: 'Elle vs Morty',
+        description: 'Elle Woods (17) vs Morty Smith (16).',
+        cast: ['Elle Woods', 'Morty Smith', 'Norman Bates', 'Lumpy Space Princess', 'Professor Quirrell', 'Frank Underwood'],
       },
       {
         id: 'game_3',
