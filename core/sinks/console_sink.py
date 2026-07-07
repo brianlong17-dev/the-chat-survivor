@@ -13,6 +13,7 @@ class ConsoleGameEventSink(GameEventSink):
     Routes all game events to the terminal via ConsoleRenderer.
     Default sink for live runs.
     """
+    line_break = (f"\n{"="*50}")
     
     def get_user_input_simple(self, field_name, description):
         print(f"\n▶ {field_name.upper()}")
@@ -35,8 +36,7 @@ class ConsoleGameEventSink(GameEventSink):
         ConsoleRenderer.print_public_action("HOST", message)
 
     def on_linebreak(self) -> None:
-        from prompts.prompts import PromptLibrary
-        ConsoleRenderer.print_system_private(PromptLibrary.line_break)
+        ConsoleRenderer.print_system_private(self.line_break)
 
     def on_game_over(self, winner_names: list[str]) -> None:
         if not winner_names:
@@ -49,10 +49,9 @@ class ConsoleGameEventSink(GameEventSink):
         ConsoleRenderer.print_system_private(result)
 
     def on_phase_header(self, phase_number: int) -> None:
-        from prompts.prompts import PromptLibrary
-        ConsoleRenderer.print_system_private(PromptLibrary.line_break)
+        ConsoleRenderer.print_system_private(self.line_break)
         ConsoleRenderer.print_system_private(f"\nPHASE: {phase_number}")
-        ConsoleRenderer.print_system_private(PromptLibrary.line_break)
+        ConsoleRenderer.print_system_private(self.line_break)
 
     def on_phase_intro(self, host_text: str, summary_text: str) -> None:
         ConsoleRenderer.print_public_action("HOST", host_text)

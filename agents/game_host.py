@@ -4,7 +4,6 @@ from typing import Literal
 from pydantic import BaseModel, Field, create_model
 from agents.base_agent import BaseAgent
 from models.game_models import DynamicGameModelFactory, SummariseRoundComplex
-from agents.player_models import BaseResponse
 from prompts.prompts import PromptLibrary
 
 class GameMaster(BaseAgent):
@@ -33,7 +32,7 @@ class GameMaster(BaseAgent):
         choice_definition = (Literal[*allowed_names], Field(description=parameter))
         public_reason = (str, Field(description="The public announcement as to why this player was chosen. Give answer in the third person passive voice."))
         fields = {"target_name" : choice_definition, "public_reason" : public_reason}
-        response_model = create_model("choose_agent_based_on_parameter", __base__=BaseResponse, **fields)
+        response_model = create_model("choose_agent_based_on_parameter", __base__=BaseModel, **fields)
         user_content = (f"You need to choose a single player that best represents this parameter: '{parameter}'.")
         return self.get_response(user_content, response_model, game_board)
         #---------------

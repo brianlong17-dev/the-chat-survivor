@@ -8,11 +8,10 @@ if TYPE_CHECKING:
     from agents.player import Debater
     
 
+default_public_response_prompt="Say what you want- Your thoughts and feelings should come through. (Don't repeat other messages. Say little if you have nothing new to say.)"
+        
+default_private_thought_prompt="Your internal thoughts. Think in voice. Strategy, feelings, and private observations. "
 
-class BaseResponse(BaseModel):
-    private_thoughts: str = Field(description= PromptLibrary.desc_basic_thought)
-    public_response: str = Field(description=PromptLibrary.desc_message)
-    
     
 class DynamicModelFactory:  
     
@@ -21,7 +20,7 @@ class DynamicModelFactory:
         ordered_fields = {}
         if action_fields:
             ordered_fields.update(action_fields)
-        pub_prompt = public_response_prompt or PromptLibrary.desc_message
+        pub_prompt = public_response_prompt or "Your public response."
         ordered_fields["public_response"] = (str, Field(description=pub_prompt))
         ordered_fields["private_thoughts"] = (str, Field(description="Private thoughts..."))
         return create_model('human_model', **ordered_fields)
@@ -68,7 +67,7 @@ class DynamicModelFactory:
         
         #......... Thoughts
         if not private_thoughts_prompt:
-            base_thought = PromptLibrary.desc_basic_thought
+            base_thought = default_private_thought_prompt
         else:
             base_thought = private_thoughts_prompt
      
@@ -81,7 +80,7 @@ class DynamicModelFactory:
         if action_fields and not action_post_response:
             ordered_fields.update(action_fields)
         #...... public response
-        pub_prompt = public_response_prompt or PromptLibrary.desc_message
+        pub_prompt = public_response_prompt or default_public_response_prompt
         if mobile_outputs and not speech:
             pub_prompt += f"\n (1-3 lines) "
         

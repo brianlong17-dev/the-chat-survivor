@@ -31,10 +31,6 @@ def apply_agent_state(agents: dict, agent_state: dict):
             agent.game_strategy = state["strategy"]
         if state.get("character_strategy"):
             agent.character_strategy = state["character_strategy"]
-        if state.get("math_assessment"):
-            agent.position_assessment = state["math_assessment"]
-        if state.get("position_assessment"):
-            agent.position_assessment = state["position_assessment"]
         if state.get("character_dictionary"):
             agent.character_dictionary = dict(state["character_dictionary"])
 

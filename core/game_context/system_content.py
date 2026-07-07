@@ -80,8 +80,7 @@ class SystemPrompt:
             f"{optional_response_buffer_string}"
             f"=== YOUR INTERNAL STRATEGY AND ASSESSMENT ===\n"
             f"Current Strategy: {agent.game_strategy}\n"
-            f"Character Strategy: {agent.character_strategy}\n"
-            f"Position Assessment: {agent.position_assessment}\n\n\n")
+            f"Character Strategy: {agent.character_strategy}\n")
         
         if agent.initialising:
             output_string += f"\n{cls.system_prompt_init()}"

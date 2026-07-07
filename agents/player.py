@@ -17,7 +17,6 @@ class Debater(BaseAgent):
     def __init__(self, name: str, initial_persona: str, api_client, speaking_style: str = ""):
         super().__init__(name, api_client=api_client)
         self.game_strategy = "Begin to take action and form strategy."
-        self.position_assessment = ""
         self.life_lessons = deque(maxlen=8)
         self.phase_summaries_detailed = {}
         self.phase_summaries_brief = {}
@@ -76,11 +75,12 @@ class Debater(BaseAgent):
     
     
     def logic_fields(self):
-        if self.game_over:
+        if True:
             return {}
         else:
+            #keeping as template - currently unused.
             return {
-                "position_assessment": (str, Field(description=PromptLibrary.desc_agent_position_assessment))
+                #"position_assessment": (str, Field(description=("With an eye on the finale, what is your position on the scoreboard?")))
             }
             
     def chain_of_thought_fields(self):
