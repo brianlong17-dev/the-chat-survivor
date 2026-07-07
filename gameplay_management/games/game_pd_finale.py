@@ -57,7 +57,6 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
                         f"Remember your last thoughts: {player.most_recent_internal_thought}\n",
             public_response_prompt=f"Your last word before the game. Play it however you want. {coronation_string} {self.sfx}",
             game_logic_fields={"method": (str, Field(description="Do you want to influence your opponent? If so, how?"))},
-            round_specific_strategy="What will you do for the final split or steal? Update your strategy with this plan. ",
             broadcast=True, 
             is_reply = True)
     
@@ -74,17 +73,20 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     
     def finale_reg_split_or_steal(self, player, tie_possible):
         tie_string = "If you end on equal points, you may share the crown. Otherwise: " if tie_possible else ""
+        mask_slip = "Their choice is already locked in. You can drop any pretense you may have had. Reveal your choice and let them know. " if not tie_possible else ""
+        
         turn_prompt_post = ( f"{tie_string}" 
             f"The player with the most points wins, and the loser is evicted. ")
         opponent = self._other_agents(player, self.agents)[0]
         turn_prompt = (
             f"The finale. You are facing {opponent.name}.\n"
             f"You have {self.game_board.agent_scores[player.name]} points. Your opponent has {self.game_board.agent_scores[opponent.name]} points. \n{self.sfx}"
-            f"{turn_prompt_post}"
+            f"{turn_prompt_post}\n"
+            f"{mask_slip}"
         )
         additional_thought_nudge = "The end of your journey, what do you want your decision to be?"
         
-        public_response_prompt = "What do you say as you reveal your choice? From your own logic and feelings, express why you chose this."
+        public_response_prompt = f"What do you say as you reveal your choice? From your own logic and feelings, express why you chose this. {mask_slip}"
         return self.get_split_or_steal(player, turn_prompt, public_response_prompt= public_response_prompt, additional_thought_nudge=additional_thought_nudge)
         
     def finale_tie_split_or_steal(self, player):
@@ -115,7 +117,6 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
                 choice = 'steal'
                 
             self.turn_manager._output_response(agent, res, pre_message_choice_reveal="action", is_reply=True)
-            agent.clear_round_specific_strategy()
             choices.append(choice)
         return choices
    
@@ -216,9 +217,6 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     #####################
            
     def run_game(self):
-        if False: #self._agent_by_name("Finn"):
-            self._host_broadcast("Jake was able to send points from home ! Lumpy Space Princess gets 6 points! ")
-            self.game_board.append_agent_points("Lumpy Space Princess", 6)
         
         agent0 = self.agents[0]
         agent1 = self.agents[1]
@@ -244,6 +242,9 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             self._pre_game_exchange(player)
         for player in self.agents:
             self._pre_game_exchange_2(player, is_coronation)
+        if not tie_possible:
+            for player in self.agents:
+                player._mask_drop=True
         self._host_broadcast(f"Ok let's go- a nation holds its breath- {self.format_list(self._names(self.agents))} ... please reveal your choice.")
         results = self._run_tasks([(agent, tie_possible) for agent in self.agents], self.finale_reg_split_or_steal)
         #results = [self.finale_reg_split_or_steal(agent, tie_possible) for agent in self.agents]
@@ -257,6 +258,8 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             self.run_tie(agent0, agent1, is_second_game = True)
             
         else:
+            for player in self.agents:
+                player._mask_drop=True
             winner = self.get_leader()
             loser = agent1 if winner is agent0 else agent0
             is_upset = (winner == follower)
@@ -275,7 +278,8 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             self._pre_game_exchange(player, is_tie = True)
         for agent in self.agents:
             self._pre_game_exchange_2(agent, is_tie = True)
-        
+        for player in self.agents:
+            player._mask_drop=True
         self._host_broadcast(f"Ok let's go- a nation holds its breath- {self.format_list(self._names(self.agents))} ... please reveal your choice.")
         results = self._run_tasks([(agent,) for agent in self.agents], self.finale_tie_split_or_steal)
         #results = [self.finale_tie_split_or_steal(agent) for agent in self.agents]
@@ -312,7 +316,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             intro += (f"With {leader.name}'s score so far ahead, it seems the outcome is a foregone conclusion. "
             "This game is a matter of sportsmanship- will you Split as a sign of respect, or Steal to the last? ")
         elif tie_possible:
-            intro += (f"One last prisoner's dilemma. {points_rules} However, if the final score ends in a tie- both players could take home the crown! ")
+            intro += (f"One last Prisoner's Dilemma. {points_rules} \nIt is possible that you both end up on the same score! In that case, we have the possibility of a tie - a double win. ")
         else: 
             intro += (f"The game works as before. {points_rules}"
             "The player with the most points will win, while the loser will be our final evictee. ")

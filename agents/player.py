@@ -109,7 +109,7 @@ class Debater(BaseAgent):
         
         fields["additional_persona_coloring"] = self._persona_coloring_field_description()
         fields["character_strategy"] =( Optional[str], Field(default=None, description=
-                                ("Optional update: In line with core values and speaking style: what is your game plan? ")))
+                                ("Optional update: In line with core values and speaking style: what unqiue edge do you have with your persona - what is your game plan? ")))
         
         fields["speaking_style_update"] = self._speaking_style_field()
         
@@ -128,7 +128,7 @@ class Debater(BaseAgent):
             )))
          
     def _persona_coloring_field_description(self):
-        description = ("Add a splash of colour to your Unique Persona Detail? In keeping with your existing persona, written in your speaking style- perhaps a new fun element? Or just something you feel is missing? ")
+        description = ("Add a splash of colour to your Unique Persona Detail? In keeping with your existing persona, written in your speaking style- perhaps a new fun element that gives you an edge in the game? Or just something you feel is missing? ")
         if self.additional_persona_coloring:
             return (Optional[str], Field(default=None, description=f"Optional: Update unique persona detail? In keeping with your existing persona, written in your speaking style- a fun new persona element?"))
              

@@ -1,6 +1,5 @@
 import random
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Sequence
 
 from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
@@ -17,82 +16,196 @@ class VoteElectLeader(VoteMechanicsMixin):
 
     @classmethod
     def rules_brief(cls, cfg):
-        return "Vote for who will choose who to send home."
-
-    def _vote_for_leader(self, agent, all_names):
-        eligible = all_names #[n for n in all_names if n != agent.name]
-        turn_prompt = (
-            f"Vote for who you want to be the Executioner — the player who will choose who goes home. "
-            f"Who do you nominate from: {', '.join(eligible)}?"
+        return "Vote to elect a leader- the leader chooses who to send home."
+    
+    
+    def _game_intro(self):
+        intro = (
+            "TIME TO *ELECT THE EXECUTIONER*. The elected player will have the power, and the burden"
+            "to send one player home. "
+            "You will receive one point per vote received. "
         )
-        name_field_prompt = "The exact name of the player you nominate as Executioner."
-        additional_thought_nudge = "What does it mean to elect an executioner? What will happen to them? What power will they have? Who would your choice send home?"
-        action_fields = self.turn_manager._choose_name_field(eligible, name_field_prompt)
-        return self.turn_manager.take_turn(agent, turn_prompt, model_name="vote_for_leader", action_fields=action_fields, additional_thought_nudge=additional_thought_nudge)
+        if self.immunity_plus:
+            intro += ("Each player who receives a nomination will be immune and safe from elimination. ")
+        return intro
 
-    def _collect_leader_votes(self, all_names: Sequence[str]):
-        voting_futures = []
-        with ThreadPoolExecutor() as executor:
-            for agent in self.simulationEngine.agents:
-                future = executor.submit(self._vote_for_leader, agent, all_names)
-                voting_futures.append(future)
-            voting_results = [f.result() for f in voting_futures]
-
-        votes = []
-        for agent, vote_response in zip(self.simulationEngine.agents, voting_results):
-            self.turn_manager._output_response(agent, vote_response, is_reply=True, delay=1,
-                        pre_message_choice_reveal=self.TARGET_NAME_FIELD)
-            
-            target_name = self.turn_manager._get_target_name_from_response(vote_response)
-            choice = self._agent_by_name(target_name)
-            if choice:
-                votes.append(choice.name)
-        return votes
 
     def run_vote(self, immunity_players: Optional[Sequence[str]]):
-        immunity_players = self._validate_immunity(immunity_players)
+        self.immunity_plus = True
+        # 1. intro
+        intro = self._game_intro()
+        self.game_board.host_broadcast(intro)
+
         all_names = [a.name for a in self.simulationEngine.agents]
-        players_up_for_elimination = [a.name for a in self._players_up_for_elimination(immunity_players)]
+        self._initialise_voting_widget(all_names, all_names, theme="gold")
 
-        # --- Step 1: Each player votes for a leader (anyone except themselves) ---
-        host_message = "TIME TO ELECT THE EXECUTIONER. Each player will vote for who they want to carry the power to send someone home."
-        self.game_board.host_broadcast(host_message)
+        # 2. vote
+        votes = []
+        for player in self.simulationEngine.agents:
+            possible_vote_targets = all_names if not self.immunity_plus else self._copy_without(all_names, player.name)
+            turn_prompt = (
+                "Cast your vote for the executioner- who gets to send one player home. "
+                f"Choose from: {', '.join(possible_vote_targets)}."
+            )
+            if self.immunity_plus:
+                turn_prompt += "Remember: voting for someone also keeps them *safe* from elimination. (You cannot vote for yourself). "
+            public_response_prompt = (
+                "What do you say after you reveal your choice? "
+                "Optional - you can also make your own pitch to be nominated. "
 
-        # Collect votes — everyone is eligible to be elected leader (including immune players)
-        votes = self._collect_leader_votes(all_names)
+            )
+            additional_thought_prompt = (
+                "Who would be the best nominee as executioner from your specific perspective? "
+                
+            )
+            if self.immunity_plus:
+                additional_thought_prompt += "Do you need to nominate someone to give them immunity? Are you at risk- Do you want to ask for a nomination from who hasn't voted yet? "
+            action_fields = self.turn_manager._choose_name_field(possible_vote_targets, "The player you elect as Executioner.")
+            vote_response = self.turn_manager.take_turn(
+                player, turn_prompt,
+                model_name="vote_for_leader",
+                public_response_prompt=public_response_prompt,
+                additional_thought_nudge=additional_thought_prompt,
+                action_fields=action_fields,
+            )
 
-        # --- Step 2: Tally — pick leader, random on tie ---
-        vote_counts = Counter(votes)
-        max_votes = max(vote_counts.values()) if vote_counts else 0
-        top = [name for name, count in vote_counts.items() if count == max_votes]
-        leader_name = random.choice(top)
-
-        # --- Step 3: Leader reacts ---
-        leader = next(a for a in self.simulationEngine.agents if a.name == leader_name)
-        self.game_board.host_broadcast(
-            f"The votes are in... {leader_name}, you have been elected Executioner. "
-            f"With great power comes great vengeance. Who will you be sending home today, and why?"
-        )
-        #TODO actually we should annouce immunity here
-        #host_message += self.immunity_string(immunity_players, players_up_for_elimination)
-
-        # Leader chooses from non-immune players only
-        action_fields = self.turn_manager._choose_name_field(players_up_for_elimination, "Choose who to send home.")
-        leader_response = self.turn_manager.take_turn(leader,
-            f"You have been elected Executioner. Choose who to eliminate from: {', '.join(players_up_for_elimination)}",
-            model_name="elect_leader_choice", 
-            action_fields=action_fields,
-            broadcast=True)
-
-        # --- Step 4: Reveal and eliminate ---
-        victim_name = self.turn_manager._get_target_name_from_response(leader_response)
-        if not victim_name or victim_name not in players_up_for_elimination:
-            self.game_board.host_broadcast(f"⚡ {leader_name} has made an invalid choice of... {victim_name}.")
-            victim_name = random.choice(players_up_for_elimination)
-            self.game_board.host_broadcast(f"⚡Instead, {victim_name} will be sent home.")
-        else:
-            self.game_board.host_broadcast(f"⚡ {leader_name} has made their choice... {victim_name} will be going home.")
-        #perfect opportunity to run thru the model to make a joke or pun
-        self.eliminate_player_by_name(victim_name)
-        self.game_board.host_broadcast(f"⚡ {leader_name}, thank you for your service. Your time as executioner has come to an end... unless a re-election?")
+            choice = self.turn_manager._get_target_name_from_response(vote_response)
+            self.turn_manager._output_response(
+                player, vote_response, is_reply=True, delay=2,
+                pre_message_choice_reveal=self.TARGET_NAME_FIELD,
+            )
+            self._update_voting_widget(player.name, choice or "—")
+            if choice:
+                votes.append(choice)
+                
+        self._process_votes(votes)
         
+
+    def _process_votes(self, votes):
+        vote_counts = Counter(votes)
+        nominees = [nominee for nominee in vote_counts]
+        host_msg = f"Congrats our nominees {self.format_list(nominees)}. You will each receive one point per vote received. "
+        eligible = [agent.name for agent in self.agents if agent.name not in nominees]
+
+
+        for nominee, count in vote_counts.items():
+            self.game_board.append_agent_points(nominee, count)
+       
+        max_votes = max(vote_counts.values())
+        top_scorers = [name for name, count in vote_counts.items() if count == max_votes]
+        if len(top_scorers) > 1:
+            tied_agents = [self._agent_by_name(name) for name in top_scorers]
+            score_leaders = self.get_strategic_players(tied_agents, top_player=True, multiple=True)
+            if len(score_leaders) == 1:
+                winner_name = score_leaders[0].name
+                host_msg += f"With a tie for most votes, our scoreboard leader will be chosen as executioner: \n*{winner_name}*. "
+            else:
+                winner_name = random.choice(score_leaders).name
+                host_msg += f"With a tie for votes and on points, a random executioner will be...\n{winner_name}! "
+        else:
+            winner_name = top_scorers[0]
+            host_msg += f"With {max_votes} votes our chosen executioner is: \n*{winner_name}*"
+            
+        self._push_voting_widget_winners([winner_name])
+        self._host_broadcast(host_msg)
+        
+            
+        if self.immunity_plus:
+            if len(eligible) == 1:
+                self._one_nominee(winner_name, eligible[0])
+                return
+            elif len(eligible) == 0:
+                nominee_message = "As every player received one vote, each player is again vulnerable. "
+                eligible = [agent.name for agent in self.agents if agent.name != winner_name]
+            else:
+                nominee_message = f"The following players did not receive a vote, and will now be up for elimination: \n*{self.format_list(eligible)}.*"
+            self._host_broadcast(nominee_message)
+        else:
+            eligible = [agent.name for agent in self.agents if agent.name != winner_name]
+
+
+
+
+        self._make_execution_decision(winner_name, eligible )
+    
+
+    def _one_nominee(self, winner_name, loser_name):
+        host_question = (f"Sadly- only one player did not receive a nomination. It hardly seems fair, but we now say goodbye to our beloved \n{loser_name}. ")
+        self._host_broadcast(host_question)
+        self._push_voting_widget_losers([loser_name])
+        elimination_context_string = "You were the only player not to receive a vote which provides immunity, so you are being sent home by default. "
+        self.eliminate_player_by_name(loser_name, elimination_context_string)
+        host_question = (f"And to our executioner {winner_name}- Your time is up as executioner and you never had to make a decision, so your hands are clean. "
+                             "Are you happy you didn't have to choose, or did you want to get your hands dirty?"
+                             "If you could have given someone the axe, who would it have been? ")
+        self._host_broadcast(host_question)
+        self.turn_manager.respond_to(self._agent_by_name(winner_name), turn_prompt=f"Respond to the events of the round: {loser_name}'s last words, and to the hosts question: {host_question}",
+                                     private_thoughts_prompt="What do you want to reveal? ", prefix_respond_to=False, broadcast=True)
+        
+        #go to winner for reaction 
+
+    def _make_execution_decision(self, nominee, eligible):
+        leader = self._agent_by_name(nominee)
+
+        if len(eligible) < 6:
+            self.game_board.host_broadcast(
+                f"Before {nominee} decides, those at risk get one last word. Make your plea."
+            )
+            for name in eligible:
+                pleader = self._agent_by_name(name)
+                self.turn_manager.respond_to(
+                    pleader,
+                    turn_prompt=f"You are at risk of being sent home by {nominee}. Make your final plea — why should they spare you?",
+                    private_thoughts_prompt="What is your read on the executioner? What angle will actually move them?",
+                    prefix_respond_to=False,
+                    broadcast=True,
+                    is_reply=True
+                )
+
+        self.game_board.host_broadcast(
+            f"{nominee} Who will you be sending home today?"
+        )
+        
+        
+
+        additional_thought_prompt = (
+            "You hold the power to send someone home. "
+            "How are you feeling about this? "
+            "There are several players you could choose. "
+            "Reason through your character — what are you feeling as a person? Is your heart heavy, "
+            "or is it just logical? Who do you choose?"
+        )
+        public_response_prompt = (
+            "What do you say as Executioner? How are you feeling? "
+            "Your choice will be revealed afterwards, so weigh your words. "
+        )
+        action_fields = self.turn_manager._choose_name_field(eligible, "the player you send home.")
+
+        leader_response = self.turn_manager.take_turn(
+            leader,
+            f"You have been elected Executioner. Choose who to eliminate from: {', '.join(eligible)}",
+            model_name="elect_leader_choice",
+            public_response_prompt=public_response_prompt,
+            additional_thought_nudge=additional_thought_prompt,
+            action_fields=action_fields,
+            is_reply=True
+        )
+
+        # broadcast choice — post reveal
+        self.turn_manager._output_response(leader, leader_response, post_message_choice_reveal=self.TARGET_NAME_FIELD)
+
+        # manage execution
+        victim_name = self.turn_manager._get_target_name_from_response(leader_response)
+        host_question = f"How does it feel to be sent home by {leader.name}? "
+        self.game_board.host_broadcast(f"⚡ {nominee} has made their choice... {victim_name} will be going home. {host_question}")
+        self._push_voting_widget_losers([victim_name])
+        
+        elimination_context = f"You were up for elimination with {self.format_list(self._copy_without(eligible, victim_name))}. {nominee} chose to send you home."
+        self.eliminate_player_by_name(victim_name, elimination_context=elimination_context)
+        
+        if len(eligible) == 2:
+            safe_player_names = self._copy_without(eligible, victim_name)
+            for safe_player_name in safe_player_names:
+                host_msg = (f"Wow- {safe_player_name} - you narrowly survived this one- how are you feeling? What lessons will you take forward?")
+                self._host_broadcast(host_msg)
+                self.turn_manager.respond_to(self._agent_by_name(safe_player_name), "Your turn: respond to the events above, and to the hosts question.", private_thoughts_prompt = "How are you feeling, and how does that impact what you want to say? ", broadcast=True, is_reply=True)
