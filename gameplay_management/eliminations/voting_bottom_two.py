@@ -22,6 +22,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
         return rules_string
            
     def run_vote(self, immunity_players: Optional[Sequence[str]]):
+        self.elimination_context=None
         self.run_voting_bottom_players(immunity_players, expand_ties = self.cfg.vote_bottom_two_expand_ties,
                                        dont_miss = self.cfg.vote_dont_miss)
 
@@ -46,8 +47,20 @@ class VoteBottomTwo(VoteMechanicsMixin):
         self._vote_widget_vote_finalised()
         if dont_miss:
             self._dispense_victim_points(victim_name, votes)
-        self.eliminate_player_by_name(victim_name)
-       
+        self.eliminate_player_by_name(victim_name, elimination_context=self.elimination_context)
+
+        if len(players_up_for_elimination) == 2:
+            safe_player_name = self._copy_without(self._names(players_up_for_elimination), victim_name)[0]
+            host_msg = f"Wow- {safe_player_name} - you narrowly survived this one- how do you respond to that exit? What lessons will you take forward?"
+            self._host_broadcast(host_msg)
+            self.turn_manager.respond_to(
+                self._agent_by_name(safe_player_name),
+                "Your turn: respond to the events above, and to the hosts question.",
+                private_thoughts_prompt="How are you feeling, and how does that impact what you want to say? ",
+                broadcast=True,
+                is_reply=True,
+            )
+
     def revote(self, candidates):
         votes = []
         self._initialise_voting_widget(self._names(candidates), self._names(self.agents), theme="blood")
@@ -69,9 +82,13 @@ class VoteBottomTwo(VoteMechanicsMixin):
         self._handle_voter_responses(votes, non_candidates, responses)
         players_with_top_votes = self._get_top_votes(votes)
         if len(players_with_top_votes) == 1:
-            return players_with_top_votes[0], votes
+            victim=players_with_top_votes[0]
+            self._set_elimination_context(candidates, victim, votes)
+            return victim, votes
         else:
-            return self.leader_chooses(leader, candidates), votes
+            victim = self.leader_chooses(leader, candidates)
+            self._set_elimination_context(candidates, victim, votes, leader_name=leader.name)
+            return victim, votes
     
     def _handle_voter_responses(self, votes, voters, responses):
         for agent, response in zip(voters, responses):
@@ -104,15 +121,36 @@ class VoteBottomTwo(VoteMechanicsMixin):
                 
         players_with_top_votes = self._get_top_votes(votes)
         if len(players_with_top_votes) == 1:
-            return players_with_top_votes[0], votes
+            victim = players_with_top_votes[0]
+            self._set_elimination_context(candidates, victim, votes)
+            return victim, votes
         else:
             tied_agents = [a for a in self.agents if a.name in players_with_top_votes]
             if self.cfg.allow_revote:
                 return self.revote(tied_agents)
             else:
                 leader = self.get_strategic_players(self.agents, top_player = True, multiple = False)[0]
-                return self.leader_chooses(leader, tied_agents), votes
-        
+                victim = self.leader_chooses(leader, tied_agents)
+                self._set_elimination_context(tied_agents, victim, votes, leader_name=leader.name)
+                return victim, votes
+
+    def _set_elimination_context(self, candidates, victim, votes, leader_name=None):
+        others = self._copy_without(self._names(candidates), victim)
+        voted_against = list({
+            v["name"] for v in self._voting_dictionary["voters_done"]
+            if v["voted_for"] == victim and v["name"] != victim
+        })
+        self.elimination_context = (
+            f"You were up for elimination against {self.format_list(others)}. \n"
+        )
+        if voted_against:
+            self.elimination_context += f"{self.format_list(voted_against)} voted to send you home. \n"
+        else:
+            self.elimination_context += "The group voted you out. \n"
+        if leader_name:
+            self.elimination_context += f"Due to a tie break, {leader_name} had the deciding vote and sent you home. "
+    
+    
     def _dispense_victim_points(self, victim_name, votes):
         points_per_survived_vote = GamePromptLibrary.points_per_survived_vote
         vote_counts = Counter(name for name in votes if name and name != victim_name)

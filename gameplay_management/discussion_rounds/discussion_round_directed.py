@@ -28,7 +28,7 @@ class DiscussionRoundDirected(BaseRound):
 
                 names = [agent.name for agent in self.agents if agent != player]
 
-                turn_prompt = "You can directly address another player and get a response. "
+                turn_prompt = "You can directly address another player and get a response. Be direct and specific, not performative. "
                 if group_allowed:
                     names.append("Group")
                     turn_prompt += "Choose Group if you want to address the group. Directing questions is often key to building alliances and building strategy."

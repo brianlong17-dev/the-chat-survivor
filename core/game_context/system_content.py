@@ -87,14 +87,12 @@ class SystemPrompt:
         
         brevity_prompt = ("Public responses should feel reactive and conversational- not a speech or statement. "
         "Occasional shortness can be powerful. Instead of a paragraph, try a short biting line. ")
-        if agent.brevity_jail:
-            output_string += brevity_prompt
         
-        if agent.most_recent_internal_thought:
-            output_string += f"\n\nYour internal thoughts at your last turn: \n{agent.most_recent_internal_thought}\n"
-
         if agent._mask_drop or agent.game_over: #combine?
             output_string += "THE GAME IS OVER. There's nothing left to win or lose. NB: Drop any pretense or false persona. \n"
         else:
-            output_string += "INSTRUCTION: Reason through your character. Speak publicly through your core speaking style. \n"
+            output_string += "INSTRUCTION: Reason through your character. Speak publicly through your speaking style. \n"
+            if agent.brevity_jail:
+                output_string += f"\n {brevity_prompt}"
+
         return output_string
