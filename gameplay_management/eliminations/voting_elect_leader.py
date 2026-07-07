@@ -71,7 +71,7 @@ class VoteElectLeader(VoteMechanicsMixin):
 
             choice = self.turn_manager._get_target_name_from_response(vote_response)
             self.turn_manager._output_response(
-                player, vote_response, is_reply=True, delay=2,
+                player, vote_response, is_reply=True,
                 pre_message_choice_reveal=self.TARGET_NAME_FIELD,
             )
             self._update_voting_widget(player.name, choice or "—")

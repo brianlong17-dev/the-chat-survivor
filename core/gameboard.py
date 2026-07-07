@@ -201,6 +201,9 @@ class GameBoard:
         self.broadcast_public_action_non_player(self.HOST_NAME, message, is_reply=is_reply, should_animate_override=animate_as_player)
         self.game_sink.delay(delay)
 
+    def delay(self, delay: float = 0.0):
+        self.game_sink.delay(delay)
+
     def environment_broadcast(self, message, delay):
         #TODO make this right - its just a frontend thing for BANG
         self.broadcast_public_action_non_player("", message)

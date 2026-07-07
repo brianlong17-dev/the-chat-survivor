@@ -25,21 +25,36 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             f"You Steal | They Split : Only you win.\n"
             f"You Split | They Steal : Only they win.\n"
         )
-        
+
+    def points_rules_string_technical_plus(self, player, opponent):
+        cfg = self.cfg
+        name = opponent.name
+        you = self.game_board.get_agent_score(player.name)
+        them = self.game_board.get_agent_score(opponent.name)
+
+        def final(you_gain, them_gain):
+            return f"Final score: You: {you + you_gain}. {name}: {them + them_gain}."
+
+        return ("Game points:\n"
+            f"Both Split: Both get +{cfg.pd_points_split}. {final(cfg.pd_points_split, cfg.pd_points_split)}\n"
+            f"Both Steal: Both only get +{cfg.pd_points_both_steal}. {final(cfg.pd_points_both_steal, cfg.pd_points_both_steal)}\n"
+            f"You steal | They trust and Split: You get +{cfg.pd_points_steal} | They get 0. {final(cfg.pd_points_steal, 0)}\n"
+            f"You trust and Split | They Steal: You get 0 | They get +{cfg.pd_points_steal}. {final(0, cfg.pd_points_steal)}\n"
+        )
+
     def _pre_game_exchange(self, player, is_tie = False):
         game_logic_fields = {
-            "can_you_win": (str, Field(description="There is only one game left. Is it possible for you to win on final scores? Is it possible for you to lose?")),
             "goal": (str, Field(description="What is the outcome you want?")),
-            "method": (str, Field(description="Do you want to influence your opponent WITHOUT revealing your choice? If so, how?")),
+            "can_you_win": (str, Field(description="There is only one game left. Is it possible for you to win on final scores? Is it possible for you to lose?")),
+            "method": (str, Field(description="Do you need to influence your opponent for your goal? If so, how?")),
         }
-        reminder =  (f"{self.points_rules_string_technical()}") if not is_tie else self.tie_rules_string_technical()
+        opponent = self._other_agents(player, self.agents)[0]
+        reminder = self.points_rules_string_technical_plus(player, opponent) if not is_tie else self.tie_rules_string_technical()
             
         self.turn_manager.take_turn(player,
             turn_prompt=f"{reminder}\n\n"
-            "Your chance to react to the final. Say how you feel to be here, "
-                "what you think of your opponent, and what case you want to make "
-                f"before the last game. Do not reveal your choice.\n",
-            public_response_prompt=f"Do you speak your mind? Do you play it coy? Do you try and trick them? Final words before the last game. {self.sfx}",
+                "Welcome to the final! React to how you feel to be here with your opponent.\n",
+            public_response_prompt=f"Speak your mind or play it coy? Last moments of the game. {self.sfx}",
             game_logic_fields=game_logic_fields,
             broadcast=True,
             is_reply = True,
@@ -210,7 +225,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self._eliminate_player(loser)
         final_q = (f"{winner.name}, how does it feel to be champion? What did you learn from the competition? What advice would you give to yourself if you had to start the game from scratch?")
         self._host_broadcast(final_q)
-        self._result_react(winner, f"React to host message: {final_q}", "Only answer the questions- afterwards give a final speech. ")
+        self._result_react(winner, f"React to host message: {final_q}", "Say how you feel at the end with a crown! ")
        
     #####################
     #  Run              #

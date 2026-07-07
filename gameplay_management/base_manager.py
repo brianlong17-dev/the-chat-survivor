@@ -62,7 +62,7 @@ class BaseRound:
             f"---------------------------------------------------------------------\n"
             f"!!!GAME OVER!!!\n"
             f"You're being removed! React to what just happened{elimination_context}\n"
-            f"(NOTE: Don't use a persona now. Speak as your true self.)\n"
+            f"(NOTE: Speak as your true self - drop fake strategic persona.)\n"
             f"---------------------------------------------------------------------\n"
             f"Your Final Words:")
         

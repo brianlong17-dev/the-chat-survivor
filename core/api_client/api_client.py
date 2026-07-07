@@ -88,6 +88,7 @@ class APIClient:
                         #top_k=64
                     ),
                 )
+                result = response_model(**json.loads(response.text))
                 break
             except json.JSONDecodeError:
                 if attempt < max_429_retries - 1:
@@ -105,7 +106,6 @@ class APIClient:
                     time.sleep(wait)
                 else:
                     raise
-        result = response_model(**json.loads(response.text))
         return response, result
     
     def create(self, response_model, messages: list, thinking=False, use_higher_model = False, use_model_3 = False):
