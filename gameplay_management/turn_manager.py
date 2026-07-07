@@ -116,6 +116,7 @@ class TurnManager:
                   instruction_override = None,
                   broadcast: bool = False,
                   is_reply = False,
+                  speech=False,
                   thinking = False,
                   use_higher_model=False,
                   multi_answer_model=False):
@@ -129,7 +130,8 @@ class TurnManager:
             action_fields=action_fields,
             game_logic_fields=game_logic_fields,
             action_post_response=action_post_response,
-            multi_answer_model=multi_answer_model
+            multi_answer_model=multi_answer_model,
+            speech=speech
         )
 
         result = player.take_turn_standard(turn_prompt, self.game_board, model, instruction_override=instruction_override, thinking=thinking,
@@ -148,7 +150,8 @@ class TurnManager:
             action_fields = None,
             game_logic_fields = None,
             action_post_response: bool = False,
-            multi_answer_model=False
+            multi_answer_model=False,
+            speech=False
         ):
         model = DynamicModelFactory.create_model_(
             player,
@@ -161,7 +164,8 @@ class TurnManager:
             game_logic_fields=game_logic_fields,
             action_post_response=action_post_response,
             mobile_outputs=self.game_board.mobile_outputs,
-            multi_answer_model=multi_answer_model)
+            multi_answer_model=multi_answer_model,
+            speech=speech)
         return model
                       
     def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,

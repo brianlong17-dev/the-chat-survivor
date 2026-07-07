@@ -105,8 +105,7 @@ class Debater(BaseAgent):
                                         ("Only populate if you want to update your game strategy. "
                                         "Based on your initial persona written in initial speaking style- what's your long term game plan? "))) 
         fields["life_lessons"] =  (Optional[str], Field(default=None, description=
-                                ("IF WARRANTED: Based on your initial persona, what new lesson would you take forward? "
-                                "This will shape your future decisions. Take key lessons only, so you don't cloud your decision making. Write in register of initial speaking style. ")))
+                                ("OPTIONAL: New information to form a new life lesson. Write from your persona. ")))
         
         fields["additional_persona_coloring"] = self._persona_coloring_field_description()
         fields["character_strategy"] =( Optional[str], Field(default=None, description=

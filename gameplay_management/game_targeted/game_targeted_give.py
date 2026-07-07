@@ -26,7 +26,9 @@ class GameTargetedChoiceGive(GameMechanicsMixin):
 
         self.game_board.host_broadcast(self._give_game_intro(points_amount),  animate_as_player=True)
 
-        for player in self._shuffled_agents():
+        ordered_agents = self._shuffled_agents()
+        while ordered_agents:
+            player = ordered_agents.pop(0)
             self.game_board.host_broadcast(self._player_intro(player))
 
             other_names = self._names(self._other_agents(player))
@@ -39,6 +41,10 @@ class GameTargetedChoiceGive(GameMechanicsMixin):
 
             target_name = self.turn_manager._get_target_name_from_response(response)
             target_agent = self._agent_by_name(target_name)
+
+            if target_agent and target_agent in ordered_agents:
+                ordered_agents.remove(target_agent)
+                ordered_agents.append(target_agent)
 
             self.game_board.append_agent_points(target_name, points_amount)
             result = f"Yay! {player.name} chooses {target_name}! They receive {points_amount} points."

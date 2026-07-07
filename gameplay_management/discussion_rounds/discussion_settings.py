@@ -7,6 +7,7 @@ class DiscussionLoop:
     turn_prompt: str = "Chat and strategise"
     host_message: Optional[str] = None
     additional_thought_prompt: Optional[str] = None
+    public_response_prompt: Optional[str] = None
     #separate directed fields to avoid defaults
     directed_turn_prompt: str = ""
     directed_public_response_prompt: str = ""

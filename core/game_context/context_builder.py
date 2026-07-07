@@ -55,6 +55,8 @@ class ContextBuilder:
         return f"{header}\n{self._score_status_string(agent, scores)}"
 
     def _score_status_string(self, agent, scores=None):
+        if agent.game_over:
+            return ""
         if scores is None:
             scores = dict(self.game_board.agent_scores)
         if not scores:

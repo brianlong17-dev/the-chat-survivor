@@ -26,6 +26,7 @@ class DiscussionRound(BaseRound):
                 self.turn_manager.take_turn(
                     player,
                     loop.turn_prompt,
+                    public_response_prompt=loop.public_response_prompt,
                     additional_thought_nudge=formatted_thought_prompt,
                     broadcast=True,
                 )

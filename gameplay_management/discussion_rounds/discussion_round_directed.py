@@ -34,7 +34,7 @@ class DiscussionRoundDirected(BaseRound):
                     turn_prompt += "Choose Group if you want to address the group. Directing questions is often key to building alliances and building strategy."
                 
                     
-                public_response_prompt = "Your statement to the group or to the target you've selected. Don't repeat yourself. If you have nothing new to say don't say anything. "
+                public_response_prompt = "Your statement to the group or person. Can be a one liner. Doesn't need to be a question. "
                 additional_thought_nudge = "Have you already spoken in this round? What new can you say? You only want to speak if it avoids repetition. "
                 public_response_prompt += loop.directed_public_response_prompt
                 additional_thought_nudge += loop.directed_additional_thought_prompt
@@ -56,7 +56,7 @@ class DiscussionRoundDirected(BaseRound):
                             appendage = "This is your last turn in the discussion round. Say anything else you want to say. "
                             #in this case they should also get the thought prompt etc
 
-                    user_prompt = f"{player.name} last message was directed to you. Please respond directly to them. {appendage}"
+                    user_prompt = f"Respond directly to {player.name}'s last message to you. Don't ask a question in response. {appendage}"
                     self.turn_manager.respond_to(chosen_agent, user_prompt, public_response_prompt="Your public response. ",
                                                 broadcast=True, is_reply=True, prefix_respond_to=False)
         self.cfg.discussion_index += 1

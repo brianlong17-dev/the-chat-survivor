@@ -144,7 +144,7 @@ class PhaseRunner:
         
         if phase_description.should_summarise_phase:
             agents = self.simulation_engine.agents
-            if cfg.should_dead_players_summarise or self._dev_mode:
+            if cfg.should_dead_players_summarise:
                 agents = agents + self.simulation_engine.dead_agents
             
             if agents: 

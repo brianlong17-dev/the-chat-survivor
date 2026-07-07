@@ -95,7 +95,7 @@ class SystemPrompt:
             output_string += f"\n\nYour internal thoughts at your last turn: \n{agent.most_recent_internal_thought}\n"
 
         if agent._mask_drop or agent.game_over: #combine?
-            output_string += "THE GAME IS OVER. The pressure is gone. There's nothing left to win or lose. BE YOUR TRUE SELF. \n"
-        
-        output_string += "INSTRUCTION: Reason through your character. Speak publicly through your core speaking style. \n"
+            output_string += "THE GAME IS OVER. There's nothing left to win or lose. NB: Drop any pretense or false persona. \n"
+        else:
+            output_string += "INSTRUCTION: Reason through your character. Speak publicly through your core speaking style. \n"
         return output_string

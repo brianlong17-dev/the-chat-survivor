@@ -33,7 +33,9 @@ class GameTargetedChoiceSteal(GameMechanicsMixin):
 
         self.game_board.host_broadcast(self._game_intro(points_amount), animate_as_player=True)
 
-        for player in self._shuffled_agents():
+        ordered_agents = self._shuffled_agents()
+        while ordered_agents:
+            player = ordered_agents.pop(0)
             self.game_board.host_broadcast(self._player_intro(player))
 
             other_names = self._names(self._other_agents(player))
@@ -50,6 +52,10 @@ class GameTargetedChoiceSteal(GameMechanicsMixin):
 
             target_name = self.turn_manager._get_target_name_from_response(response)
             target_agent = self._agent_by_name(target_name)
+
+            if target_agent and target_agent in ordered_agents:
+                ordered_agents.remove(target_agent)
+                ordered_agents.append(target_agent)
 
             current_victim_points = self.game_board.get_agent_score(target_agent.name)
             actual_steal = min(points_amount, max(0, current_victim_points))

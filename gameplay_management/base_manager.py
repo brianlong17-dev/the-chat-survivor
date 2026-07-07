@@ -51,16 +51,29 @@ class BaseRound:
     #   Function        #
     #####################
     
-    def eliminate_player_by_name(self, player_name):
-        victim = next((a for a in self.simulationEngine.agents if a.name == player_name), None)
-        if not victim:
-            print(f"NOT FOUND: {player_name}")
-            return
+    def eliminate_player_by_name(self, player_name, elimination_context=None):
+        victim = self._agent_by_name(player_name) 
+        elimination_context = ': ' + elimination_context if elimination_context else ". "
+            
         victim.game_over = True
         self.game_board.host_broadcast(self.cfg.pre_eviction_message.format(victim_name=victim.name.upper()))
         self.simulationEngine.eliminate_player(victim)
-        final_words_result = self.turn_manager.respond_to(victim, PromptLibrary.final_words_prompt(), prefix_respond_to=False)
-        self.turn_manager._output_response(victim, final_words_result)
+        turn_prompt = (
+            f"---------------------------------------------------------------------\n"
+            f"!!!GAME OVER!!!\n"
+            f"You're being removed! React to what just happened{elimination_context}\n"
+            f"(NOTE: Don't use a persona now. Speak as your true self.)\n"
+            f"---------------------------------------------------------------------\n"
+            f"Your Final Words:")
+        
+        final_words_prompt = ("Mask drop moment- let your inner voice speak. Speak directly to specific players.")
+        if False: #host_question:
+            final_words_prompt += f"Respond to the host's question: {host_question}"
+        
+        final_words_response= self.turn_manager.take_turn(victim, turn_prompt, public_response_prompt=final_words_prompt,
+                                                           additional_thought_nudge="Are you mad at anyone? What have you been holding back? ", speech=True)
+        
+        self.turn_manager._output_response(victim, final_words_response)
         
         self.game_board.system_broadcast(self.cfg.post_eviction_system_message.format(victim_name=victim.name), private = False)
 

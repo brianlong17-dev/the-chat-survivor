@@ -15,15 +15,20 @@ class PromptLibrary:
    
 
     @staticmethod
-    def final_words_prompt():
+    def final_words_prompt(eviction_context: str = None):
+        context_line = f"{eviction_context}\n" if eviction_context else ""
         return (
             f"---------------------------------------------------------------------\n"
-            f"🛑 GAME OVER 🛑\n"
-            f"You have just been ELIMINATED. Your game is finished.\n"
-            f"Do not plan for the next round. Do not try to save yourself.\n"
-            f"Your Goal: Give a memorable final statement. You can be gracious, angry, confused, or vengeful.\n"
+            f"ELIMINATED.\n"
+            f"{context_line}"
+            f"Your game is over. Do not plan or strategize.\n"
+            f"Speak from the gut — relief, bitterness, pride, hurt, dignity, spite. Whatever is true for you right now.\n"
             f"---------------------------------------------------------------------\n"
             f"Your Final Words:"
         )
-        
-   
+
+    final_words_public_response = (
+        "Your last words to everyone. Make it count — what do you actually feel? "
+        "Don't wrap it up neatly if you don't feel neat. Don't perform grace if you feel betrayed."
+    )
+
