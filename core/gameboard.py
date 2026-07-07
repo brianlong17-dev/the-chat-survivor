@@ -160,11 +160,13 @@ class GameBoard:
         is_repeated_host_message = isinstance(speaker, str) and speaker.upper() == self.HOST_NAME and self._was_last_message_from_host()
         return not (is_system_speaker or self._is_human(speaker) or is_repeated_host_message)
 
-    def broadcast_public_action_agent(self, agent, message, private_thought_brief=None, color: str = "", directed_to_name = None, is_reply = False):
+    def broadcast_public_action_agent(self, agent, message, private_thought_brief=None, color: str = "", directed_to_name = None, 
+                            is_reply = False, delay=0):
         message_id = self.game_log._update_history(agent.name, message, private_thought_brief=private_thought_brief)
         
         self.game_sink.on_public_action(agent.name, message, color=color, animate_as_player=True, should_hold=True,
                                         directed_to_name = directed_to_name, is_reply = is_reply, is_human=agent.is_human())
+        self.game_sink.delay(delay)
         self.first_message_send = True
         return message_id
 

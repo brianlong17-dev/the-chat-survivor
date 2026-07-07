@@ -273,7 +273,7 @@ class TurnManager:
         
         if single_message_overwrite:
             #In case of multiple turns being included in a single response model- we will only have public output.
-            return self.game_board.broadcast_public_action_agent(player, single_message_overwrite, is_reply=is_reply)
+            return self.game_board.broadcast_public_action_agent(player, single_message_overwrite, is_reply=is_reply, delay=delay)
         
         private_thoughts = None if player.is_human() else getattr(response, 'private_thoughts', None)
         private_thoughts_brief = None if player.is_human() else getattr(response, 'private_thoughts_brief', None)

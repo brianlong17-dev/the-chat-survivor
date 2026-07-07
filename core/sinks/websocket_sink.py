@@ -1,5 +1,6 @@
 import asyncio
 import queue
+import random
 import time
 import json
 import os
@@ -207,6 +208,11 @@ class WebSocketSink(GameEventSink):
         self._send({"type": "loading_done", "message": message})
 
     def delay(self, delay: float = 0.0):
-        pass
-        #time.sleep(delay)
+        if delay <= 0:
+            return
+        jittered = delay + random.uniform(0, 1)
+        time.sleep(jittered) #the backend runs ahead and normal messages then shoot out.
+        #would need a more complex design that front end delay, maybe a 1.5 between all public messages. 
+        
+        #self._send({"type": "delay", "ms": int(jittered * 1000)})
 

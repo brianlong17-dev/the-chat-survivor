@@ -79,6 +79,15 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
       const evt = pendingQueue.current.shift()
       if (evt.type === 'input_request') { setInputRequest(evt); return }
 
+      if (evt.type === 'delay') {
+        if (evt.ms > 0) {
+          pacingRef.current = true
+          setTimeout(() => { pacingRef.current = false; drainQueue() }, evt.ms)
+          break
+        }
+        continue
+      }
+
       if (evt.type === 'points_update') { setScores(evt.scores); continue }
       
       if (evt.type === 'evicted_update') { setEvicted(evt.evicted_names); continue }
