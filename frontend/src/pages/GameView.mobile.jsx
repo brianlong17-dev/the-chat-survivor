@@ -18,6 +18,9 @@ export default function GameViewMobile({
 }) {
   const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs } = settings
 
+  const replayRunthroughId = (window.location.pathname.match(/^\/runthrough\/([^/]+)/) || [])[1] || null
+  const scrolledToRef = useRef(null)
+
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [mobileOutputsInfoOpen, setMobileOutputsInfoOpen] = useState(false)
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false)
@@ -103,6 +106,25 @@ export default function GameViewMobile({
 
   useEffect(() => {
     pinFeedToBottom()
+  }, [events.length])
+
+  useEffect(() => {
+    const scrollToHash = () => {
+      const msgId = window.location.hash.slice(1)
+      if (!msgId || scrolledToRef.current === msgId) return
+      const el = document.getElementById(`msg-${msgId}`)
+      if (!el) return
+      scrolledToRef.current = msgId
+      userScrolledUpRef.current = true
+      document.querySelectorAll('.msg-deeplink-target').forEach(n => n.classList.remove('msg-deeplink-target'))
+      const feed = feedRef.current
+      if (feed) feed.scrollTop += el.getBoundingClientRect().top - feed.getBoundingClientRect().top - feed.clientHeight * 0.25
+      else el.scrollIntoView({ block: 'center' })
+      el.classList.add('msg-deeplink-target')
+    }
+    scrollToHash()
+    window.addEventListener('hashchange', scrollToHash)
+    return () => window.removeEventListener('hashchange', scrollToHash)
   }, [events.length])
 
   useEffect(() => {
@@ -244,6 +266,7 @@ export default function GameViewMobile({
               skipRef={skipRef}
               sendNextRound={sendNextRound}
               awaitingNextRound={awaitingNextRound}
+              runthroughId={replayRunthroughId}
             />
             <div ref={bottomRef} />
           </main>

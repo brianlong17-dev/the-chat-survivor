@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import './App.mobile.css'
 import { loadSettings, saveSettings } from './utils/settings'
 import { useGameSocket } from './hooks/useGameSocket'
 import LobbyRouter from './pages/LobbyRouter'
 import DemosPage from './pages/DemosPage'
+import AboutPage from './pages/AboutPage'
 import GameViewRouter from './pages/GameViewRouter'
+import RunthroughPage from './pages/RunthroughPage'
+import IdleLayout from './components/IdleLayout'
 
 export default function App() {
-  const [view, setView] = useState('lobby')
   const [settings, setSettings] = useState(loadSettings)
   const [transcriptionEnabled, setTranscriptionEnabled] = useState(false)
 
@@ -27,26 +30,33 @@ export default function App() {
     })
   }
 
+  const navigate = useNavigate()
   const socket = useGameSocket(settings.autoRun, settings.animateText, settings.mobileOutputs)
-  const { status, startGame, startDemo } = socket
+  const { status, startGame, startDemo, startReplay } = socket
 
   if (status !== 'idle') {
-    return <GameViewRouter {...socket} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} />
+    const exitGame = () => { socket.exitGame(); navigate('/') }
+    return <GameViewRouter {...socket} exitGame={exitGame} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} />
   }
 
   return (
-    <>
-      {status === 'idle' && (
-        <div className="idle-layout">
-          <nav className="main-nav">
-            <button className={`nav-btn ${view === 'lobby' ? 'active' : ''}`} onClick={() => setView('lobby')}>Game</button>
-            <button className={`nav-btn ${view === 'demos' ? 'active' : ''}`} onClick={() => setView('demos')}>Demos</button>
-          </nav>
-          {view === 'lobby'
-            ? <LobbyRouter onStart={startGame} view={view} setView={setView} />
-            : <DemosPage onStart={startDemo} view={view} setView={setView} />}
-        </div>
-      )}
-    </>
+    <Routes>
+      <Route path="/" element={
+        <IdleLayout view="lobby">
+          <LobbyRouter onStart={startGame} />
+        </IdleLayout>
+      } />
+      <Route path="/demos" element={
+        <IdleLayout view="demos">
+          <DemosPage onStart={startDemo} />
+        </IdleLayout>
+      } />
+      <Route path="/about" element={
+        <IdleLayout view="about">
+          <AboutPage />
+        </IdleLayout>
+      } />
+      <Route path="/runthrough/:runthroughId" element={<RunthroughPage onStart={startReplay} />} />
+    </Routes>
   )
 }

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 
 const WS_GAME_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/game`
 const WS_DEMO_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/demo`
+const WS_REPLAY_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/replay`
 
 function isAnimatableEvent(evt, animateText) {
   if (!animateText) return false
@@ -39,7 +40,8 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const mobileOutputsRef = useRef(mobileOutputs)
   useEffect(() => {
     mobileOutputsRef.current = mobileOutputs
-    if (wsRef.current) wsRef.current.send(JSON.stringify({ type: 'set_flag', flag: 'mobile_outputs', value: mobileOutputs }))
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN)
+      wsRef.current.send(JSON.stringify({ type: 'set_flag', flag: 'mobile_outputs', value: mobileOutputs }))
   }, [mobileOutputs])
 
   const [isAnimatingState, setIsAnimatingState] = useState(false)
@@ -223,6 +225,10 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     connect(WS_DEMO_URL, { type: 'start_demo', demo_id: demoId, human_name: humanName, fixture_choice: fixtureChoice, turnstile_token: turnstileToken })
   }, [connect])
 
+  const startReplay = useCallback(({ replayFile }) => {
+    connect(WS_REPLAY_URL, { type: 'start_replay', replay_file: replayFile })
+  }, [connect])
+
   const submitInput = useCallback((value) => {
     if (wsRef.current) {
       wsRef.current.send(JSON.stringify({ type: 'input_response', value }))
@@ -299,7 +305,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     status, events, scores, evicted,
     inputRequest, awaitingNext,  awaitingNextRound, phaseRounds, currentRoundIndex, feedMarkers, segmentTitles,
     widget, privateConversations, playerNames,
-    startGame, startDemo, submitInput, sendNext, sendNextRound, skipAnimation, exitGame, transcribe,
+    startGame, startDemo, startReplay, submitInput, sendNext, sendNextRound, skipAnimation, exitGame, transcribe,
     onAnimationComplete, skipRef, isAnimating: isAnimatingState,
   }
 }

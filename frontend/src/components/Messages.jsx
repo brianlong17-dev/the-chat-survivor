@@ -262,7 +262,25 @@ function RoundHeader({ round_number, scores, onComplete }) {
   )
 }
 
-function PublicAction({ speaker, message, color, animate_as_player, onComplete, skipRef, animateText }) {
+function MessageLink({ messageId, runthroughId }) {
+  const [copied, setCopied] = useState(false)
+  const copy = async (e) => {
+    e.stopPropagation()
+    const url = `${window.location.origin}/runthrough/${runthroughId}#${messageId}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch { setCopied(false) }
+  }
+  return (
+    <button className="msg-link" onClick={copy} title="Copy link to this message">
+      {copied ? 'copied!' : `#${messageId}`}
+    </button>
+  )
+}
+
+function PublicAction({ speaker, message, color, animate_as_player, onComplete, skipRef, animateText, message_id, runthroughId }) {
   const isHost = speaker === 'HOST'
   const isSystem = speaker === 'SYSTEM'   // shouldn't happen (backend asserts), render harmlessly
 
@@ -277,10 +295,13 @@ function PublicAction({ speaker, message, color, animate_as_player, onComplete, 
     return <span className="message-text">{renderBold(message)}</span>
   }
 
+  const anchorProps = message_id ? { id: `msg-${message_id}` } : {}
+
   return (
-    <div className={`msg public-action ${(isHost || isSystem) ? 'system' : ''}`}>
+    <div className={`msg public-action ${(isHost || isSystem) ? 'system' : ''}`} {...anchorProps}>
       {label}
       {body()}
+      {message_id && runthroughId && <MessageLink messageId={message_id} runthroughId={runthroughId} />}
     </div>
   )
 }
@@ -438,7 +459,7 @@ function railColor(msg, colorMap) {
   return getSpeakerColor(msg.speaker, colorMap)
 }
 
-export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts, onAnimationComplete, skipRef, sendNextRound, awaitingNextRound}) {
+export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts, onAnimationComplete, skipRef, sendNextRound, awaitingNextRound, runthroughId}) {
   const groups = groupThread(events)
   const lastEvent = events[events.length - 1]
   const lastNextRoundIdx = events.reduce((acc, e, i) => e.type === 'next_round_request' ? i : acc, -1)
@@ -460,6 +481,7 @@ export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts
         autoExpandThoughts={autoExpandThoughts}
         sendNextRound={sendNextRound}
         awaitingNextRound={awaitingNextRound && events.indexOf(evt) === lastNextRoundIdx}
+        runthroughId={runthroughId}
       />
     )
   }
@@ -489,15 +511,15 @@ export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts
   })
 }
 
-export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, skipRef, animateText, autoExpandThoughts, sendNextRound, awaitingNextRound }) {
+export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, skipRef, animateText, autoExpandThoughts, sendNextRound, awaitingNextRound, runthroughId }) {
   switch (event.type) {
     case 'phase_header':
       return <PhaseHeader {...event} />
     case 'round_start':
       return <RoundHeader {...event} onComplete={onRoundHeaderComplete} />
     case 'public_action':
-      return <PublicAction {...event} color={getSpeakerColor(event.speaker, colorMap)} onComplete={onComplete} skipRef={skipRef} 
-      animateText={animateText}/>
+      return <PublicAction {...event} color={getSpeakerColor(event.speaker, colorMap)} onComplete={onComplete} skipRef={skipRef}
+      animateText={animateText} runthroughId={runthroughId}/>
     case 'round_summary':
       return <RoundSummary {...event} />
     case 'private_thought':

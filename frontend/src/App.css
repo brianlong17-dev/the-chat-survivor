@@ -462,6 +462,35 @@
 
 .system-speaker { color: var(--sys-color); }
 
+.msg-link {
+  align-self: flex-start;
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0 4px;
+  font: inherit;
+  font-size: 0.72em;
+  color: var(--sys-color, #888);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+
+.public-action:hover .msg-link { opacity: 0.55; }
+.msg-link:hover { opacity: 1 !important; text-decoration: underline; }
+
+.msg-deeplink-target {
+  background: rgba(255, 220, 120, 0.14);
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px rgba(255, 220, 120, 0.35);
+  animation: msg-deeplink-fade 2.4s ease-out 0.6s forwards;
+}
+
+@keyframes msg-deeplink-fade {
+  to { background: transparent; box-shadow: none; }
+}
+
 .message-text {
   color: var(--text);
   word-break: break-word;
@@ -1314,6 +1343,35 @@
 
 .chip.inactive .chip-remove { color: var(--text-dim); }
 
+.lobby-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  margin-bottom: 10px;
+}
+.lobby-search input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.lobby-search input::placeholder { color: var(--text-dim); opacity: 1; }
+.lobby-search-x {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
 .lobby-tabs {
   display: flex;
   gap: 0;
@@ -1616,10 +1674,104 @@
   margin: -16px 0 8px;
 }
 
+.about-body {
+  max-width: 620px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
 .demos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
+}
+
+.collapsible-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: left;
+}
+
+.collapsible-header:hover {
+  color: var(--accent);
+}
+
+.collapsible-caret {
+  display: inline-block;
+  transition: transform 0.15s;
+  color: var(--text-dim);
+}
+
+.collapsible-caret.open {
+  transform: rotate(90deg);
+}
+
+.collapsible-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.25s ease, opacity 0.25s ease;
+}
+
+.collapsible-body.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.collapsible-body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.runthrough-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.runthrough-watch-btn,
+.runthrough-copy-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 8px 14px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  transition: all 0.15s;
+}
+
+.runthrough-watch-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.runthrough-watch-btn:hover,
+.runthrough-copy-btn:hover {
+  background: var(--bg3);
 }
 
 .demo-card {

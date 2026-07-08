@@ -13,6 +13,7 @@ export default function Lobby({ onStart }) {
   const [humanName, setHumanName] = useState(saved.humanName || '')
   const [customNames, setCustomNames] = useState(saved.customNames || [])
   const [customInput, setCustomInput] = useState('')
+  const [query, setQuery] = useState('')
   const [gameEnabled, setGameEnabled] = useState(false)
   const [levels, setLevels] = useState([])
   const [selectedLevel, setSelectedLevel] = useState(saved.selectedLevel || null)
@@ -154,6 +155,19 @@ export default function Lobby({ onStart }) {
     removeAI(name)
   }
 
+  const addFromSearch = () => {
+    const name = query.trim()
+    if (!name || selected.length >= hardSelectableAI) return
+    setCustomNames([...customNames, name])
+    setSelected([...selected, name])
+    setQuery('')
+  }
+
+  const q = query.trim().toLowerCase()
+  const allNames = [...new Set([...Object.values(tabs).flat(), ...customNames])]
+  const tabNames = activeTab === 'Custom' ? customNames : (tabs[activeTab] || [])
+  const filtered = q ? allNames.filter(n => n.toLowerCase().includes(q)) : tabNames
+
   const canStart = gameEnabled && activeCount >= minPlayers && activeCount <= maxPlayers && selectedLevel && !humanNameMissing && (!turnstileEnabled || turnstileToken)
 
   return (
@@ -209,25 +223,36 @@ export default function Lobby({ onStart }) {
         </div>
       </div>
 
-      <div className="lobby-tabs">
-        {Object.keys(tabs).map(tab => (
-          <button
-            key={tab}
-            className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
-        <button
-          className={`tab-btn ${activeTab === 'Custom' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Custom')}
-        >
-          Custom
-        </button>
+      <div className="lobby-search">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <circle cx="5.5" cy="5.5" r="4" stroke="var(--text-dim)" strokeWidth="1.3" />
+          <path d="M8.7 8.7L12 12" stroke="var(--text-dim)" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search cast..." />
+        {query && <button className="lobby-search-x" onClick={() => setQuery('')}>×</button>}
       </div>
 
-      {activeTab === 'Custom' && (
+      {!q && (
+        <div className="lobby-tabs">
+          {Object.keys(tabs).map(tab => (
+            <button
+              key={tab}
+              className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+          <button
+            className={`tab-btn ${activeTab === 'Custom' ? 'active' : ''}`}
+            onClick={() => setActiveTab('Custom')}
+          >
+            Custom
+          </button>
+        </div>
+      )}
+
+      {!q && activeTab === 'Custom' && (
         <div className="custom-input-row">
           <div className="name-input-wrapper">
             <input
@@ -246,13 +271,26 @@ export default function Lobby({ onStart }) {
         </div>
       )}
 
+      {q && filtered.length === 0 && (
+        <div className="custom-input-row">
+          <button
+            className="input-submit"
+            onClick={addFromSearch}
+            disabled={selected.length >= hardSelectableAI}
+          >
+            + Add “{query.trim()}”
+          </button>
+        </div>
+      )}
+
       <div className="lobby-grid">
-        {(activeTab === 'Custom' ? customNames : (tabs[activeTab] || [])).map(name => {
+        {filtered.map(name => {
           const isSelected = selected.includes(name)
           const isActive = activeAINames.includes(name)
           const selClass = isSelected ? (isActive ? 'selected' : 'selected inactive') : ''
           const isDisabled = !isSelected && selected.length >= hardSelectableAI
-          return activeTab === 'Custom' ? (
+          const isCustom = !q && activeTab === 'Custom'
+          return isCustom ? (
             <span key={name} className="name-btn-wrap">
               <button
                 className={`name-btn ${selClass}`}
@@ -274,8 +312,11 @@ export default function Lobby({ onStart }) {
             </button>
           )
         })}
-        {activeTab === 'Custom' && customNames.length === 0 && (
+        {!q && activeTab === 'Custom' && customNames.length === 0 && (
           <span className="lobby-hint">Add names above</span>
+        )}
+        {!q && activeTab !== 'Custom' && filtered.length === 0 && (
+          <span className="lobby-hint">No matches</span>
         )}
       </div>
 

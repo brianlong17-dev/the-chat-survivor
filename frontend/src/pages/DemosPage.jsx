@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import MobileNav from '../components/MobileNav'
+import CollapsibleSection from '../components/CollapsibleSection'
+import RunthroughsSection from '../components/RunthroughsSection'
 
 const DEMOS = [
   {
     id: 'reunion',
+    category: 'finales',
     title: 'Reunion Finale',
     description: 'The jury of eliminated players decides who wins, then a final split-or-steal.',
     fixtures: [
@@ -59,6 +62,7 @@ const DEMOS = [
   },
   {
     id: 'pd_finale',
+    category: 'finales',
     title: "Prisoner's Dilemma Finale",
     description: 'Two finalists, one last split-or-steal. Trust, betrayal, or a tie.',
     fixtures: [
@@ -120,6 +124,7 @@ const DEMOS = [
   },
   {
     id: 'game_phase',
+    category: 'game-modules',
     title: 'Game Phase',
     description: 'A full Knives + Vote round from mid-game state. 11 real players.',
     cast: ['Aang', 'Michael Jackson', 'HAL 9000', 'Jo March', 'Lady Macbeth', 'Lady Diana', 'Morty Smith', 'Amy March', 'Benoit Blanc', 'Gollum', 'Buffy Summers'],
@@ -247,8 +252,9 @@ function DemoCard({ demo, onStart, turnstileEnabled }) {
   )
 }
 
-export default function DemosPage({ onStart, view, setView }) {
+export default function DemosPage({ onStart }) {
   const [turnstileEnabled, setTurnstileEnabled] = useState(null)
+  const [openSection, setOpenSection] = useState('finales')
 
   useEffect(() => {
     fetch('/api/flags')
@@ -256,16 +262,34 @@ export default function DemosPage({ onStart, view, setView }) {
       .then(data => setTurnstileEnabled(data.turnstile_enabled))
   }, [])
 
+  const toggleSection = (key) => setOpenSection(prev => (prev === key ? null : key))
+
+  const finales = DEMOS.filter(d => d.category === 'finales')
+  const gameModules = DEMOS.filter(d => d.category === 'game-modules')
+
   return (
     <div className="demos-page">
-      <MobileNav view={view} setView={setView} />
+      <MobileNav />
       <h1 className="lobby-title">Demos</h1>
       <p className="demos-subtitle">Pre-loaded game scenarios from real playthroughs.</p>
-      <div className="demos-grid">
-        {DEMOS.map(demo => (
-          <DemoCard key={demo.id} demo={demo} onStart={onStart} turnstileEnabled={turnstileEnabled} />
-        ))}
-      </div>
+
+      <CollapsibleSection title="Finales" open={openSection === 'finales'} onToggle={() => toggleSection('finales')}>
+        <div className="demos-grid">
+          {finales.map(demo => (
+            <DemoCard key={demo.id} demo={demo} onStart={onStart} turnstileEnabled={turnstileEnabled} />
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Game modules" open={openSection === 'game-modules'} onToggle={() => toggleSection('game-modules')}>
+        <div className="demos-grid">
+          {gameModules.map(demo => (
+            <DemoCard key={demo.id} demo={demo} onStart={onStart} turnstileEnabled={turnstileEnabled} />
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <RunthroughsSection open={openSection === 'runthroughs'} onToggle={() => toggleSection('runthroughs')} />
     </div>
   )
 }

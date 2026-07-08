@@ -9,6 +9,7 @@ from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, GAME_ENABLED,
 from web.server_helpers import handle_transcribe
 from web.ws_game import router as game_router
 from web.ws_demo import router as demo_router
+from web.ws_replay import router as replay_router
 
 
 
@@ -24,6 +25,7 @@ app.add_middleware(
 
 app.include_router(game_router)
 app.include_router(demo_router)
+app.include_router(replay_router)
 
 
 # ---------------------------------------------------------------------------

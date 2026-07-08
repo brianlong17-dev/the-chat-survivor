@@ -16,6 +16,11 @@ export default function GameView({
 }) {
   const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs, autoExpandThoughts } = settings
 
+  // A replay deep-link keeps the URL /runthrough/:id#<msgId> even after App swaps to GameView.
+  // The msgId lives in the hash so clicking a link on an already-open replay only scrolls.
+  const replayRunthroughId = (window.location.pathname.match(/^\/runthrough\/([^/]+)/) || [])[1] || null
+  const scrolledToRef = useRef(null)
+
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false)
   const [mobileOutputsInfoOpen, setMobileOutputsInfoOpen] = useState(false)
@@ -148,6 +153,25 @@ export default function GameView({
 
   useEffect(() => {
     pinFeedToBottom()
+  }, [events.length])
+
+  useEffect(() => {
+    const scrollToHash = () => {
+      const msgId = window.location.hash.slice(1)
+      if (!msgId || scrolledToRef.current === msgId) return
+      const el = document.getElementById(`msg-${msgId}`)
+      if (!el) return
+      scrolledToRef.current = msgId
+      userScrolledUpRef.current = true   // stop the autopin from yanking back to bottom
+      document.querySelectorAll('.msg-deeplink-target').forEach(n => n.classList.remove('msg-deeplink-target'))
+      const feed = feedRef.current
+      if (feed) feed.scrollTop += el.getBoundingClientRect().top - feed.getBoundingClientRect().top - feed.clientHeight * 0.10
+      else el.scrollIntoView({ block: 'center' })
+      el.classList.add('msg-deeplink-target')
+    }
+    scrollToHash()
+    window.addEventListener('hashchange', scrollToHash)
+    return () => window.removeEventListener('hashchange', scrollToHash)
   }, [events.length])
 
   useEffect(() => {
@@ -305,6 +329,7 @@ export default function GameView({
               skipRef={skipRef}
               sendNextRound={sendNextRound}
               awaitingNextRound={awaitingNextRound}
+              runthroughId={replayRunthroughId}
             />
             <div ref={bottomRef} />
           </main>

@@ -7,8 +7,9 @@ my-llm-project-output.txt
 
 changes.txt
 output/
-data/
-logs/
+/data/
+/logs/*
+!/logs/saved_games/
 
 
 # Editor/System junk

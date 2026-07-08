@@ -14,7 +14,7 @@ import './Lobby.mobile.css'
 const LOBBY_STORAGE_KEY = 'lobby_state'
 const HARD_CAP = 12
 
-export default function LobbyMobile({ onStart, view, setView }) {
+export default function LobbyMobile({ onStart }) {
   const saved = JSON.parse(localStorage.getItem(LOBBY_STORAGE_KEY) || '{}')
 
   const [tabs, setTabs] = useState({})
@@ -163,7 +163,7 @@ export default function LobbyMobile({ onStart, view, setView }) {
   return (
     <div className="ml-lobby">
       <div className="ml-body">
-        <MobileNav view={view} setView={setView} />
+        <MobileNav />
 
         {/* Watch / Play chooser — gates the rest of the lobby */}
         <div className={`ml-choose ${mode === null ? 'pulse' : ''}`}>

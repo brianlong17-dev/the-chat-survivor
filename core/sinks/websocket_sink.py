@@ -35,6 +35,7 @@ class WebSocketSink(GameEventSink):
         self._round_gate = threading.Event()
         self._round_gate.set()
         self.mobile_outputs: bool = False
+        self._public_action_count = 0
         self.log_file = None
         if backend_config.GAME_LOGGING_ENABLED:
             self._initialise_log_file()
@@ -42,7 +43,7 @@ class WebSocketSink(GameEventSink):
     def _initialise_log_file(self):
         log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "logs", "gamelogs")
         os.makedirs(log_dir, exist_ok=True)
-        _prune_logs(log_dir, keep=30)
+        _prune_logs(log_dir, keep=400)
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         suffix = uuid.uuid4().hex[:6]
         self.log_file = os.path.join(log_dir, f"game_{timestamp}_{suffix}.jsonl")
@@ -105,9 +106,10 @@ class WebSocketSink(GameEventSink):
         if directed_to_name:
             message = f"@{directed_to_name} - {message}"
         speaker_name = speaker.name if hasattr(speaker, "name") else str(speaker)
-        event = {"type": "public_action", "speaker": speaker_name, "message": message, 
+        self._public_action_count += 1
+        event = {"type": "public_action", "speaker": speaker_name, "message": message,
                  "animate_as_player": animate_as_player, "should_hold": should_hold,
-                 "is_human": is_human}
+                 "is_human": is_human, "message_id": f"0-{self._public_action_count}"}
         if is_reply:
             event["child"] = True
         self._send(event)
