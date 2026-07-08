@@ -2,9 +2,9 @@
 Generate an agent-state fixture JSON from a set of per-agent JSONL log files.
 
 Usage:
-    python -m runtime_tests.generate_fixture \\
+    python -m demo_runner.fixture_generation.generate_fixture \\
         --files logs/Finn_20260521_103238.jsonl logs/Lumpy*.jsonl \\
-        --output tests/fixtures/my_fixture.json \\
+        --output demo_runner/fixtures/my_fixture.json \\
         [--include-empty BMO "Ice King" ...] \\
         [--demo-snippet]
 """

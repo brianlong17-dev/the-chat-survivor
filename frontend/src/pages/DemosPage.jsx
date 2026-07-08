@@ -3,139 +3,147 @@ import MobileNav from '../components/MobileNav'
 import CollapsibleSection from '../components/CollapsibleSection'
 import RunthroughsSection from '../components/RunthroughsSection'
 
-const DEMOS = [
-  {
-    id: 'reunion',
-    category: 'finales',
-    title: 'Reunion Finale',
-    description: 'The jury of eliminated players decides who wins, then a final split-or-steal.',
-    fixtures: [
-      {
-        id: 'game_3',
-        label: 'Game 3',
-        description: 'Tied 39–39. Avatar Aang vs Morty Smith.',
-        cast: ['Avatar Aang', 'Morty Smith', 'HAL 9000', 'Michael Jackson', 'Amy March', 'Benoit Blanc', 'Buffy Summers', 'Gollum', 'Lady Macbeth', 'Jo March', 'Lady Diana'],
-      },
-      {
-        id: 'game_2',
-        label: 'Game 2',
-        description: 'Amy March (41) vs Lady Diana (48).',
-        cast: ['Amy March', 'Lady Diana', 'Morty Smith', 'Lady Macbeth', 'HAL 9000', 'Jo March', 'Michael Jackson', 'Avatar Aang', 'Gollum', 'Buffy Summers', 'Benoit Blanc'],
-      },
-      {
-        id: 'finn_lsp',
-        label: 'Finn vs LSP',
-        description: 'Tied 17–17. Finn vs Lumpy Space Princess.',
-        cast: ['Finn', 'Lumpy Space Princess', 'BMO', 'Princess Bubblegum', 'Ice King', 'Jake the Dog'],
-      },
-      {
-        id: 'adventure_time_pre_finale',
-        label: 'Finn vs Jake',
-        description: 'Jake (16) vs Finn (13).',
-        cast: ['Finn', 'Jake the Dog', 'Princess Bubblegum', 'Ice King', 'Lumpy Space Princess', 'BMO'],
-      },
-      {
-        id: 'brian_jake_pre_finale',
-        label: 'Brian vs Finn',
-        description: 'Finn (17) vs Brian (15).',
-        cast: ['Finn the Human', 'Brian', 'Princess Bubblegum', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
-      },
-      {
-        id: 'aang_pb_pre_finale',
-        label: 'Aang vs PB',
-        description: 'Princess Bubblegum (18) vs Avatar Aang (11).',
-        cast: ['Avatar Aang', 'Princess Bubblegum', 'Finn the Human', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
-      },
-      {
-        id: 'quirrell_morty_pre_finale',
-        label: 'Quirrell vs Morty',
-        description: 'Professor Quirrell (19) vs Morty Smith (17).',
-        cast: ['Professor Quirrell', 'Morty Smith', 'Elle Woods', 'Lumpy Space Princess', 'Gollum', 'Logan Roy', 'Amy March', 'Lady Macbeth'],
-      },
-      {
-        id: 'elle_morty_pre_finale',
-        label: 'Elle vs Morty',
-        description: 'Elle Woods (17) vs Morty Smith (16).',
-        cast: ['Elle Woods', 'Morty Smith', 'Norman Bates', 'Lumpy Space Princess', 'Professor Quirrell', 'Frank Underwood'],
-      },
-    ],
-  },
-  {
-    id: 'pd_finale',
-    category: 'finales',
-    title: "Prisoner's Dilemma Finale",
-    description: 'Two finalists, one last split-or-steal. Trust, betrayal, or a tie.',
-    fixtures: [
-      {
-        id: 'finn_lsp',
-        label: 'Finn vs LSP',
-        description: 'Tied 17–17. Finn vs Lumpy Space Princess.',
-        cast: ['Finn', 'Lumpy Space Princess', 'BMO', 'Princess Bubblegum', 'Ice King', 'Jake the Dog'],
-      },
-      {
-        id: 'adventure_time_pre_finale',
-        label: 'Finn vs Jake',
-        description: 'Jake (16) vs Finn (13).',
-        cast: ['Finn', 'Jake the Dog', 'Princess Bubblegum', 'Ice King', 'Lumpy Space Princess', 'BMO'],
-      },
-      {
-        id: 'brian_jake_pre_finale',
-        label: 'Brian vs Finn',
-        description: 'Finn (17) vs Brian (15).',
-        cast: ['Finn the Human', 'Brian', 'Princess Bubblegum', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
-      },
-      {
-        id: 'aang_pb_pre_finale',
-        label: 'Aang vs PB',
-        description: 'Princess Bubblegum (18) vs Avatar Aang (11).',
-        cast: ['Avatar Aang', 'Princess Bubblegum', 'Finn the Human', 'Jake the Dog', 'Lumpy Space Princess', 'BMO'],
-      },
-      {
-        id: 'quirrell_morty_pre_finale',
-        label: 'Quirrell vs Morty',
-        description: 'Professor Quirrell (19) vs Morty Smith (17).',
-        cast: ['Professor Quirrell', 'Morty Smith', 'Elle Woods', 'Lumpy Space Princess', 'Gollum', 'Logan Roy', 'Amy March', 'Lady Macbeth'],
-      },
-      {
-        id: 'danny_diana_pre_finale',
-        label: 'Danny vs Diana',
-        description: 'Danny Healy-Rae (22) vs Lady Diana (17).',
-        cast: ['Danny Healy-Rae', 'Lady Diana'],
-      },
-      {
-        id: 'elle_morty_pre_finale',
-        label: 'Elle vs Morty',
-        description: 'Elle Woods (17) vs Morty Smith (16).',
-        cast: ['Elle Woods', 'Morty Smith', 'Norman Bates', 'Lumpy Space Princess', 'Professor Quirrell', 'Frank Underwood'],
-      },
-      {
-        id: 'game_3',
-        label: 'Game 3',
-        description: 'Tied 39–39. Avatar Aang vs Morty Smith.',
-        cast: ['Avatar Aang', 'Morty Smith', 'HAL 9000', 'Michael Jackson', 'Amy March', 'Benoit Blanc', 'Buffy Summers', 'Gollum', 'Lady Macbeth', 'Jo March', 'Lady Diana'],
-      },
-      {
-        id: 'game_2',
-        label: 'Game 2',
-        description: 'Amy March (41) vs Lady Diana (48).',
-        cast: ['Amy March', 'Lady Diana', 'Morty Smith', 'Lady Macbeth', 'HAL 9000', 'Jo March', 'Michael Jackson', 'Avatar Aang', 'Gollum', 'Buffy Summers', 'Benoit Blanc'],
-      },
-    ],
-  },
-  {
-    id: 'game_phase',
-    category: 'game-modules',
-    title: 'Game Phase',
-    description: 'A full Knives + Vote round from mid-game state. 11 real players.',
-    cast: ['Aang', 'Michael Jackson', 'HAL 9000', 'Jo March', 'Lady Macbeth', 'Lady Diana', 'Morty Smith', 'Amy March', 'Benoit Blanc', 'Gollum', 'Buffy Summers'],
-    locked: false,
-  },
-]
+const GAME_MODULE_DEMO = {
+  id: 'game_phase',
+  title: 'Game Phase',
+  description: 'A full Knives + Vote round from mid-game state. 11 real players.',
+  cast: ['Aang', 'Michael Jackson', 'HAL 9000', 'Jo March', 'Lady Macbeth', 'Lady Diana', 'Morty Smith', 'Amy March', 'Benoit Blanc', 'Gollum', 'Buffy Summers'],
+  locked: false,
+}
+
+function FinaleSection({ onStart, turnstileEnabled }) {
+  const [fixtures, setFixtures] = useState([])
+  const [modules, setModules] = useState([])
+  const [selectedId, setSelectedId] = useState(null)
+  const [finaleType, setFinaleType] = useState(null)
+  const [mode, setMode] = useState('watch')
+  const [humanName, setHumanName] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState(null)
+  const turnstileRef = useRef(null)
+
+  useEffect(() => {
+    fetch('/api/fixtures')
+      .then(r => r.json())
+      .then(data => {
+        const finaleFixtures = data.fixtures.filter(f => f.finale)
+        setFixtures(finaleFixtures)
+        if (finaleFixtures.length > 0) setSelectedId(finaleFixtures[0].id)
+      })
+    fetch('/api/modules')
+      .then(r => r.json())
+      .then(data => {
+        const finaleModules = data.modules.filter(m => m.finale)
+        setModules(finaleModules)
+        if (finaleModules.length > 0) setFinaleType(finaleModules[0].id)
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!turnstileEnabled) return
+    let widgetId = null
+    const renderWidget = () => {
+      if (turnstileRef.current) {
+        widgetId = window.turnstile.render(turnstileRef.current, {
+          sitekey: '0x4AAAAAADhT2idZkL-1k2P0',
+          appearance: 'interaction-only',
+          callback: (token) => setTurnstileToken(token),
+          'expired-callback': () => setTurnstileToken(null),
+          'error-callback': () => setTurnstileToken(null),
+        })
+      }
+    }
+    if (window.turnstile) renderWidget()
+    else window.onTurnstileLoad = renderWidget
+    return () => { if (widgetId !== null) window.turnstile?.remove(widgetId) }
+  }, [turnstileEnabled])
+
+  const canStart = (mode === 'watch' || humanName.trim()) && (!turnstileEnabled || turnstileToken)
+
+  const selected = fixtures.find(f => f.id === selectedId)
+
+  const handleSelect = (id) => {
+    setSelectedId(id)
+    setMode('watch')
+    setHumanName('')
+  }
+
+  return (
+    <div className="finale-section">
+      <div className="finale-row-label">Fixtures</div>
+      <div className="fixture-card-grid">
+        {fixtures.map(fx => (
+          <button
+            key={fx.id}
+            className={`fixture-card${selectedId === fx.id ? ' fixture-card--selected' : ''}`}
+            onClick={() => handleSelect(fx.id)}
+          >
+            <span className="fixture-card-title">{fx.title}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="finale-row-label">Finale Level</div>
+      <div className="fixture-card-grid fixture-card-grid--small">
+        {modules.map(ft => (
+          <button
+            key={ft.id}
+            className={`fixture-card${finaleType === ft.id ? ' fixture-card--selected' : ''}`}
+            onClick={() => setFinaleType(ft.id)}
+          >
+            <span className="fixture-card-title">{ft.title}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="finale-row-label">Watch / Play</div>
+      <div className="demo-card finale-controls">
+        {selected?.alive?.length > 0 && (
+          <div className="demo-cast">
+            {selected.alive.map(name => (
+              <span
+                key={name}
+                className={`demo-cast-chip demo-cast-chip--clickable${humanName === name && mode === 'play' ? ' demo-cast-chip--selected' : ''}`}
+                onClick={() => { setMode('play'); setHumanName(name) }}
+              >{name}</span>
+            ))}
+          </div>
+        )}
+        {mode === 'play' && (
+          <input
+            className="lobby-name-input lobby-name-input-wide"
+            placeholder="Your name"
+            value={humanName}
+            onChange={e => setHumanName(e.target.value)}
+            autoFocus
+          />
+        )}
+        <div className="lobby-footer-btns">
+          <div className="mode-switch">
+            <button className={`mode-switch-opt${mode === 'watch' ? ' active' : ''}`} onClick={() => { setMode('watch'); setHumanName('') }}>Watch</button>
+            <button className={`mode-switch-opt${mode === 'play' ? ' active' : ''}`} onClick={() => setMode('play')}>Play</button>
+          </div>
+          {turnstileEnabled && <div ref={turnstileRef} />}
+          <button
+            className="lobby-start-btn"
+            disabled={!canStart}
+            onClick={() => onStart({
+              demoId: finaleType,
+              humanName: mode === 'play' ? humanName.trim() : null,
+              fixtureChoice: selectedId,
+              turnstileToken,
+            })}
+          >
+            Run Demo
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function DemoCard({ demo, onStart, turnstileEnabled }) {
   const [mode, setMode] = useState('watch')
   const [humanName, setHumanName] = useState('')
-  const [fixtureId, setFixtureId] = useState(demo.fixtures ? demo.fixtures[0].id : null)
   const [turnstileToken, setTurnstileToken] = useState(null)
   const turnstileRef = useRef(null)
 
@@ -153,14 +161,9 @@ function DemoCard({ demo, onStart, turnstileEnabled }) {
         })
       }
     }
-    if (window.turnstile) {
-      renderWidget()
-    } else {
-      window.onTurnstileLoad = renderWidget
-    }
-    return () => {
-      if (widgetId !== null) window.turnstile?.remove(widgetId)
-    }
+    if (window.turnstile) renderWidget()
+    else window.onTurnstileLoad = renderWidget
+    return () => { if (widgetId !== null) window.turnstile?.remove(widgetId) }
   }, [turnstileEnabled])
 
   const canStart = (mode === 'watch' || humanName.trim()) && (!turnstileEnabled || turnstileToken)
@@ -180,40 +183,12 @@ function DemoCard({ demo, onStart, turnstileEnabled }) {
     )
   }
 
-  const activeFixture = demo.fixtures ? demo.fixtures.find(f => f.id === fixtureId) : null
-  const cast = activeFixture ? activeFixture.cast : demo.cast
-
-  const handleFixtureChange = (id) => {
-    setFixtureId(id)
-    setMode('watch')
-    setHumanName('')
-  }
-
   return (
     <div className="demo-card">
       <h2 className="demo-title">{demo.title}</h2>
       <p className="demo-description">{demo.description}</p>
-      {demo.fixtures && (
-        <div className="demo-fixture-select">
-          {demo.fixtures.map(fx => (
-            <label key={fx.id} className="mode-opt">
-              <input
-                type="radio"
-                name={`fixture-${demo.id}`}
-                value={fx.id}
-                checked={fixtureId === fx.id}
-                onChange={() => handleFixtureChange(fx.id)}
-              />
-              {fx.label}
-            </label>
-          ))}
-        </div>
-      )}
-      {activeFixture && (
-        <p className="demo-fixture-description">{activeFixture.description}</p>
-      )}
       <div className="demo-cast">
-        {cast.map(name => (
+        {demo.cast.map(name => (
           <span
             key={name}
             className={`demo-cast-chip demo-cast-chip--clickable${humanName === name && mode === 'play' ? ' demo-cast-chip--selected' : ''}`}
@@ -221,33 +196,29 @@ function DemoCard({ demo, onStart, turnstileEnabled }) {
           >{name}</span>
         ))}
       </div>
-      <div className="demo-mode">
-        <label className="mode-opt">
-          <input type="radio" name={`mode-${demo.id}`} value="watch" checked={mode === 'watch'} onChange={() => setMode('watch')} />
-          Watch
-        </label>
-        <label className="mode-opt">
-          <input type="radio" name={`mode-${demo.id}`} value="play" checked={mode === 'play'} onChange={() => setMode('play')} />
-          Play as:
-        </label>
-        {mode === 'play' && (
-          <input
-            className="lobby-name-input"
-            placeholder="Your name"
-            value={humanName}
-            onChange={e => setHumanName(e.target.value)}
-            autoFocus
-          />
-        )}
+      {mode === 'play' && (
+        <input
+          className="lobby-name-input lobby-name-input-wide"
+          placeholder="Your name"
+          value={humanName}
+          onChange={e => setHumanName(e.target.value)}
+          autoFocus
+        />
+      )}
+      <div className="lobby-footer-btns">
+        <div className="mode-switch">
+          <button className={`mode-switch-opt${mode === 'watch' ? ' active' : ''}`} onClick={() => { setMode('watch'); setHumanName('') }}>Watch</button>
+          <button className={`mode-switch-opt${mode === 'play' ? ' active' : ''}`} onClick={() => setMode('play')}>Play</button>
+        </div>
+        {turnstileEnabled && <div ref={turnstileRef} />}
+        <button
+          className="lobby-start-btn"
+          disabled={!canStart}
+          onClick={() => onStart({ demoId: demo.id, humanName: mode === 'play' ? humanName.trim() : null, fixtureChoice: null, turnstileToken })}
+        >
+          Run Demo
+        </button>
       </div>
-      {turnstileEnabled && <div ref={turnstileRef} />}
-      <button
-        className="lobby-start-btn"
-        disabled={!canStart}
-        onClick={() => onStart({ demoId: demo.id, humanName: mode === 'play' ? humanName.trim() : null, fixtureChoice: fixtureId, turnstileToken })}
-      >
-        Run Demo
-      </button>
     </div>
   )
 }
@@ -264,9 +235,6 @@ export default function DemosPage({ onStart }) {
 
   const toggleSection = (key) => setOpenSection(prev => (prev === key ? null : key))
 
-  const finales = DEMOS.filter(d => d.category === 'finales')
-  const gameModules = DEMOS.filter(d => d.category === 'game-modules')
-
   return (
     <div className="demos-page">
       <MobileNav />
@@ -274,18 +242,12 @@ export default function DemosPage({ onStart }) {
       <p className="demos-subtitle">Pre-loaded game scenarios from real playthroughs.</p>
 
       <CollapsibleSection title="Finales" open={openSection === 'finales'} onToggle={() => toggleSection('finales')}>
-        <div className="demos-grid">
-          {finales.map(demo => (
-            <DemoCard key={demo.id} demo={demo} onStart={onStart} turnstileEnabled={turnstileEnabled} />
-          ))}
-        </div>
+        <FinaleSection onStart={onStart} turnstileEnabled={turnstileEnabled} />
       </CollapsibleSection>
 
       <CollapsibleSection title="Game modules" open={openSection === 'game-modules'} onToggle={() => toggleSection('game-modules')}>
         <div className="demos-grid">
-          {gameModules.map(demo => (
-            <DemoCard key={demo.id} demo={demo} onStart={onStart} turnstileEnabled={turnstileEnabled} />
-          ))}
+          <DemoCard demo={GAME_MODULE_DEMO} onStart={onStart} turnstileEnabled={turnstileEnabled} />
         </div>
       </CollapsibleSection>
 

@@ -1,0 +1,67 @@
+from demo_runner.fixture_directory import FIXTURE_MAP
+from demo_runner.game_module_directory import MODULE_MAP
+from demo_runner.game_setup import load_fixture, apply_agent_state, add_human
+
+from core.bootstrap import create_engine
+from core.levels.phase_description import PhaseDescription
+from tests.helpers.testing_game_design import TestingGameDesign
+
+def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_name: str = None):
+    fixture = FIXTURE_MAP.get(fixture_id)
+    if not fixture:
+        raise ValueError(f"Unknown fixture: {fixture_id}")
+
+    module = MODULE_MAP.get(module_id)
+    if not module:
+        raise ValueError(f"Unknown module: {module_id}")
+
+    game_design = TestingGameDesign([PhaseDescription(rounds=[module.module_class], should_summarise_phase=False)])
+
+    engine, agent_data, scores, elimination_order = _set_up_fixture(fixture_id, game_design, sink, api_client)
+    _initialise_agents(engine, agent_data, scores, elimination_order, human_name=human_name)
+
+    engine.run_phase_loop()
+
+
+
+def _set_up_fixture(fixture_id: str, game_design, sink, api_client):
+    fixture_data = load_fixture(f"{fixture_id}.json")
+    agent_data = fixture_data["agents"]
+    all_names = list(agent_data.keys())
+
+    scores = fixture_data["scores"]
+    elimination_order = fixture_data.get("elimination_order", [])
+    phase_number = fixture_data.get("phase_number")
+
+    engine = create_engine(sink, game_design=game_design, names=all_names, populate_agents=False, api_client=api_client)
+
+    if phase_number:
+        engine.game_board.phase_number = phase_number
+
+    return engine, agent_data, scores, elimination_order
+
+
+def _initialise_agents(engine, agent_data, scores, elimination_order, human_name=None):
+    alive_names = set(scores.keys())
+
+    if human_name:
+        add_human(human_name, engine, is_dead=True)
+
+    engine.initialiseGameBoard()
+    agents = {a.name: a for a in engine.agents}
+
+    for name, score in scores.items():
+        engine.game_board.agent_scores[name] = score
+    engine.game_board.game_sink.on_points_update(dict(engine.game_board.agent_scores))
+
+    apply_agent_state(agents, agent_data)
+
+    for name in elimination_order:
+        if name in agents:
+            engine.eliminate_player(agents[name])
+
+    for agent in list(engine.agents):
+        if agent.name not in alive_names:
+            engine.eliminate_player(agent)
+
+

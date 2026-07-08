@@ -4,7 +4,7 @@ Shared setup helpers for demo runners and runtime tests.
 import json
 import os
 
-FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures")
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 def load_fixture(filename: str) -> dict:
@@ -29,6 +29,8 @@ def apply_agent_state(agents: dict, agent_state: dict):
             agent.speaking_style_update = state["speaking_style_update"]
         if state.get("strategy"):
             agent.game_strategy = state["strategy"]
+        if state.get("game_strategy"):
+            agent.game_strategy = state["game_strategy"]
         if state.get("character_strategy"):
             agent.character_strategy = state["character_strategy"]
         if state.get("character_dictionary"):

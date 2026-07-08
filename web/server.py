@@ -71,6 +71,49 @@ async def get_characters():
 
 
 # ---------------------------------------------------------------------------
+# Modules endpoint
+# ---------------------------------------------------------------------------
+
+@app.get("/api/modules")
+async def get_modules():
+    from demo_runner.game_module_directory import MODULES
+    return {
+        "modules": [
+            {
+                "id": m.id,
+                "title": m.title,
+                "description": m.description,
+                "finale": m.finale,
+                "game": m.game,
+            }
+            for m in MODULES
+        ]
+    }
+
+
+# ---------------------------------------------------------------------------
+# Fixtures endpoint
+# ---------------------------------------------------------------------------
+
+@app.get("/api/fixtures")
+async def get_fixtures():
+    from demo_runner.fixture_directory import FIXTURES
+    return {
+        "fixtures": [
+            {
+                "id": f.name,
+                "title": f.title,
+                "cast": f.cast,
+                "alive": f.alive,
+                "description": f.description,
+                "finale": f.finale,
+            }
+            for f in FIXTURES
+        ]
+    }
+
+
+# ---------------------------------------------------------------------------
 # Levels endpoint
 # ---------------------------------------------------------------------------
 

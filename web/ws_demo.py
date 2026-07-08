@@ -6,7 +6,8 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from core.api_client import create_api_client
 from core.sinks.websocket_sink import WebSocketSink
-from runtime_tests.demo_runner import DEMO_REGISTRY
+from demo_runner.demo_runner import run_from_frontend
+from demo_runner.game_module_directory import MODULE_MAP
 from web import rate_limits
 from web.server_config import DEMO_ENABLED, TURNSTILE_ENABLED, MAX_NAME_LENGTH, DEMO_TOKEN_BUDGET
 from web.server_helpers import (
@@ -46,9 +47,9 @@ async def demo_ws(websocket: WebSocket):
     msg = json.loads(data)
     demo_id = msg.get("demo_id")
     turnstile_token = msg.get("turnstile_token")
+    
 
-    runner = DEMO_REGISTRY.get(demo_id)
-    if not runner:
+    if not demo_id in MODULE_MAP:
         await websocket.send_text(json.dumps({"type": "error", "message": f"Unknown demo: {demo_id}"}))
         return
 
@@ -74,7 +75,8 @@ async def demo_ws(websocket: WebSocket):
 
         def run_demo():
             try:
-                runner(sink, api_client, human_name=human_name, fixture_choice=fixture_choice)
+                run_from_frontend(demo_id, fixture_choice, sink, api_client, human_name=human_name)
+                
             except Exception as e:
                 _send_error(websocket, loop, e)
 
