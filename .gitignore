@@ -4,6 +4,7 @@
 # Project Exports
 my-llm-project-output.md
 my-llm-project-output.txt
+
 changes.txt
 output/
 data/
@@ -28,6 +29,7 @@ todo.txt
 README copy.md
 DEPLOY.md
 ARCHITECTURE_NOTES.md
+tests/test_agents/TEST_PLAN_player.md
 
 #frontend stuff
 frontend/node_modules/
