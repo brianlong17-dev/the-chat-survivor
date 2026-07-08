@@ -1,5 +1,5 @@
 from core.game_config import GameConfig
-from core.shared_web_game_functionality import INACTIVITY_TIMEOUT
+from core.shared_web_game_functionality import INACTIVITY_TIMEOUT, is_dev_mode
 from core.levels.phase_description import PhaseDescription
 from gameplay_management.discussion_rounds.discussion_round import DiscussionRound
 from gameplay_management.discussion_rounds.discussion_round_directed import DiscussionRoundDirected
@@ -37,7 +37,7 @@ class GameDesign:
     
     @classmethod
     def should_dead_players_summarise(cls) -> bool:
-        return False
+        return is_dev_mode() #subclass True if renunion finale
 
     @classmethod
     def initialise_game_config(cls, config):

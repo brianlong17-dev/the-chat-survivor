@@ -21,7 +21,7 @@ class VoteElectLeader(VoteMechanicsMixin):
     
     def _game_intro(self):
         intro = (
-            "TIME TO *ELECT THE EXECUTIONER*. The elected player will have the power, and the burden"
+            "TIME TO *ELECT THE EXECUTIONER*. The elected player will have the power, and the burden "
             "to send one player home. "
             "You will receive one point per vote received. "
         )

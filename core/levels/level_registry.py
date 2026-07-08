@@ -23,7 +23,7 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
     ),
     LevelDefinition(
         id="beginner",
-        name="Six",
+        name="Game One: Six Player",
         description="A six player, six phase game. A quick 10 minute game, with enough space for emergent strategic behavior. ",
         token_budget=15000000,
         game_design=GameDesignBeginner,
@@ -31,7 +31,7 @@ AVAILABLE_LEVELS: List[LevelDefinition] = [
     ),
     LevelDefinition(
         id="8p",
-        name="Game One: Eight",
+        name="Game One: Eight Player",
         description="An eight person game. Players elect leaders and protect allies. More space for emergent social strategy in groups dynamics.",
         token_budget=15000000,
         game_design=GameDesignBeginner8,

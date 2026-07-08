@@ -1,7 +1,7 @@
-import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING
 
+from core.shared_web_game_functionality import is_dev_mode
 from gameplay_management.immunities.immunity_mechanicsMixin import ImmunityMechanicsMixin
 from gameplay_management.discussion_rounds.discussion_settings import DiscussionRoundSettings
 
@@ -19,7 +19,7 @@ class PhaseRunner:
         self.simulation_engine = simulation_engine
         self.current_phase_description = None
         self.current_round_index = 0
-        self._dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
+        self._dev_mode = is_dev_mode()
         
 
     @property

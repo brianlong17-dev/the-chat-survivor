@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from core.shared_web_game_functionality import INACTIVITY_TIMEOUT  # noqa: F401 — re-exported for visibility
+from core.shared_web_game_functionality import INACTIVITY_TIMEOUT, is_dev_mode  # noqa: F401 — re-exported for visibility
 
 load_dotenv(override=True)
 
@@ -13,7 +13,7 @@ TURNSTILE_ENABLED = os.getenv("TURNSTILE_ENABLED", "").lower() == "true"
 CHECK_IP = os.getenv("CHECK_IP", "").lower() == "true"
 
 
-DEV_MODE = os.getenv("DEV_MODE", "false").lower() in ("1", "true", "yes")
+DEV_MODE = is_dev_mode()
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 
