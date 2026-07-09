@@ -850,6 +850,7 @@
 .round-item-name {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -889,6 +890,10 @@
   color: var(--text-dim);
   letter-spacing: 0.05em;
   opacity: 0.7;
+}
+
+.rw-label-count-text {
+  text-transform: none;
 }
 
 /* Nominees */
@@ -1033,6 +1038,235 @@
 .rw-voter--pending .rw-voter-name {
   color: var(--text-dim);
   opacity: 0.35;
+}
+
+/* RPS pairs */
+.rw-nominees--rps {
+  gap: 10px;
+}
+
+.rw-pair {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  gap: 2px;
+}
+
+.rw-pair-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0.55;
+  margin: 3px 0;
+}
+
+.rw-pair-vs::before,
+.rw-pair-vs::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.rw-rps-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  transition: opacity 0.2s;
+}
+
+.rw-rps-row--waiting {
+  opacity: 0.4;
+}
+
+.rw-rps-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+.rw-rps-row--revealed .rw-rps-name {
+  color: var(--text);
+}
+
+.rw-rps-points {
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+.rw-rps-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  padding: 6px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.rw-rps-dots {
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.rw-rps-icon--waiting {
+  background: transparent;
+  border-style: dashed;
+}
+
+.rw-rps-icon--picked {
+  background: transparent;
+  padding: 5px;
+}
+
+.rw-rps-icon--revealed {
+  background: color-mix(in srgb, var(--winner-color, var(--border)) 18%, var(--bg3));
+  border-color: var(--winner-color, var(--border));
+}
+
+/* Guess the Number */
+.rw-guess-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  transition: opacity 0.2s;
+}
+
+.rw-guess-row--waiting {
+  opacity: 0.4;
+}
+
+.rw-guess-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+.rw-guess-row--revealed .rw-guess-name {
+  color: var(--text);
+}
+
+.rw-guess-points {
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+.rw-guess-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 5px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: none;
+  color: var(--text-dim);
+}
+
+.rw-guess-icon--waiting {
+  background: transparent;
+  border-style: dashed;
+}
+
+.rw-guess-icon--picked {
+  background: transparent;
+  padding: 5px;
+}
+
+.rw-guess-icon--revealed {
+  background: transparent;
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.rw-guess-number {
+  line-height: 1;
+}
+
+/* Prisoner's Dilemma — one shared outcome glyph per pair */
+.rw-pair-vs-icon {
+  width: 26px;
+  height: 28px;
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+
+.rw-pd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  transition: opacity 0.2s;
+}
+
+.rw-pd-row--waiting .rw-pd-name {
+  opacity: 0.4;
+}
+
+.rw-pd-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+.rw-pd-row--revealed .rw-pd-name {
+  color: var(--text);
+}
+
+.rw-pd-points {
+  margin-left: 4px;
+  font-weight: bold;
+}
+
+.rw-pd-status {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--text-dim);
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rw-pd-status-dots {
+  font-size: 10px;
+  letter-spacing: 1px;
+  width: auto;
+  height: auto;
 }
 
 /* Master toggle on label */

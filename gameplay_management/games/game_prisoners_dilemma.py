@@ -52,8 +52,87 @@ class GamePrisonersDilemma(GameMechanicsMixin):
             f"You steal | They trust and Split : You get +{cfg.pd_points_steal} points | They get 0\n"
             f"You trust and Split | They Steal : You get 0 | They get +{cfg.pd_points_steal} points\n"
         )
-
+        
     
+    def run_game(self):
+        self._widget_pairs = []
+        intro_message = self._prisoners_dilemma_intro()
+        self._host_broadcast(intro_message)
+        
+        available = self._shuffled_agents()
+        
+        cfg=self.cfg
+        choose_partner = cfg.pd_pairing_method in (cfg.pd_pairing_choice_random, cfg.pd_pairing_choice_lowest)
+        if cfg.pd_pairing_method == cfg.pd_pairing_choice_all:
+            self._opening_message()
+        
+        if not choose_partner:
+            if cfg.pd_pairing_method == cfg.pd_pairing_choice_all:
+                pairs = list(combinations(available, 2))
+                leftover = None
+            else:
+                pairs, leftover = self._generate_random_pairings(available)
+
+            if leftover:
+                self._award_leftover(leftover)
+
+            self._initialise_widget(pairs)
+            self._execute_pairs(pairs)
+
+
+        else:
+
+            loser_picks_first = cfg.pd_pairing_method == cfg.pd_pairing_choice_lowest
+            while len(available) > 1:
+                if loser_picks_first:
+                    chooser = self.get_strategic_players(available, top_player=False)[0]
+                    available.remove(chooser)
+                else:
+                    chooser = available.pop()#already shuffled
+                self._host_broadcast(f"{chooser.name}, who do you pick to partner with for Prisoner's Dilemma? ")
+                partner = self._choose_partner(chooser, available)
+                available.remove(partner)
+                self._add_pair_to_widget(chooser, partner)
+                self._execute_pair(chooser, partner, nested_host_announcement = True)
+                
+            if available:
+                self._award_leftover(available[0])
+                
+                
+    
+    def _widget_update_entry(self, name, state=None, choice=None, points=None):
+        for pair in self._widget_pairs:
+            for entry in pair:
+                if entry["name"] == name:
+                    if state:
+                        entry["state"] = state
+                    if choice:
+                        entry["choice"] = choice
+                    if points is not None:
+                        entry["points"] = points
+                    self._emit_widget()
+                    return
+
+    def _widget_pair_entry_initial(self, pair):
+        couple = []
+        for agent in pair:
+            entry = {"name": agent.name, "state": "waiting"}
+            entry["choice"] = None
+            entry["points"] = None
+            couple.append(entry)
+        return couple
+
+    def _emit_widget(self):
+        self.game_board.game_sink.on_widget_update({"kind": "pd", "pairs": self._widget_pairs})
+
+    def _initialise_widget(self, pairs):
+        self._widget_pairs = [self._widget_pair_entry_initial(pair) for pair in pairs]
+        self._emit_widget()
+
+    def _add_pair_to_widget(self, agent0, agent1):
+        self._widget_pairs.append(self._widget_pair_entry_initial([agent0, agent1]))
+        self._emit_widget()
+
     def _choose_partner(self, chooser, available_agents):
         available_agents_names = self._names(available_agents)
         turn_prompt = (
@@ -80,7 +159,9 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         
         additional_thought_nudge="What points are available? How will the next elimination work? Do you need points or alliance?"
         public_response_prompt = "A one liner, for AFTER your result has been revealed. (Not neccessary to re-state your choice as it will already be revealed.)."
-        return self.get_split_or_steal(player, turn_prompt, public_response_prompt, additional_thought_nudge)
+        result = self.get_split_or_steal(player, turn_prompt, public_response_prompt, additional_thought_nudge)
+        self._widget_update_entry(player.name, state="picked")
+        return result
 
     def get_split_or_steal(self, player, turn_prompt, public_response_prompt, additional_thought_nudge = None):
         choices = ["split", "steal"]
@@ -116,10 +197,16 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         choices = []
         for agent, res in zip((agent0, agent1), results):
             self.turn_manager._output_response(agent, res, pre_message_choice_reveal="action", is_reply=True)
+            self._widget_update_entry(agent.name, state="revealed", choice=res.action)
             choices.append(res.action)
 
         result_host_message = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
         self._host_broadcast(f"{result_host_message}\n")
+
+        p0_gain, p1_gain, _ = self._calculate_pd_payout(choices[0], choices[1], agent0.name, agent1.name)
+        for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
+            if gain > 0:
+                self._widget_update_entry(agent.name, points=gain)
 
         if self.cfg.pd_get_reactions and (self.cfg.pd_pairing_method != self.cfg.pd_pairing_choice_all):
             if (choices[0] == 'steal' and choices[1] == 'steal'):
@@ -148,7 +235,8 @@ class GamePrisonersDilemma(GameMechanicsMixin):
 
         for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
             self.game_board.append_agent_points(agent.name, gain)
-
+            self._widget_update_entry(agent.name, points=gain)
+            
         result_host_message = f"{msg}{agent0.name} receives {p0_gain}, and {agent1.name} receives {p1_gain} points."
         return result_host_message
 
@@ -177,50 +265,6 @@ class GamePrisonersDilemma(GameMechanicsMixin):
                                         broadcast = True,
                                         is_reply = True)
     
-    def run_game(self):
-        #self.widget_dictionary = {pairs = [], scores = []} #name, score, color #TODO
-        
-        intro_message = self._prisoners_dilemma_intro()
-        self._host_broadcast(intro_message)
-        
-        available = self._shuffled_agents()
-        
-        cfg=self.cfg
-        choose_partner = cfg.pd_pairing_method in (cfg.pd_pairing_choice_random, cfg.pd_pairing_choice_lowest)
-        if cfg.pd_pairing_method == cfg.pd_pairing_choice_all:
-            self._opening_message()
-        
-        if not choose_partner:
-            if cfg.pd_pairing_method == cfg.pd_pairing_choice_all:
-                pairs = list(combinations(available, 2))
-                leftover = None
-            else:
-                pairs, leftover = self._generate_random_pairings(available)
-
-            if leftover:
-                self._award_leftover(leftover)
-
-            self._execute_pairs(pairs)
-        
-        
-        else:
-            
-            loser_picks_first = cfg.pd_pairing_method == cfg.pd_pairing_choice_lowest
-            while len(available) > 1:
-                if loser_picks_first:
-                    chooser = self.get_strategic_players(available, top_player=False)[0]
-                    available.remove(chooser)
-                else: 
-                    chooser = available.pop()#already shuffled
-                self._host_broadcast(f"{chooser.name}, who do you pick to partner with for Prisoner's Dilemma? ")
-                partner = self._choose_partner(chooser, available)
-                available.remove(partner)
-                self._execute_pair(chooser, partner, nested_host_announcement = True)
-                
-            if available:
-                self._award_leftover(available[0])
-                
-                
     def _award_leftover(self, leftover):
         auto_points = self.cfg.pd_odd_player_auto_points
         self._host_broadcast(f"{leftover.name} is the odd one out this round! They automatically receive {auto_points} points.\n\n")

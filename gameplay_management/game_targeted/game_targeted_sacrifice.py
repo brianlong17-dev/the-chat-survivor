@@ -1,8 +1,8 @@
-from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
+from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
 from pydantic import Field
 
 
-class GameTargetedChoiceSacrifice(GameMechanicsMixin):
+class GameTargetedChoiceSacrifice(BaseTargetedGame):
 
     @classmethod
     def display_name(cls, cfg):
@@ -24,19 +24,26 @@ class GameTargetedChoiceSacrifice(GameMechanicsMixin):
     def _player_intro(self, player):
         return f"{player.name}! You have the floor. Will you sabotage someone, or stay safe?"
 
+    def _emit_widget(self):
+        self.game_board.game_sink.on_widget_update({"kind": "give_take", "turns": self._widget_turns})
+
     def run_game(self):
+        self._init_queue(self._shuffled_agents())
+        self._init_widget()
         game_instruction = (
             "Decide if you want to attack. If yes, choose a target and an amount to spend. "
             "If no, choose 'Pass' as the target."
         )
         self.game_board.host_broadcast(self._game_intro())
-        for player in self._shuffled_agents():
+        while self._agent_queue:
+            player = self._pop_agent_from_queue()
             self.game_board.host_broadcast(self._player_intro(player))
             my_score =  self._agent_score(player.name)
 
             if my_score <= 0:
                 result = f"{player.name} has no points, so has no choice but to sit this one out."
                 self.game_board.host_broadcast(result, is_reply=True)
+                self._update_row(player.name, None, "pass", actor_amount=0, target_amount=0)
                 continue
 
             targets = self._names(self._other_agents(player)) + ["Pass"]
@@ -68,8 +75,11 @@ class GameTargetedChoiceSacrifice(GameMechanicsMixin):
             if str(target_name).strip().lower() == "pass" or spent <= 0:
                 result = f"{player.name} chooses mercy (or cowardice?) and passes. No blood is shed."
                 reactor = player
+                self._update_row(player.name, None, "pass", actor_amount=0, target_amount=0)
             else:
                 target_agent = self._agent_by_name(target_name)
+                if target_agent:
+                    self._bump_to_back_of_queue(target_agent)
                 victim_score = self.game_board.get_agent_score(target_agent.name)
                 actual_spend = max(0, min(spent, my_score))
                 damage = min(victim_score, actual_spend)
@@ -77,6 +87,7 @@ class GameTargetedChoiceSacrifice(GameMechanicsMixin):
                 if victim_score == 0:
                     result = f"{target_agent.name} has no points, so the attack does nothing. Perhaps just to make a point?"
                     reactor = player
+                    self._update_row(player.name, target_agent.name, "take", actor_amount=0, target_amount=0)
                 else:
                     self.game_board.append_agent_points(player.name, -actual_spend)
                     self.game_board.append_agent_points(target_agent.name, -damage)
@@ -87,6 +98,7 @@ class GameTargetedChoiceSacrifice(GameMechanicsMixin):
                     )
                     reactor = target_agent
                     ledger_message = f"{player.name} sacrificed points to attack {target_agent.name}."
+                    self._update_row(player.name, target_agent.name, "take", actor_amount=-actual_spend, target_amount=-damage)
 
             self.game_board.host_broadcast(result, is_reply=True)
             reaction = self.turn_manager.respond_to(reactor, result, is_reply=True)

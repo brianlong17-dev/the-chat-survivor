@@ -1,8 +1,8 @@
-from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
+from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
 from prompts.gamePrompts import GamePromptLibrary
 
 
-class GameTargetedChoiceGive(GameMechanicsMixin):
+class GameTargetedChoiceGive(BaseTargetedGame):
 
     @classmethod
     def display_name(cls, cfg):
@@ -19,16 +19,20 @@ class GameTargetedChoiceGive(GameMechanicsMixin):
     
     def _player_intro(self, player):
         return (f"{player.name}! You're up- what player are you choosing, and why?")
-    
+
+    def _emit_widget(self):
+        self.game_board.game_sink.on_widget_update({"kind": "give_take", "turns": self._widget_turns})
+
     def run_game(self):
+        self._init_queue(self._shuffled_agents())
+        self._init_widget()
         points_amount = GamePromptLibrary.targeted_games_points
         game_instruction = f"Choose one player to receive {points_amount} points. Explain why."
 
         self.game_board.host_broadcast(self._give_game_intro(points_amount),  animate_as_player=True)
 
-        ordered_agents = self._shuffled_agents()
-        while ordered_agents:
-            player = ordered_agents.pop(0)
+        while self._agent_queue:
+            player = self._pop_agent_from_queue()
             self.game_board.host_broadcast(self._player_intro(player))
 
             other_names = self._names(self._other_agents(player))
@@ -42,13 +46,13 @@ class GameTargetedChoiceGive(GameMechanicsMixin):
             target_name = self.turn_manager._get_target_name_from_response(response)
             target_agent = self._agent_by_name(target_name)
 
-            if target_agent and target_agent in ordered_agents:
-                ordered_agents.remove(target_agent)
-                ordered_agents.append(target_agent)
+            if target_agent:
+                self._bump_to_back_of_queue(target_agent)
 
             self.game_board.append_agent_points(target_name, points_amount)
             result = f"Yay! {player.name} chooses {target_name}! They receive {points_amount} points."
-            
+            self._update_row(player.name, target_name, "give", points_amount)
+
             self.game_board.host_broadcast(result, is_reply=True)
             reaction = self.turn_manager.respond_to(target_agent, result, is_reply=True)
             self.turn_manager._output_response(target_agent, reaction, is_reply=True)

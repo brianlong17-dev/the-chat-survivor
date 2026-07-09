@@ -21,6 +21,35 @@ class GameGuess(GameMechanicsMixin):
         response = self.turn_manager.take_turn(player, turn_prompt, action_fields = action_fields)
         return player, response
 
+    def _widget_update_entry(self, name, state=None, guess=None, correct=None, points=None):
+        for entry in self._widget_rows:
+            if entry["name"] == name:
+                if state:
+                    entry["state"] = state
+                if guess is not None:
+                    entry["guess"] = guess
+                if correct is not None:
+                    entry["correct"] = correct
+                if points is not None:
+                    entry["points"] = points
+                self._emit_widget()
+                return
+
+    def _emit_widget(self):
+        self.game_board.game_sink.on_widget_update({
+            "kind": "guess",
+            "range": self._widget_range,
+            "rows": self._widget_rows,
+        })
+
+    def _initialise_widget(self, agents, number_range):
+        self._widget_range = {"min": 1, "max": number_range}
+        self._widget_rows = [
+            {"name": agent.name, "state": "waiting", "guess": None, "correct": None, "points": None}
+            for agent in agents
+        ]
+        self._emit_widget()
+
     def _build_guess_the_number_result_string(self, correct, incorrect, number_range):
         parts = []
 
@@ -68,6 +97,8 @@ class GameGuess(GameMechanicsMixin):
 
         
         # --- Collect guesses in parallel (mirrors PD / vote patterns) ---------
+        self._initialise_widget(self.simulationEngine.agents, number_range)
+
         futures = []
         with ThreadPoolExecutor() as executor:
             for agent in self.simulationEngine.agents:
@@ -76,6 +107,9 @@ class GameGuess(GameMechanicsMixin):
                 )
                 futures.append(future)
 
+        for agent in self.simulationEngine.agents:
+            self._widget_update_entry(agent.name, state="picked")
+
         results = [f.result() for f in futures]
 
         # --- Publish each player's public words & guess -----------------------
@@ -83,12 +117,17 @@ class GameGuess(GameMechanicsMixin):
         incorrect = []
 
         for player, response in results:
-            self.turn_manager._output_response(player, response, pre_message_choice_reveal="choice", delay=1)
-
             raw_choice = getattr(response, "choice", None)
             guess = int(raw_choice)
+            self._widget_update_entry(player.name, state="revealed", guess=guess)
+            self.turn_manager._output_response(player, response, pre_message_choice_reveal="choice", delay=1, is_reply=True)
+
             
-            if guess == winning_number:
+
+            is_correct = guess == winning_number
+            
+
+            if is_correct:
                 correct.append(player)
             else:
                 incorrect.append(player)
@@ -105,6 +144,9 @@ class GameGuess(GameMechanicsMixin):
 
         for player in correct:
             self.game_board.append_agent_points(player.name, points_for_correct)
+            self._widget_update_entry(player.name, correct=True, points=points_for_correct)
+        for player in incorrect:
+            self._widget_update_entry(player.name, correct=False)
 
         #DELAY
         # --- Reactions (optional but consistent with PD pattern) --------------

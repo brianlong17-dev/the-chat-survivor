@@ -261,10 +261,308 @@ function VotingWidget({ nominees = [], voters_done = [], voters_pending = [], is
   )
 }
 
+const RPS_RESULT_COLOR = { winner: '#67b37d', loser: '#d9706a', draw: '#67b37d' }
+
+const ICON_PROPS = { width: '100%', height: '100%', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' }
+
+function IconRock() {
+  return (
+    <svg {...ICON_PROPS}>
+      <path d="M12 4 L18.5 8.5 L19.5 15.5 L14 20 L8 19 L4.5 12.5 Z" />
+    </svg>
+  )
+}
+
+function IconPaper() {
+  return (
+    <svg {...ICON_PROPS}>
+      <rect x="5.5" y="3.5" width="13" height="17" rx="0.5" />
+      <line x1="8.5" y1="9" x2="15.5" y2="9" />
+      <line x1="8.5" y1="12.5" x2="15.5" y2="12.5" />
+      <line x1="8.5" y1="16" x2="13" y2="16" />
+    </svg>
+  )
+}
+
+function IconScissors() {
+  return (
+    <svg {...ICON_PROPS}>
+      <circle cx="6" cy="6.5" r="2.25" />
+      <circle cx="6" cy="17.5" r="2.25" />
+      <line x1="8" y1="7.8" x2="20" y2="18.5" />
+      <line x1="8" y1="16.2" x2="20" y2="5.5" />
+    </svg>
+  )
+}
+
+function IconLock() {
+  return (
+    <svg {...ICON_PROPS}>
+      <rect x="6" y="11" width="12" height="9" rx="1.5" />
+      <path d="M8.5 11 V8 a3.5 3.5 0 0 1 7 0 v3" />
+    </svg>
+  )
+}
+
+const CHOICE_ICON = { rock: IconRock, paper: IconPaper, scissors: IconScissors }
+
+function RpsRow({ name, state, choice, result, points }) {
+  const color = RPS_RESULT_COLOR[result]
+  const ChoiceIcon = CHOICE_ICON[choice]
+
+  return (
+    <div
+      className={`rw-rps-row rw-rps-row--${state}`}
+      style={color ? { '--winner-color': color } : {}}
+    >
+      <span className="rw-rps-name" style={color ? { color } : {}}>
+        {name}
+        {state === 'revealed' && points > 0 && (
+          <span className="rw-rps-points" style={color ? { color } : {}}> +{points}</span>
+        )}
+      </span>
+      <span
+        className={`rw-rps-icon rw-rps-icon--${state}`}
+        style={state === 'revealed' && color ? { color } : {}}
+      >
+        {state === 'waiting'  && <span className="rw-rps-dots">···</span>}
+        {state === 'picked'   && <IconLock />}
+        {state === 'revealed' && ChoiceIcon && <ChoiceIcon />}
+      </span>
+    </div>
+  )
+}
+
+function RpsWidget({ pairs = [] }) {
+  return (
+    <div className="round-widget">
+      <div className="rw-section">
+        <h3 className="rw-label">Rock Paper Scissors</h3>
+        <div className="rw-nominees rw-nominees--rps">
+          {pairs.map((pair, i) => (
+            <div key={i} className="rw-pair">
+              <RpsRow {...pair[0]} />
+              <div className="rw-pair-vs">vs</div>
+              <RpsRow {...pair[1]} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const GUESS_RESULT_COLOR = { correct: '#67b37d', incorrect: '#d9706a' }
+
+function GuessRow({ name, state, guess, correct, points }) {
+  const result = state === 'revealed' && correct != null ? (correct ? 'correct' : 'incorrect') : undefined
+  const color = GUESS_RESULT_COLOR[result]
+
+  return (
+    <div className={`rw-guess-row rw-guess-row--${state}`}>
+      <span className="rw-guess-name" style={color ? { color } : {}}>
+        {name}
+        {state === 'revealed' && points > 0 && (
+          <span className="rw-guess-points" style={color ? { color } : {}}> +{points}</span>
+        )}
+      </span>
+      <span
+        className={`rw-guess-icon rw-guess-icon--${state}`}
+        style={state === 'revealed' && color ? { color, borderColor: color } : {}}
+      >
+        {state === 'waiting' && <span className="rw-rps-dots">···</span>}
+        {state === 'picked' && <IconLock />}
+        {state === 'revealed' && <span className="rw-guess-number">{guess}</span>}
+      </span>
+    </div>
+  )
+}
+
+function GuessWidget({ range, rows = [] }) {
+  const rangeLabel = range ? `${range.min}–${range.max}?` : ''
+  return (
+    <div className="round-widget">
+      <div className="rw-section">
+        <h3 className="rw-label">
+          Guess the Number
+          {rangeLabel && <span className="rw-label-count rw-label-count-text">{rangeLabel}</span>}
+        </h3>
+        <div className="rw-nominees">
+          {rows.map((row, i) => <GuessRow key={i} {...row} />)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Two overlapping circles — one shared glyph per pair, not per player.
+// Each side independently can be: unknown (grey dashed), picked-but-not-final
+// (colored dashed — backend reveals choices in order, so one side often lands
+// before the other), or fully revealed (colored solid).
+const PD_CHOICE_COLOR = { split: '#67b37d', steal: '#d9706a' }
+
+function pdDotState(p) {
+  if (!p.choice) return { color: '#444', dashed: true }
+  return { color: PD_CHOICE_COLOR[p.choice], dashed: p.state !== 'revealed' }
+}
+
+function PdOutcomeIcon({ a, b }) {
+  const dotA = pdDotState(a)
+  const dotB = pdDotState(b)
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 28 30" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="14" cy="10.5" r="7.5" stroke={dotA.color} strokeDasharray={dotA.dashed ? '2.5 3' : undefined} />
+      <circle cx="14" cy="19.5" r="7.5" stroke={dotB.color} strokeDasharray={dotB.dashed ? '2.5 3' : undefined} />
+    </svg>
+  )
+}
+
+function PdStatus({ state }) {
+  if (state === 'revealed') return null
+  if (state === 'picked') {
+    return (
+      <span className="rw-pd-status">
+        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="6" y="11" width="12" height="9" rx="1.5" />
+          <path d="M8.5 11 V8 a3.5 3.5 0 0 1 7 0 v3" />
+        </svg>
+      </span>
+    )
+  }
+  return <span className="rw-pd-status rw-pd-status-dots">···</span>
+}
+
+function PdRow({ name, state, choice, points }) {
+  const color = state === 'revealed' ? PD_CHOICE_COLOR[choice] : undefined
+  return (
+    <div className={`rw-pd-row rw-pd-row--${state}`}>
+      <span className="rw-pd-name" style={color ? { color } : {}}>
+        {name}
+        {state === 'revealed' && points > 0 && (
+          <span className="rw-pd-points" style={color ? { color } : {}}> +{points}</span>
+        )}
+      </span>
+      <PdStatus state={state} />
+    </div>
+  )
+}
+
+function PdWidget({ pairs = [] }) {
+  return (
+    <div className="round-widget">
+      <div className="rw-section">
+        <h3 className="rw-label">Prisoner's Dilemma</h3>
+        <div className="rw-nominees rw-nominees--rps">
+          {pairs.map((pair, i) => {
+            const [a, b] = pair
+            return (
+              <div key={i} className="rw-pair">
+                <PdRow {...a} />
+                <div className="rw-pair-vs">
+                  <span className="rw-pair-vs-icon">
+                    <PdOutcomeIcon a={a} b={b} />
+                  </span>
+                </div>
+                <PdRow {...b} />
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Give & Take — a sequential turn list, not simultaneous pairs. Each turn is
+// one player's move: they pick a target and either GIVE (target gains, actor
+// unaffected — grows the shared pot) or TAKE (zero-sum — actor gains exactly
+// what the target loses). The target/action only exist once a turn is
+// revealed — pre-decision turns render as a single bare row (no placeholder
+// pair), since there's nothing to show yet.
+const GT_ACTION_COLOR = { give: '#67b37d', take: '#d9706a' }
+
+function GtTurn({ order, actor, state, target, action, amount = 3, actor_amount, target_amount }) {
+  if (state !== 'revealed') {
+    // Name and pending label stack on separate lines — sharing one line made
+    // longer names ("Princess Leia") truncate against the label.
+    return (
+      <div className={`rw-gt-turn rw-gt-turn--${state}`}>
+        <div className="rw-gt-line">
+          <span className="rw-gt-order">{order}</span>
+          <span className="rw-gt-name">{actor}</span>
+        </div>
+        <span className="rw-gt-pending-label">{state === 'picked' ? 'deciding···' : 'awaiting turn'}</span>
+      </div>
+    )
+  }
+
+  if (action === 'pass') {
+    return (
+      <div className="rw-gt-turn rw-gt-turn--revealed">
+        <div className="rw-gt-line">
+          <span className="rw-gt-order">{order}</span>
+          <span className="rw-gt-name">{actor}</span>
+        </div>
+        <span className="rw-gt-pending-label">passed</span>
+      </div>
+    )
+  }
+
+  const isGive = action === 'give'
+  // actor_amount/target_amount let a turn specify independent deltas (e.g.
+  // sacrifice: actor spends N, target only loses what they had left) instead
+  // of assuming a single zero-sum `amount` shared by both sides.
+  const actorDelta = actor_amount !== undefined ? actor_amount : (isGive ? 0 : amount)
+  const targetDelta = target_amount !== undefined ? target_amount : (isGive ? amount : -amount)
+  // Name colors follow each side's own gain/loss (green = up, red = down,
+  // untinted = unaffected) — NOT the action itself. A 'take' still colors the
+  // taking actor green, because they gained; only their victim goes red.
+  const actorColor = actorDelta > 0 ? GT_ACTION_COLOR.give : (actorDelta < 0 ? GT_ACTION_COLOR.take : undefined)
+  const targetColor = targetDelta > 0 ? GT_ACTION_COLOR.give : (targetDelta < 0 ? GT_ACTION_COLOR.take : undefined)
+
+  // Stacked, not side-by-side: each name gets the full card width so it never
+  // truncates in the ~200px sidebar, even for longer names. The connector row
+  // (hairline — arrow — hairline) mirrors the existing .rw-pair-vs idiom, just
+  // vertical and colored/directional instead of a static "vs".
+  return (
+    <div className="rw-gt-turn rw-gt-turn--revealed">
+      <div className="rw-gt-line">
+        <span className="rw-gt-order">{order}</span>
+        <span className="rw-gt-name" style={actorColor ? { color: actorColor } : {}}>{actor}</span>
+        {actorDelta !== 0 && (
+          <span className="rw-gt-points" style={{ color: actorColor }}>{actorDelta > 0 ? ` +${actorDelta}` : ` ${actorDelta}`}</span>
+        )}
+      </div>
+      <div className="rw-gt-line rw-gt-line--target">
+        <span className="rw-gt-name" style={targetColor ? { color: targetColor } : {}}>{target}</span>
+        {targetDelta !== 0 && (
+          <span className="rw-gt-points" style={{ color: targetColor }}>{targetDelta > 0 ? ` +${targetDelta}` : ` ${targetDelta}`}</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function GiveTakeWidget({ turns = [] }) {
+  return (
+    <div className="round-widget">
+      <div className="rw-section">
+        <div className="rw-nominees">
+          {turns.map((turn, i) => <GtTurn key={i} order={i + 1} {...turn} />)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function RoundWidget({ widget }) {
   if (!widget || !widget.kind) return null
   switch (widget.kind) {
-    case 'voting': return <VotingWidget {...widget} />
+    case 'voting':    return <VotingWidget {...widget} />
+    case 'rps':       return <RpsWidget {...widget} />
+    case 'pd':        return <PdWidget {...widget} />
+    case 'give_take': return <GiveTakeWidget {...widget} />
+    case 'guess':     return <GuessWidget {...widget} />
     default: return null
   }
 }

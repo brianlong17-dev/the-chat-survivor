@@ -1,12 +1,12 @@
-from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
+from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
 from prompts.gamePrompts import GamePromptLibrary
 
 
-class GameTargetedChoiceGiveOrTake(GameMechanicsMixin):
+class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
 
     @classmethod
     def display_name(cls, cfg):
-        return "Give or Take"
+        return "Give & Take"
 
     @classmethod
     def rules_description(cls, cfg):
@@ -23,7 +23,12 @@ class GameTargetedChoiceGiveOrTake(GameMechanicsMixin):
     def _player_intro(self, player):
         return f"{player.name}! You're up- who are you choosing, and will you give or take?"
 
+    def _emit_widget(self):
+        self.game_board.game_sink.on_widget_update({"kind": "give_take", "turns": self._widget_turns})
+
     def run_game(self):
+        self._init_queue(self._shuffled_agents())
+        self._init_widget()
         points_amount = GamePromptLibrary.targeted_games_points
         game_instruction = (
             f"Choose one player, then decide whether to GIVE them {points_amount} points "
@@ -32,10 +37,10 @@ class GameTargetedChoiceGiveOrTake(GameMechanicsMixin):
         )
 
         self.game_board.host_broadcast(self._game_intro(points_amount), animate_as_player=True)
+        
 
-        ordered_agents = self._shuffled_agents()
-        while ordered_agents:
-            player = ordered_agents.pop(0)
+        while self._agent_queue:
+            player = self._pop_agent_from_queue()
             self.game_board.host_broadcast(self._player_intro(player))
 
             other_names = self._names(self._other_agents(player))
@@ -60,9 +65,8 @@ class GameTargetedChoiceGiveOrTake(GameMechanicsMixin):
             target_name = self.turn_manager._get_target_name_from_response(response)
             target_agent = self._agent_by_name(target_name)
 
-            if target_agent and target_agent in ordered_agents:
-                ordered_agents.remove(target_agent)
-                ordered_agents.append(target_agent)
+            if target_agent:
+                self._bump_to_back_of_queue(target_agent)
 
             choice = str(response.give_or_take).strip().lower()
 
@@ -72,6 +76,7 @@ class GameTargetedChoiceGiveOrTake(GameMechanicsMixin):
                 result = f"Aww! {player.name} chooses to GIVE to {target_agent.name}! They receive {points_amount} points."
                 ledger_message = f"{player.name} gave points to {target_agent.name}."
                 reactor = target_agent
+                self._update_row(player.name, target_agent.name, choice, points_amount)
             else:
                 current_victim_points = self.game_board.get_agent_score(target_agent.name)
                 actual_take = min(points_amount, max(0, current_victim_points))
@@ -90,6 +95,7 @@ class GameTargetedChoiceGiveOrTake(GameMechanicsMixin):
                     )
                     ledger_message = f"{player.name} took points from {target_agent.name}."
                     reactor = target_agent
+                self._update_row(player.name, target_agent.name, choice, actual_take)
 
             self.game_board.host_broadcast(result, is_reply=True)
             reaction = self.turn_manager.respond_to(reactor, result, is_reply=True)

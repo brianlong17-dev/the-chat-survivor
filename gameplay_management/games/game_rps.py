@@ -69,6 +69,38 @@ class GameRockPaperScissors(GameMechanicsMixin):
         msg = f"*{c1.upper()}* beats {c0}! {name1} WINS and earns {pts} points!"
         return 0, pts, msg
 
+    def _widget_update_entry(self, name, state=None, choice=None, result=None, points=None):
+        for pair in self._widget_pairs:
+            for entry in pair:
+                if entry["name"] == name:
+                    if state:
+                        entry["state"] = state
+                    if choice:
+                        entry["choice"] = choice
+                    if result:
+                        entry["result"] = result
+                    if points is not None:
+                        entry["points"] = points
+                    self._emit_widget()
+                    return
+
+    def _widget_pair_entry_initial(self, pair):
+        couple = []
+        for agent in pair:
+            entry = {"name": agent.name, "state": "waiting"}
+            entry["choice"] = None
+            entry["result"] = None
+            entry["points"] = None
+            couple.append(entry)
+        return couple
+
+    def _emit_widget(self):
+        self.game_board.game_sink.on_widget_update({"kind": "rps", "pairs": self._widget_pairs})
+
+    def _initialise_widget(self, pairs):
+        self._widget_pairs = [self._widget_pair_entry_initial(pair) for pair in pairs]
+        self._emit_widget()
+
     def _execute_pairs(self, pairs):
         for agent0, agent1 in pairs:
             self.game_board.host_broadcast(f"{agent0.name} vs {agent1.name} — Rock, Paper, or Scissors?\n")
@@ -78,20 +110,34 @@ class GameRockPaperScissors(GameMechanicsMixin):
                 future1 = executor.submit(self._get_rps_choice, agent1, agent0)
                 results = [future0.result(), future1.result()]
 
+            for agent in (agent0, agent1):
+                self._widget_update_entry(agent.name, state="picked")
+
             choices = []
             for agent, res in zip((agent0, agent1), results):
                 self.turn_manager._output_response(agent, res, post_message_choice_reveal="action", is_reply=True)
-                choices.append(res.action.strip().lower())
+                choice = res.action.strip().lower()
+                self._widget_update_entry(agent.name, state="revealed", choice=choice)
+                choices.append(choice)
 
             p0_gain, p1_gain, msg = self._calculate_outcome(choices[0], choices[1], agent0.name, agent1.name)
 
+            if p0_gain > p1_gain:
+                winner, loser = agent0.name, agent1.name
+            elif p1_gain > p0_gain:
+                winner, loser = agent1.name, agent0.name
+            else:
+                winner, loser = "draw", "draw"
+
             for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
+                result = "draw" if winner == "draw" else ("winner" if winner == agent.name else "loser")
+                self._widget_update_entry(agent.name, result=result, points=gain)
                 self.game_board.append_agent_points(agent.name, gain)
 
             self.game_board.host_broadcast(f"{msg}\n")
 
             for agent in (agent0, agent1):
-                reaction = self.turn_manager.respond_to(agent, msg, broadcast=True, is_reply=True)
+                self.turn_manager.respond_to(agent, msg, broadcast=True, is_reply=True)
 
     def run_game(self):
         rps_game_intro = (
@@ -111,5 +157,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
                 f"{leftover.name} has no opponent this round — they automatically receive {auto_pts} points.\n\n"
             )
             self.game_board.append_agent_points(leftover.name, auto_pts)
-
+            
+        
+        self._initialise_widget(pairs)
         self._execute_pairs(pairs)
