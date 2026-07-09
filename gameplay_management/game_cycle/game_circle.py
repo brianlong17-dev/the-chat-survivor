@@ -172,7 +172,7 @@ class GameCircle(CycleRound):
             # -- 4. Shoot
             shot_names = self._take_shot(gun_holder, unprotected_pool)
             
-            bang = "BANG! BANG! " if  self.double_shot else "BANG! "
+            bang = "*BANG! BANG!* " if  self.double_shot else "*BANG!* "
             self.game_board.environment_broadcast(bang, delay = 1)
             
             # -- 5. Handle result

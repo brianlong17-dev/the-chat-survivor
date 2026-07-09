@@ -4,6 +4,9 @@ from typing import Type
 from gameplay_management.base_manager import BaseRound
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
 from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
+from gameplay_management.game_cycle.game_knives import GameKnives
+from gameplay_management.game_cycle.game_circle import GameCircle
+from gameplay_management.game_cycle.game_mob import GameMob
 
 
 @dataclass
@@ -30,6 +33,27 @@ MODULES = [
         module_class=GamePrisonersDilemmaFinale,
         description="The two finalists face a split-or-steal endgame.",
         finale=True,
+    ),
+    ModuleEntry(
+        id="knives",
+        title="Knives",
+        module_class=GameKnives,
+        description="Players pass or plant knives each round — alliances and betrayals play out in the open.",
+        game=True,
+    ),
+    ModuleEntry(
+        id="circle",
+        title="The Circle",
+        module_class=GameCircle,
+        description="A shooting-circle standoff — survivors split the bonus.",
+        game=True,
+    ),
+    ModuleEntry(
+        id="mob",
+        title="Mob",
+        module_class=GameMob,
+        description="Players form mobs behind a leader and pile onto a target.",
+        game=True,
     ),
 ]
 

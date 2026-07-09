@@ -460,6 +460,20 @@
   color: var(--sys-color) !important;
 }
 
+.env-pop {
+  display: inline-block;
+  position: relative;
+  z-index: 50;
+  transform-origin: left center;
+  animation: env-pop 0.9s ease-in-out both;
+}
+
+@keyframes env-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(3); }
+  100% { transform: scale(1); }
+}
+
 .system-speaker { color: var(--sys-color); }
 
 .msg-link {
@@ -1819,6 +1833,13 @@
   gap: 6px;
 }
 
+.demo-cast-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
 .demo-cast-chip {
   font-size: 11px;
   font-family: var(--font-mono);
@@ -1839,6 +1860,18 @@
 .demo-cast-chip--selected {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+.demo-cast-chip--dead {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.demo-cast-divider {
+  align-self: stretch;
+  width: 1px;
+  background: var(--border);
+  margin: 0 4px;
 }
 
 .demo-mode {

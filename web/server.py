@@ -105,7 +105,9 @@ async def get_fixtures():
                 "title": f.title,
                 "cast": f.cast,
                 "alive": f.alive,
-                "description": f.description,
+                "pd_desc": f.pd_desc,
+                "reunion_desc": f.reunion_desc,
+                "game_desc": f.game_desc,
                 "finale": f.finale,
             }
             for f in FIXTURES

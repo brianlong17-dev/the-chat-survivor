@@ -1,9 +1,18 @@
 """
 Generate an agent-state fixture JSON from a set of per-agent JSONL log files.
 
+With --game-log, the script derives scores, elimination_order, and phase_number
+from the game log and writes the WRAPPED fixture shape the demo loader expects:
+
+    {"scores": {...}, "elimination_order": [...], "agents": {"<name>": {...}}}
+
+Without --game-log it writes the legacy flat {name: state} dict.
+
 Usage:
     python -m demo_runner.fixture_generation.generate_fixture \\
-        --files logs/Finn_20260521_103238.jsonl logs/Lumpy*.jsonl \\
+        --files "logs/characterlogs/Finn_20260521_103238.jsonl" "logs/characterlogs/Lumpy*.jsonl" \\
+        --game-log logs/gamelogs/game_20260521_103200_abc123.jsonl \\
+        --phase 3 \\
         --output demo_runner/fixtures/my_fixture.json \\
         [--include-empty BMO "Ice King" ...] \\
         [--demo-snippet]
@@ -159,6 +168,40 @@ def reconstruct_agent(lines: list) -> dict:
     return state
 
 
+def parse_game_log(path: str, phase: int) -> tuple:
+    """Derive (scores, elimination_order, alive_names) as agents ENTERED `phase`.
+
+    Walks the game-log events up to (but not including) the phase_header for `phase`:
+      - cast            -> full roster
+      - points_update   -> last one before the header gives start-of-phase scores
+      - evicted_update  -> last one's evicted_names is the cumulative eviction order
+    alive_names = cast - eliminated.
+    """
+    lines = load_jsonl(path)
+
+    cast = None
+    scores = None
+    elimination_order = []
+    for d in lines:
+        t = d.get("type")
+        if t == "phase_header" and d.get("phase_number") == phase:
+            break
+        if t == "cast":
+            cast = list(d["names"])
+        elif t == "points_update":
+            scores = dict(d["scores"])
+        elif t == "evicted_update":
+            elimination_order = list(d["evicted_names"])
+
+    if cast is None:
+        raise ValueError(f"No 'cast' event found in game log before phase {phase}: {path}")
+    if scores is None:
+        raise ValueError(f"No 'points_update' event found before phase {phase}: {path}")
+
+    alive_names = [n for n in cast if n not in set(elimination_order)]
+    return scores, elimination_order, alive_names
+
+
 def load_jsonl(path: str) -> list:
     out = []
     with open(path, encoding="utf-8") as f:
@@ -175,8 +218,12 @@ def main():
     ap.add_argument("--output", required=True, help="Path to write the fixture JSON")
     ap.add_argument("--include-empty", nargs="*", default=[], help="Agent names to add as empty-state entries (eliminated/jury)")
     ap.add_argument("--phase", type=int, default=None, help="Reconstruct state as agents ENTERED this phase (keeps summaries 1..phase-1). Omit for final state.")
-    ap.add_argument("--demo-snippet", action="store_true", help="Print a suggested demo_runner block to stderr")
+    ap.add_argument("--game-log", default=None, help="Game log JSONL. When set, derives scores/elimination_order/phase_number and writes the wrapped fixture shape.")
+    ap.add_argument("--demo-snippet", action="store_true", help="Print a suggested FixtureEntry block to stderr")
     args = ap.parse_args()
+
+    if args.game_log and args.phase is None:
+        ap.error("--game-log requires --phase (which phase boundary to snapshot)")
 
     by_agent: dict = {}
     for path in args.files:
@@ -186,7 +233,7 @@ def main():
                 continue
             by_agent.setdefault(name, []).append(entry)
 
-    fixture = {}
+    agents = {}
     last_ts_by_agent = {}
     for name, lines in by_agent.items():
         last_ts_by_agent[name] = max(l["timestamp"] for l in lines)
@@ -195,34 +242,63 @@ def main():
             if not lines:
                 print(f"WARNING: {name} has no turns before phase {args.phase}; skipping", file=sys.stderr)
                 continue
-        fixture[name] = reconstruct_agent(lines)
+        agents[name] = reconstruct_agent(lines)
 
     for name in args.include_empty:
-        if name not in fixture:
-            fixture[name] = dict(EMPTY_AGENT, life_lessons=[], summaries_brief={}, summaries_detailed={})
+        if name not in agents:
+            agents[name] = dict(EMPTY_AGENT, life_lessons=[], summaries_brief={}, summaries_detailed={})
+
+    scores = elimination_order = None
+    if args.game_log:
+        scores, elimination_order, alive_names = parse_game_log(args.game_log, args.phase)
+
+        for name in list(scores) + list(elimination_order):
+            if name not in agents:
+                raise ValueError(
+                    f"'{name}' appears in the game log but has no agent state. "
+                    f"Pass its character log in --files, or add it via --include-empty."
+                )
+        if set(scores) != set(alive_names):
+            raise ValueError(
+                f"scores keys {sorted(scores)} != alive players {sorted(alive_names)} "
+                f"derived from the game log — refusing to write an inconsistent fixture."
+            )
+
+        output = {"scores": scores, "elimination_order": elimination_order, "agents": agents}
+    else:
+        output = agents
 
     os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
     with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(fixture, f, indent=2, ensure_ascii=False)
-    print(f"Wrote {args.output} ({len(fixture)} agents)")
+        json.dump(output, f, indent=2, ensure_ascii=False)
+    print(f"Wrote {args.output} ({len(agents)} agents)")
 
     if args.demo_snippet:
-        max_phase = max(
-            (len(fixture[n]["summaries_brief"]) for n in fixture if fixture[n]["summaries_brief"]),
-            default=0,
-        )
-        elim_order = sorted(last_ts_by_agent, key=last_ts_by_agent.get)
-        if len(elim_order) >= 2:
-            elim_order = elim_order[:-2]
-        snippet = (
-            "\n# Suggested demo_runner entry (verify before pasting):\n"
-            "{\n"
-            f"    \"fixture_filename\": \"{os.path.basename(args.output)}\",\n"
-            "    \"finalist_scores\": {},  # FILL IN\n"
-            f"    \"elimination_order\": {elim_order!r},\n"
-            f"    \"phase_number\": {max_phase + 1 if max_phase else None},\n"
-            "}\n"
-        )
+        if args.game_log:
+            alive = list(scores)
+            cast = alive + [n for n in elimination_order if n not in alive]
+            snippet = (
+                "\n# Suggested FixtureEntry for demo_runner/fixture_directory.py (verify before pasting):\n"
+                "FixtureEntry(\n"
+                f"    name={os.path.splitext(os.path.basename(args.output))[0]!r},\n"
+                "    title=\"\",  # FILL IN\n"
+                f"    cast={cast!r},\n"
+                f"    alive={alive!r},\n"
+                ")\n"
+            )
+        else:
+            max_phase = max(
+                (len(agents[n]["summaries_brief"]) for n in agents if agents[n]["summaries_brief"]),
+                default=0,
+            )
+            elim_order = sorted(last_ts_by_agent, key=last_ts_by_agent.get)
+            if len(elim_order) >= 2:
+                elim_order = elim_order[:-2]
+            snippet = (
+                "\n# No --game-log given: scores/elimination_order unknown. Suggested (verify):\n"
+                f"#   elimination_order: {elim_order!r}\n"
+                f"#   phase_number: {max_phase + 1 if max_phase else None}\n"
+            )
         print(snippet, file=sys.stderr)
 
 

@@ -280,7 +280,7 @@ function MessageLink({ messageId, runthroughId }) {
   )
 }
 
-function PublicAction({ speaker, message, color, animate_as_player, onComplete, skipRef, animateText, message_id, runthroughId }) {
+function PublicAction({ speaker, message, color, animate_as_player, onComplete, skipRef, animateText, message_id, runthroughId, pop_wrap }) {
   const isHost = speaker === 'HOST'
   const isSystem = speaker === 'SYSTEM'   // shouldn't happen (backend asserts), render harmlessly
 
@@ -300,7 +300,7 @@ function PublicAction({ speaker, message, color, animate_as_player, onComplete, 
   return (
     <div className={`msg public-action ${(isHost || isSystem) ? 'system' : ''}`} {...anchorProps}>
       {label}
-      {body()}
+      {pop_wrap ? <span className="env-pop">{body()}</span> : body()}
       {message_id && runthroughId && <MessageLink messageId={message_id} runthroughId={runthroughId} />}
     </div>
   )

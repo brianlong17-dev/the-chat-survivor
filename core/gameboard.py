@@ -171,7 +171,7 @@ class GameBoard:
         return message_id
 
     def broadcast_public_action_non_player(self, speaker: str, message: str, color: str = "", directed_to_name = None, is_reply = False, 
-                                should_animate_override = False, is_human=False):
+                                should_animate_override = False, is_human=False, pop_wrap=False):
         
         if speaker.upper() == self.SYSTEM:
             raise ValueError("SYSTEM cannot broadcast a public_action; use system_broadcast instead") 
@@ -180,7 +180,7 @@ class GameBoard:
         is_repeated_host = speaker.upper() == self.HOST_NAME and self._was_last_message_from_host()
         should_hold = should_animate_override or not is_repeated_host
         self.game_sink.on_public_action(speaker, message, color=color, animate_as_player=should_animate_override, should_hold=should_hold,
-                    directed_to_name = directed_to_name, is_reply = is_reply, is_human=is_human)
+                    directed_to_name = directed_to_name, is_reply = is_reply, is_human=is_human, pop_wrap=pop_wrap)
         
     def system_broadcast(self, message, private=False, border_bottom = False):
         if not private:
@@ -206,7 +206,7 @@ class GameBoard:
 
     def environment_broadcast(self, message, delay):
         #TODO make this right - its just a frontend thing for BANG
-        self.broadcast_public_action_non_player("", message)
+        self.broadcast_public_action_non_player("", message, pop_wrap=True)
         if delay:
             self.game_sink.delay(delay)
 

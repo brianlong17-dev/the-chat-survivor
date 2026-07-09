@@ -82,7 +82,7 @@ class GameEventSink(ABC):
     # -- Speech and thought ---------------------------------------------------
 
     @abstractmethod
-    def on_public_action(self, speaker: Speaker, message: str, color: str = "", animate_as_player: bool = True, should_hold: bool = True, directed_to_name=None, is_reply: bool = False, is_human: bool = False) -> None:
+    def on_public_action(self, speaker: Speaker, message: str, color: str = "", animate_as_player: bool = True, should_hold: bool = True, directed_to_name=None, is_reply: bool = False, is_human: bool = False, pop_wrap: bool = False) -> None:
         """
         A speaker acted publicly — goes into game history, visible to all agents.
         color is a hint for terminal renderers; animate_as_player signals whether the
@@ -228,7 +228,7 @@ class NoopGameSink(GameEventSink):
     def on_phase_round_index(self, index): pass
     def on_round_start(self, round_number, scores): pass
     def on_round_summary(self, summary): pass
-    def on_public_action(self, speaker, message, color="", animate_as_player=True, should_hold=True, directed_to_name=None, is_reply=False, is_human=False): pass
+    def on_public_action(self, speaker, message, color="", animate_as_player=True, should_hold=True, directed_to_name=None, is_reply=False, is_human=False, pop_wrap=False): pass
     def on_private_thought(self, speaker, message): pass
     def on_inner_workings(self, speaker, inner_workings, override=False): pass
     def system_private(self, message, border_bottom=False): pass
@@ -297,7 +297,7 @@ class CapturingGameSink(GameEventSink):
     def on_round_summary(self, summary):
         self.round_summaries.append(summary)
 
-    def on_public_action(self, speaker, message, color="", animate_as_player=True, should_hold=True, directed_to_name=None, is_reply=False, is_human=False):
+    def on_public_action(self, speaker, message, color="", animate_as_player=True, should_hold=True, directed_to_name=None, is_reply=False, is_human=False, pop_wrap=False):
         if directed_to_name:
             message = f"@{directed_to_name} - {message}"
         self.public_actions.append({"speaker": speaker, "message": message, "color": color})

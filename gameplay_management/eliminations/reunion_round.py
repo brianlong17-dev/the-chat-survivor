@@ -24,9 +24,6 @@ class FinaleReunionRound(VoteMechanicsMixin):
     @classmethod
     def is_private_round(cls):
         return False
-    
-    
-    
 
     def _wake_up_player_reunion(self, player):
         if player.is_human():
@@ -91,7 +88,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
         
         self._host_broadcast("Finalists- what is the last thing you would like to say to the players before the vote?")
         for agent in self.finalists:
-            self._reunion_turn(agent, "", "Respond to the host, and the other players. ", is_reply = True)
+            self._reunion_turn(agent, "", "Respond to the host, and the other players. (Quick response - you'll have time for a proper address later). ", is_reply = True)
         self.time_to_vote()
 
     def _reunion_turn(self, agent, turn_prompt, public_response_prompt, optional=False, private_thoughts_prompt = None, is_reply = False):
@@ -114,7 +111,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
 
     def _get_highlights(self, player):
         return self.simulationEngine.game_master.create_host_script(
-            f"Create a short, brief recap of {player.name} highlights, "
+            f"Create a short, brief recap of {player.name} highlights- MAX 3 LINES -, "
             "in the style of a game host recapping quickly some highs and lows "
             "in the finale of a show, before the winner is announced later. "
             "They haven't won yet- they are in the final two. "
@@ -147,18 +144,18 @@ class FinaleReunionRound(VoteMechanicsMixin):
         is_tied = max_score == min_score
 
         if vote_number == 0:
-            line = f"{voter_name}, you're up first. Who will you vote for to WIN the competition?"
+            line = f"*{voter_name}*, you're up first. Who will you vote for to WIN the competition?"
         elif vote_number == total_votes - 1:
             if is_tied:
-                line = f"It all comes down to this. {voter_name}, you hold the deciding vote. The scores are tied at {scores_str}."
+                line = f"It all comes down to this. *{voter_name}*, you hold the deciding vote."
             else:
-                line = f"Last vote of the night. {voter_name}, step up. The current scores: {scores_str}."
+                line = f"Last vote of the night. *{voter_name}*, step up. "
         elif is_tied:
-            line = f"We're all tied up. {voter_name}, you're next. Current scores: {scores_str}."
+            line = f"We're all tied up. *{voter_name}*, you're next "
         elif max_score - min_score >= 2:
-            line = f"Someone's pulling ahead. {voter_name}, it's your turn. Scores: {scores_str}."
+            line = f"Someone's pulling ahead. *{voter_name}*, it's your turn.  "
         else:
-            line = f"{voter_name}, you're up. Current scores: {scores_str}."
+            line = f"*{voter_name}*, you're up. "
 
         self._host_broadcast(line)
 
@@ -169,13 +166,13 @@ class FinaleReunionRound(VoteMechanicsMixin):
         is_tied = len(leaders) > 1
 
         if vote_number == 0:
-            line = f"{voter_name} votes for... {voted_for}. And we're off. {scores_str}."
+            line = f"{voter_name} votes for... {voted_for}. And we're off. *{scores_str}.*"
         elif vote_number == total_votes - 1:
             line = f"{voter_name} casts the final vote for... {voted_for}."
         elif is_tied:
-            line = f"{voter_name} votes for {voted_for}. We're deadlocked! {scores_str}."
+            line = f"{voter_name} votes for {voted_for}. We're deadlocked! *{scores_str}.*"
         else:
-            line = f"{voter_name} votes for... {voted_for}. That puts it at {scores_str}."
+            line = f"{voter_name} votes for... {voted_for}. That puts it at *{scores_str}.*"
 
         self._host_broadcast(line)
 
@@ -186,7 +183,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
             turn_prompt = (
                 f"It is time to cast your vote. "
                 f"Vote for one of the finalists: {self.format_list(finalist_names)}. "
-                f"Who do you vote for, and why? Please include every detail of personal drama you mentioned in your pre-round conversation with the host. "
+                f"Who do you vote for, and why? Please include specific detail of your personal relationship and specific observed moments.  "
             )
 
         action_fields = self.turn_manager._choose_name_field(
@@ -194,7 +191,8 @@ class FinaleReunionRound(VoteMechanicsMixin):
             "Vote for the finalist you believe deserves to win. "
         )
         result = self.turn_manager.take_turn(juror, turn_prompt, model_name="jury_vote", 
-                                             action_fields=action_fields, broadcast=True, is_reply=True)
+                                             action_fields=action_fields, broadcast=False)
+        self.turn_manager._output_response(juror, result, post_message_choice_reveal=self.TARGET_NAME_FIELD, is_reply=True)
         return result
 
     def time_to_vote(self):
@@ -229,7 +227,8 @@ class FinaleReunionRound(VoteMechanicsMixin):
             self.eliminate_player_by_name(loser_name)
 
         winner = self._agent_by_name(winner_name)
-        self._reunion_turn(winner, "You just won the game! Give your victory speech. ", "Your victory speech to the group. ")
+        winner._mask_drop=True
+        self._reunion_turn(winner, "You just won the game! Address the group (You can drop any pretense you may have had- the game is over.) ", "Your victory speech to the group. ")
 
 
     def _get_winner(self, vote_counts):
@@ -268,6 +267,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
                         f" You're the HOST only introducing {player.name}- the finalists have already been introduced. "
                         f" Try to mention a personal detail to {player.name} regarding the finalists if possible. "
                         f" But still - at least feign neutrality. You're still the professional host. "
+                        f" Length: A quick 3-4 liner. "
                         ),
                     additional_context = player.detailed_summaries_string(), 
                     context_explanation =
@@ -315,5 +315,5 @@ class FinaleReunionRound(VoteMechanicsMixin):
                     chosen_agent = self._agent_by_name(chosen_name.strip())
                     if chosen_agent:
                         self._reunion_turn(chosen_agent, "", f"Respond to {player_name}'s question. Directly say anything else you want to say.", is_reply = True)
-                        self._reunion_turn(player, f"{chosen_agent.name} has responded to your question. Do you have anything to say in response to their answer? Do not repeat what you said in your question. ", "Anything else to add?", 
+                        self._reunion_turn(player, f"{chosen_agent.name} has responded to your question. Do you have anything to say in response to their answer? Do not repeat what you said in your question. - Max 2 lines -", "Anything else to add?", 
                                            optional=True, private_thoughts_prompt = "They responded to your question. Did they answer well enough? Do you have anything left to say to them, or to the other voters? You will have another chance to share your mind when you vote. ", is_reply = True)
