@@ -39,7 +39,7 @@ class APIClient:
         
     def _mock_response(self, response_model):
         long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, \n \n sunt in culpa qui officia deserunt mollit anim id est laborum."
-        short_text = "_"
+        short_text = "Lorem ipsum dolor sit amet"
         values = {}
         for name, field_info in response_model.model_fields.items():
             annotation = field_info.annotation
@@ -56,11 +56,11 @@ class APIClient:
             elif annotation is bool:
                 values[name] = random.choice([True, False])
             elif annotation is int:
-                values[name] = 0
+                values[name] = 2
             elif annotation is float:
                 values[name] = 0.0
             else:
-                values[name] = f"{long_text}  [{name}]"
+                values[name] = f"{short_text}  [{name}]"
         return response_model(**values)
 
     def _make_call(self, messages, api_model, response_model, thinking=False):
