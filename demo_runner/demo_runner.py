@@ -5,6 +5,7 @@ from demo_runner.game_setup import load_fixture, apply_agent_state, add_human
 from core.bootstrap import create_engine
 from core.levels.phase_description import PhaseDescription
 from tests.helpers.testing_game_design import TestingGameDesign
+from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
 
 def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_name: str = None):
     fixture = FIXTURE_MAP.get(fixture_id)
@@ -15,19 +16,35 @@ def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_n
     if not module:
         raise ValueError(f"Unknown module: {module_id}")
     
-    phase_desc = PhaseDescription(rounds=[module.module_class], should_summarise_phase=False)
+    if module.module_class == None:
+        phase_desc = _get_test_phase_description(module)
+
+    else:
+        phase_desc = PhaseDescription(rounds=[module.module_class], should_summarise_phase=False)
 
     game_design = TestingGameDesign([phase_desc])
 
     engine, agent_data, scores, elimination_order = _set_up_fixture(fixture_id, game_design, sink, api_client)
     _initialise_agents(engine, agent_data, scores, elimination_order, human_name=human_name)
     
+    if module.module_class == None:
+        _set_up_cfg(engine)
+    
     if module.game:
         engine.phase_runner.run_phase(phase_desc)
     else:
         engine.run_phase_loop()
 
+def _get_test_phase_description(module):
+    return PhaseDescription(rounds=[GamePrisonersDilemma], should_summarise_phase=False)
 
+def _set_up_cfg(engine):
+    cfg = engine.gameplay_config
+    cfg.set_pd_pairing_all()
+    
+    num_players = 3
+    while len(engine.agents) > num_players:
+        engine.eliminate_player(engine.agents[0])
 
 def _set_up_fixture(fixture_id: str, game_design, sink, api_client):
     fixture_data = load_fixture(f"{fixture_id}.json")

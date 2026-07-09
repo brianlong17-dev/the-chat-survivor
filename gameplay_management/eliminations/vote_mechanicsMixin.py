@@ -82,8 +82,9 @@ class VoteMechanicsMixin(BaseRound):
                                             self.vote_one_player_off)
 
         for agent, vote_response in zip(self.simulationEngine.agents, voting_results):
-            self._handle_vote_response(votes, agent, vote_response)
-            
+            vote = self._handle_vote_response(agent, vote_response)
+            votes.append(vote)
+
         return votes, voting_results
    
     def process_vote_rounds(self, players_up_for_elimination: Sequence[str], revote_count: int = 0, initial_votes = None):

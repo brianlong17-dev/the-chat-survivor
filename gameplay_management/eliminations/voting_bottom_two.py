@@ -152,7 +152,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
         also = ""
         if self_voted:
             self.elimination_context += "You voted to remove yourself (brave!). \n"
-            also = "also "
+            also = "accepted your sacrifice. They also bravely "
             
         
         if voted_against:
@@ -219,7 +219,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
                                                    "Who do you choose to eliminate from the competition? ",
                                                    turn_prompt,
                                                    public_response_prompt, additional_thought_nudge)
-        return self._handle_vote_response([], leader, response)
+        return self._handle_vote_response(leader, response)
     
     def _reminder(self, candidates):
         #SCAF

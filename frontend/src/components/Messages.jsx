@@ -330,12 +330,15 @@ function PopWrap({ children, onComplete }) {
       confettiContainer.appendChild(piece)
     }
 
+    let fired = false
+    const fire = () => { if (!fired) { fired = true; onCompleteRef.current?.() } }
+
     const cleanup = setTimeout(() => {
       if (confettiContainer) confettiContainer.innerHTML = ''
-      onCompleteRef.current?.()
+      fire()
     }, 1600)
 
-    return () => clearTimeout(cleanup)
+    return () => { clearTimeout(cleanup); fire() }
   }, [])
 
   return (
