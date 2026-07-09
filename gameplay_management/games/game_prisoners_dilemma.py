@@ -99,19 +99,31 @@ class GamePrisonersDilemma(GameMechanicsMixin):
                 self._award_leftover(available[0])
                 
                 
-    
-    def _widget_update_entry(self, name, state=None, choice=None, points=None):
+    def _get_widget_entry(self, active_name, partner_name=None):
         for pair in self._widget_pairs:
-            for entry in pair:
-                if entry["name"] == name:
-                    if state:
-                        entry["state"] = state
-                    if choice:
-                        entry["choice"] = choice
-                    if points is not None:
-                        entry["points"] = points
-                    self._emit_widget()
-                    return
+            names = {e["name"] for e in pair}
+            if active_name not in names:
+                continue
+            if partner_name and partner_name not in names:
+                continue
+            return next(e for e in pair if e["name"] == active_name)
+        return None
+            
+    def _widget_update_entry(self, active_name, partner_name=None, state=None, choice=None, points=None):
+        
+        entry = self._get_widget_entry(active_name, partner_name) 
+        if entry is None:
+            #should we crash? probably not for a widget 
+            return
+
+        if state:
+            entry["state"] = state
+        if choice:
+            entry["choice"] = choice
+        if points is not None:
+            entry["points"] = points
+        self._emit_widget()
+        return
 
     def _widget_pair_entry_initial(self, pair):
         couple = []
@@ -160,7 +172,7 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         additional_thought_nudge="What points are available? How will the next elimination work? Do you need points or alliance?"
         public_response_prompt = "A one liner, for AFTER your result has been revealed. (Not neccessary to re-state your choice as it will already be revealed.)."
         result = self.get_split_or_steal(player, turn_prompt, public_response_prompt, additional_thought_nudge)
-        self._widget_update_entry(player.name, state="picked")
+        self._widget_update_entry(player.name, opponent.name, state="picked")
         return result
 
     def get_split_or_steal(self, player, turn_prompt, public_response_prompt, additional_thought_nudge = None):
@@ -195,19 +207,14 @@ class GamePrisonersDilemma(GameMechanicsMixin):
             results = [future0.result(), future1.result()]
 
         choices = []
-        for agent, res in zip((agent0, agent1), results):
+        for agent, opponent, res in ((agent0, agent1, results[0]), (agent1, agent0, results[1])):
             self.turn_manager._output_response(agent, res, pre_message_choice_reveal="action", is_reply=True)
-            self._widget_update_entry(agent.name, state="revealed", choice=res.action)
+            self._widget_update_entry(agent.name, opponent.name, state="revealed", choice=res.action)
             choices.append(res.action)
 
         result_host_message = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
         self._host_broadcast(f"{result_host_message}\n")
-
-        p0_gain, p1_gain, _ = self._calculate_pd_payout(choices[0], choices[1], agent0.name, agent1.name)
-        for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
-            if gain > 0:
-                self._widget_update_entry(agent.name, points=gain)
-
+        
         if self.cfg.pd_get_reactions and (self.cfg.pd_pairing_method != self.cfg.pd_pairing_choice_all):
             if (choices[0] == 'steal' and choices[1] == 'steal'):
                 reactions = self._run_tasks([(agent0, result_host_message), (agent1, result_host_message)],
@@ -233,9 +240,9 @@ class GamePrisonersDilemma(GameMechanicsMixin):
     def _process_results_and_points(self, choice0, choice1, agent0, agent1):
         p0_gain, p1_gain, msg = self._calculate_pd_payout(choice0, choice1, agent0.name, agent1.name)
 
-        for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
+        for agent, opponent, gain in ((agent0, agent1, p0_gain), (agent1, agent0, p1_gain)):
             self.game_board.append_agent_points(agent.name, gain)
-            self._widget_update_entry(agent.name, points=gain)
+            self._widget_update_entry(agent.name, opponent.name, points=gain)
             
         result_host_message = f"{msg}{agent0.name} receives {p0_gain}, and {agent1.name} receives {p1_gain} points."
         return result_host_message

@@ -102,8 +102,11 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         additional_thought_nudge = "The end of your journey, what do you want your decision to be?"
         
         public_response_prompt = f"What do you say as you reveal your choice? From your own logic and feelings, express why you chose this. {mask_slip}"
-        return self.get_split_or_steal(player, turn_prompt, public_response_prompt= public_response_prompt, additional_thought_nudge=additional_thought_nudge)
         
+        result = self.get_split_or_steal(player, turn_prompt, public_response_prompt= public_response_prompt, additional_thought_nudge=additional_thought_nudge)
+        self._widget_update_entry(player.name, state="picked")
+        return result
+    
     def finale_tie_split_or_steal(self, player):
         opponent = self._other_agents(player, self.agents)[0]
         turn_prompt = (
@@ -115,7 +118,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         additional_thought_nudge = "What has your journey with this person been like? Do you trust them? Is shared glory enough, or do you want it all for yourself?"
         public_response_prompt = f"What do you say as you reveal your choice? Your final words to the audience and your opponent. {self.sfx}"
         response = self.get_split_or_steal(player, turn_prompt, public_response_prompt, additional_thought_nudge)
-        #TODO push locked
+        self._widget_update_entry(player.name, state="picked")
         return response
     
     
@@ -124,33 +127,26 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     #####################
     
     
-    def _process_choices(self, agent0, agent1, results, is_Tie):
+    def _process_choices(self, agent0, agent1, results):
         choices = []
         for agent, res in zip((agent0, agent1), results):
             choice = res.action
             self.turn_manager._output_response(agent, res, pre_message_choice_reveal="action", is_reply=True)
             self._widget_update_entry(agent.name, state="revealed", choice=choice)
             choices.append(choice)
-        
-        if not is_Tie:
-            p0_gain, p1_gain, _ = self._calculate_pd_payout(choices[0], choices[1], agent0.name, agent1.name)
-            for agent, gain in zip((agent0, agent1), (p0_gain, p1_gain)):
-                if gain > 0:
-                    self._widget_update_entry(agent.name, points=gain)
-        else:
-            #TODO i would actually like to push gold color here
-            pass
-        
-        
+
         return choices
    
     def _process_tie_results(self, choice0, choice1, agent0, agent1):
         if choice0 == 'split' and choice1 == 'split':
             self._double_win()
+            #TODO push double gold
         elif choice0 == 'steal' and choice1 == 'steal':
             self._double_loss()
+            #do nothing?
         else:
             winner, loser = (agent0, agent1) if choice0 == 'steal' else (agent1, agent0)
+            #TODO push single red
             self._one_winner_from_tie(winner, loser)
             
     def _double_win(self):
@@ -276,18 +272,9 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
                 player._mask_drop=True
         self._host_broadcast(f"Ok let's go- a nation holds its breath- {self.format_list(self._names(self.agents))} ... please reveal your choice.")
         results = self._run_tasks([(agent, tie_possible) for agent in self.agents], self.finale_reg_split_or_steal)
-        #results = [self.finale_reg_split_or_steal(agent, tie_possible) for agent in self.agents]
-        for agent in self.agents:
-            self._widget_update_entry(agent.name, state="picked")
-        
-        
 
-        choices = self._process_choices(agent0, agent1, results, is_Tie=False)
+        choices = self._process_choices(agent0, agent1, results)
         result_msg = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
-        
-        
-
-       
 
         if self._is_tie(agent0, agent1):
             commentary = f"This means {follower.name} has lept into a tie for first place! "
@@ -320,7 +307,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self._host_broadcast(f"Ok let's go- a nation holds its breath- {self.format_list(self._names(self.agents))} ... please reveal your choice.")
         results = self._run_tasks([(agent,) for agent in self.agents], self.finale_tie_split_or_steal)
         #results = [self.finale_tie_split_or_steal(agent) for agent in self.agents]
-        choices = self._process_choices(agent0, agent1, results, is_Tie=True)
+        choices = self._process_choices(agent0, agent1, results)
         _, _, msg = self._calculate_pd_payout(choices[0], choices[1], agent0.name, agent1.name)
         
         self._host_broadcast(msg)
