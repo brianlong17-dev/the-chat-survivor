@@ -16,5 +16,5 @@ class GameDesignComedyRoast(GameDesign):
         return True #for audience vote
     
     @classmethod
-    def get_phase_description(cls, phase_number, agent_number, cfg, **kwargs):
+    def get_phase_description(cls, phase_number, agent_number, cfg):
         raise NotImplementedError("GameDesignComedyRoast phases not yet implemented")

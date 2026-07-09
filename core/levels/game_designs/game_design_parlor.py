@@ -16,7 +16,7 @@ class GameDesignParlor(GameDesign):
         return True #for reunion
     
     @classmethod
-    def get_phase_description(cls, phase_number, agent_number, cfg, **kwargs):
+    def get_phase_description(cls, phase_number, agent_number, cfg):
         raise NotImplementedError("GameDesignParlor phases not yet implemented")
     
     

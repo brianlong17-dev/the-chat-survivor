@@ -15,7 +15,7 @@ class GameDesignBeginner8(GameDesignBeginner):
         return 8
 
     @classmethod
-    def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):
+    def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig):
         if agent_number == 8:
             rounds = [IntroRound, DiscussionRoundDirectedShort, GameGuess, VoteElectLeader]
             cfg.set_directed_discussion_group_allowed(True)
@@ -65,4 +65,4 @@ class GameDesignBeginner8(GameDesignBeginner):
             )
             return PhaseDescription(rounds=rounds)
 
-        return super().get_phase_description(phase_number, agent_number, cfg, voting, incl_games, speed)
+        return super().get_phase_description(phase_number, agent_number, cfg)

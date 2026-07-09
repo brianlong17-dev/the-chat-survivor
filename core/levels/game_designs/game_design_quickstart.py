@@ -28,7 +28,7 @@ class GameDesignQuickStart(GameDesign):
     
 
     @classmethod
-    def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):
+    def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig):
         if agent_number == 2:
             cfg.set_discussion_settings(DiscussionRoundSettings(loops=[
                 DiscussionLoop(

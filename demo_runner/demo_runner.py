@@ -14,13 +14,18 @@ def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_n
     module = MODULE_MAP.get(module_id)
     if not module:
         raise ValueError(f"Unknown module: {module_id}")
+    
+    phase_desc = PhaseDescription(rounds=[module.module_class], should_summarise_phase=False)
 
-    game_design = TestingGameDesign([PhaseDescription(rounds=[module.module_class], should_summarise_phase=False)])
+    game_design = TestingGameDesign([phase_desc])
 
     engine, agent_data, scores, elimination_order = _set_up_fixture(fixture_id, game_design, sink, api_client)
     _initialise_agents(engine, agent_data, scores, elimination_order, human_name=human_name)
-
-    engine.run_phase_loop()
+    
+    if module.game:
+        engine.phase_runner.run_phase(phase_desc)
+    else:
+        engine.run_phase_loop()
 
 
 

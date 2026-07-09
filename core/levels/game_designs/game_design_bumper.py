@@ -12,7 +12,7 @@ class GameDesignBumper(GameDesignBeginner8):
         return 11
 
     @classmethod
-    def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig, voting=None, incl_games=True, speed=1):
+    def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig):
         if agent_number == 11:
             rounds = [IntroRound, DiscussionRoundDirected, GameGuess, VoteElectLeader]
             cfg.set_directed_discussion_group_allowed(True)
@@ -63,4 +63,4 @@ class GameDesignBumper(GameDesignBeginner8):
             )
             return PhaseDescription(rounds=rounds)
 
-        return super().get_phase_description(phase_number, agent_number, cfg, voting, incl_games, speed)
+        return super().get_phase_description(phase_number, agent_number, cfg)
