@@ -7,6 +7,7 @@ from gameplay_management.games.game_pd_finale import GamePrisonersDilemmaFinale
 from gameplay_management.game_cycle.game_knives import GameKnives
 from gameplay_management.game_cycle.game_circle import GameCircle
 from gameplay_management.game_cycle.game_mob import GameMob
+from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
 
 
 @dataclass
@@ -53,6 +54,13 @@ MODULES = [
         title="Mob",
         module_class=GameMob,
         description="Players form mobs behind a leader and pile onto a target.",
+        game=True,
+    ),
+    ModuleEntry(
+        id="bottom_two",
+        title="Bottom Two Vote",
+        module_class=VoteBottomTwo,
+        description="The two lowest-scoring players face the vote — the group decides who goes home.",
         game=True,
     ),
 ]

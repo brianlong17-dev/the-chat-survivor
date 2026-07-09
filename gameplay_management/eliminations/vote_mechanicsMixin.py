@@ -65,9 +65,8 @@ class VoteMechanicsMixin(BaseRound):
         action_fields = self.turn_manager._choose_name_field(eligible_players_names, name_field_prompt)
         return self.turn_manager.take_turn(player, turn_prompt, model_name="vote_out_player", action_fields=action_fields, action_post_response=True)
     
-    def _handle_vote_response(self, votes, agent, vote_response):
+    def _handle_vote_response(self, agent, vote_response):
         actual_vote = self.turn_manager._get_target_name_from_response(vote_response)
-        votes.append(actual_vote)
         self.turn_manager._output_response(agent, vote_response, is_reply=True, pre_message_choice_reveal=self.TARGET_NAME_FIELD)
         self._update_voting_widget(agent.name, actual_vote or "—")
         return actual_vote #used in leader_chooses

@@ -94,7 +94,7 @@ FIXTURES = [
     ),
     FixtureEntry(
         name="midgame_beth_jo_6p",
-        title="March sisters mid-game",
+        title="Little Women vs Star Wars",
         cast=["Beth March", "Jo March", "Meg March", "Han Solo", "Princess Leia", "Yoda", "Anakin Skywalker", "Amy March"],
         alive=["Beth March", "Jo March", "Meg March", "Han Solo", "Princess Leia", "Yoda"],
         game_desc="Three March sisters against a Star Wars bloc — blood loyalty versus a voting majority.",
