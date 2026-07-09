@@ -3,11 +3,9 @@ import MobileNav from '../components/MobileNav'
 import CollapsibleSection from '../components/CollapsibleSection'
 import RunthroughsSection from '../components/RunthroughsSection'
 
-function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel, levelLabel }) {
+function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel, levelLabel, selectedId, setSelectedId, finaleType, setFinaleType }) {
   const [fixtures, setFixtures] = useState([])
   const [modules, setModules] = useState([])
-  const [selectedId, setSelectedId] = useState(null)
-  const [finaleType, setFinaleType] = useState(null)
   const [mode, setMode] = useState('watch')
   const [humanName, setHumanName] = useState('')
   const [turnstileToken, setTurnstileToken] = useState(null)
@@ -19,14 +17,14 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
       .then(data => {
         const matched = data.fixtures.filter(f => !!f.finale === finale)
         setFixtures(matched)
-        if (matched.length > 0) setSelectedId(matched[0].id)
+        if (matched.length > 0 && selectedId === null) setSelectedId(matched[0].id)
       })
     fetch('/api/modules')
       .then(r => r.json())
       .then(data => {
         const matched = data.modules.filter(m => !!m.finale === finale)
         setModules(matched)
-        if (matched.length > 0) setFinaleType(matched[0].id)
+        if (matched.length > 0 && finaleType === null) setFinaleType(matched[0].id)
       })
   }, [finale])
 
@@ -153,7 +151,11 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
 
 export default function DemosPage({ onStart }) {
   const [turnstileEnabled, setTurnstileEnabled] = useState(null)
-  const [openSection, setOpenSection] = useState('finales')
+  const [openSection, setOpenSection] = useState(null)
+  const [finaleFixture, setFinaleFixture] = useState(() => localStorage.getItem('demo_finaleFixture') || null)
+  const [finaleModule, setFinaleModule] = useState(() => localStorage.getItem('demo_finaleModule') || null)
+  const [gameFixture, setGameFixture] = useState(() => localStorage.getItem('demo_gameFixture') || null)
+  const [gameModule, setGameModule] = useState(() => localStorage.getItem('demo_gameModule') || null)
 
   useEffect(() => {
     fetch('/api/flags')
@@ -162,6 +164,11 @@ export default function DemosPage({ onStart }) {
   }, [])
 
   const toggleSection = (key) => setOpenSection(prev => (prev === key ? null : key))
+
+  const setFinaleFixturePersist = (v) => { setFinaleFixture(v); localStorage.setItem('demo_finaleFixture', v) }
+  const setFinaleModulePersist = (v) => { setFinaleModule(v); localStorage.setItem('demo_finaleModule', v) }
+  const setGameFixturePersist = (v) => { setGameFixture(v); localStorage.setItem('demo_gameFixture', v) }
+  const setGameModulePersist = (v) => { setGameModule(v); localStorage.setItem('demo_gameModule', v) }
 
   return (
     <div className="demos-page">
@@ -176,6 +183,10 @@ export default function DemosPage({ onStart }) {
           finale={true}
           fixtureLabel="Fixtures"
           levelLabel="Finale Level"
+          selectedId={finaleFixture}
+          setSelectedId={setFinaleFixturePersist}
+          finaleType={finaleModule}
+          setFinaleType={setFinaleModulePersist}
         />
       </CollapsibleSection>
 
@@ -186,6 +197,10 @@ export default function DemosPage({ onStart }) {
           finale={false}
           fixtureLabel="Fixtures"
           levelLabel="Game Level"
+          selectedId={gameFixture}
+          setSelectedId={setGameFixturePersist}
+          finaleType={gameModule}
+          setFinaleType={setGameModulePersist}
         />
       </CollapsibleSection>
 

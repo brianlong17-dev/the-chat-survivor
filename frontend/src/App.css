@@ -460,18 +460,60 @@
   color: var(--sys-color) !important;
 }
 
+@keyframes env-pop {
+  0%   { transform: scale(0.4); opacity: 0; animation-timing-function: cubic-bezier(.2,1.6,.4,1); }
+  7%   { transform: scale(3.4) rotate(-3deg); opacity: 1; animation-timing-function: ease; }
+  16%  { transform: scale(2.9) rotate(2deg); animation-timing-function: ease; }
+  26%  { transform: scale(3.1) rotate(-1deg); animation-timing-function: ease; }
+  38%  { transform: scale(3) rotate(0.4deg); animation-timing-function: ease; }
+  50%  { transform: scale(3) rotate(0deg); animation-timing-function: cubic-bezier(.55,0,.2,1); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
 .env-pop {
   display: inline-block;
   position: relative;
   z-index: 50;
-  transform-origin: left center;
-  animation: env-pop 0.9s ease-in-out both;
+  transform-origin: center center;
 }
 
-@keyframes env-pop {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(3); }
-  100% { transform: scale(1); }
+.env-pop.env-pop-playing {
+  animation: env-pop 0.7s linear both;
+}
+
+@keyframes env-pop-flash {
+  0%   { opacity: 0; }
+  8%   { opacity: 1; }
+  40%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.env-pop-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, #fff 0%, rgba(255,255,255,0) 60%);
+  pointer-events: none;
+  z-index: 40;
+  opacity: 0;
+}
+
+.env-pop-flash.env-pop-flash-playing {
+  animation: env-pop-flash 0.55s ease-out both;
+}
+
+@keyframes env-pop-confetti-burst {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) rotate(var(--tr)); opacity: 0; }
+}
+
+.env-pop-confetti {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: #e03030;
+  pointer-events: none;
+  animation: env-pop-confetti-burst 1.5s cubic-bezier(.15,.6,.3,1) both;
+  animation-delay: var(--delay);
 }
 
 .system-speaker { color: var(--sys-color); }

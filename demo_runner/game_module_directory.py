@@ -8,6 +8,7 @@ from gameplay_management.game_cycle.game_knives import GameKnives
 from gameplay_management.game_cycle.game_circle import GameCircle
 from gameplay_management.game_cycle.game_mob import GameMob
 from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
+from gameplay_management.games.game_rps import GameRockPaperScissors
 
 
 @dataclass
@@ -63,7 +64,15 @@ MODULES = [
         description="The two lowest-scoring players face the vote — the group decides who goes home.",
         game=True,
     ),
+    ModuleEntry(
+        id="rps",
+        title="Rock Paper Scissors",
+        module_class=GameRockPaperScissors,
+        description="A really basic demo of a 1v1 game. ",
+        game=True,
+    ),
 ]
+
 
 MODULE_MAP = {m.id: m for m in MODULES}
 

@@ -204,11 +204,9 @@ class GameBoard:
     def delay(self, delay: float = 0.0):
         self.game_sink.delay(delay)
 
-    def environment_broadcast(self, message, delay):
-        #TODO make this right - its just a frontend thing for BANG
+    def environment_broadcast(self, message, sender_name = ""):
         self.broadcast_public_action_non_player("", message, pop_wrap=True)
-        if delay:
-            self.game_sink.delay(delay)
+        self.game_sink.delay(2)
 
     # ---------------Agent state / Scores --------------------#
 

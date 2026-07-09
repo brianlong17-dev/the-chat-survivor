@@ -280,6 +280,73 @@ function MessageLink({ messageId, runthroughId }) {
   )
 }
 
+function PopWrap({ children, onComplete }) {
+  const popRef = useRef(null)
+  const flashRef = useRef(null)
+  const confettiRef = useRef(null)
+  const animatingRef = useRef(false)
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
+
+  useEffect(() => {
+    if (animatingRef.current) return
+    animatingRef.current = true
+
+    const pop = popRef.current
+    const flash = flashRef.current
+    const confettiContainer = confettiRef.current
+    if (!pop || !flash || !confettiContainer) return
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) { onCompleteRef.current?.(); return }
+
+    pop.classList.add('env-pop-playing')
+    flash.classList.add('env-pop-flash-playing')
+
+    const n = 26
+    for (let i = 0; i < n; i++) {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI
+      const dist = 60 + Math.random() * 110
+      const tx = Math.cos(angle) * dist
+      const ty = Math.sin(angle) * dist
+      const tr = (Math.random() - 0.5) * 720
+      const size = 4 + Math.random() * 5
+      const isRound = Math.random() > 0.5
+      const delay = Math.random() * 0.08
+
+      const piece = document.createElement('div')
+      piece.className = 'env-pop-confetti'
+      piece.style.cssText = [
+        `width:${size}px`,
+        `height:${size * (isRound ? 1 : 0.5)}px`,
+        `border-radius:${isRound ? '50%' : '1px'}`,
+        `margin-left:${-size / 2}px`,
+        `margin-top:${-size / 2}px`,
+        `--tx:${tx}px`,
+        `--ty:${ty}px`,
+        `--tr:${tr}deg`,
+        `--delay:${delay}s`,
+      ].join(';')
+      confettiContainer.appendChild(piece)
+    }
+
+    const cleanup = setTimeout(() => {
+      if (confettiContainer) confettiContainer.innerHTML = ''
+      onCompleteRef.current?.()
+    }, 1600)
+
+    return () => clearTimeout(cleanup)
+  }, [])
+
+  return (
+    <span style={{ position: 'relative', display: 'inline-block' }}>
+      <span ref={flashRef} className="env-pop-flash" />
+      <span ref={popRef} className="env-pop">{children}</span>
+      <span ref={confettiRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
+    </span>
+  )
+}
+
 function PublicAction({ speaker, message, color, animate_as_player, onComplete, skipRef, animateText, message_id, runthroughId, pop_wrap }) {
   const isHost = speaker === 'HOST'
   const isSystem = speaker === 'SYSTEM'   // shouldn't happen (backend asserts), render harmlessly
@@ -288,10 +355,11 @@ function PublicAction({ speaker, message, color, animate_as_player, onComplete, 
     ? <span className="speaker system-speaker">{speaker}</span>
     : <span className="speaker" style={{ color }}>{speaker}</span>
 
-  const body = () => {
+  const body = (suppressComplete) => {
     if (isSystem) return <span className="message-text">{renderBold(message)}</span>
-    if (animate_as_player) return <WordByWord text={message} onComplete={onComplete} skipRef={skipRef} animateText={animateText} />
-    if (isHost)   return <HostStagger text={message} onComplete={onComplete} skipRef={skipRef} animateText={animateText} />
+    const complete = suppressComplete ? undefined : onComplete
+    if (animate_as_player) return <WordByWord text={message} onComplete={complete} skipRef={skipRef} animateText={animateText} />
+    if (isHost)   return <HostStagger text={message} onComplete={complete} skipRef={skipRef} animateText={animateText} />
     return <span className="message-text">{renderBold(message)}</span>
   }
 
@@ -300,7 +368,7 @@ function PublicAction({ speaker, message, color, animate_as_player, onComplete, 
   return (
     <div className={`msg public-action ${(isHost || isSystem) ? 'system' : ''}`} {...anchorProps}>
       {label}
-      {pop_wrap ? <span className="env-pop">{body()}</span> : body()}
+      {pop_wrap ? <PopWrap onComplete={onComplete}>{body(true)}</PopWrap> : body()}
       {message_id && runthroughId && <MessageLink messageId={message_id} runthroughId={runthroughId} />}
     </div>
   )
