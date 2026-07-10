@@ -5,7 +5,7 @@ from prompts.prompts import PromptLibrary
 import warnings
 if TYPE_CHECKING:
     from agents.human_player import Human
-    from agents.player import Debater
+    from agents.abstract_agentic_player import AbstractAgenticPlayer
     
 
 default_public_response_prompt="Say what you want- Your thoughts and feelings should come through. (Don't repeat other messages. Say little if you have nothing new to say.)"
@@ -13,7 +13,7 @@ default_public_response_prompt="Say what you want- Your thoughts and feelings sh
 default_private_thought_prompt="Your internal thoughts. Think in voice. Strategy, feelings, and private observations. "
 
     
-class DynamicModelFactory:  
+class AgentResponseModelFactory:  
     
     @classmethod 
     def create_human_model(cls, public_response_prompt, action_fields):
@@ -29,7 +29,7 @@ class DynamicModelFactory:
     @classmethod
     def create_model_(
         cls, 
-        agent: 'Debater', 
+        agent: 'AbstractAgenticPlayer', 
         game_board,
         model_name: str = "DynamicTurnModel",
         public_response_prompt: str = None, 
@@ -95,7 +95,8 @@ class DynamicModelFactory:
             ordered_fields.update(agent_evolution_fields)
             
             
-        ordered_fields = cls._add_character_fields(ordered_fields, game_board, agent)
+        if agent.uses_character_dictionary():
+            ordered_fields = cls._add_character_fields(ordered_fields, game_board, agent)
         return create_model(model_name, **ordered_fields)
 
 

@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, Optional
 from pydantic import Field, create_model
-from agents.player_models import DynamicModelFactory
+from agents.player_response_models import AgentResponseModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 
 if TYPE_CHECKING:
-    from agents.player import Debater
+    from agents.abstract_agentic_player import AbstractAgenticPlayer
     from gameplay_management.base_manager import BaseRound
 
 
@@ -153,7 +153,7 @@ class TurnManager:
             multi_answer_model=False,
             speech=False
         ):
-        model = DynamicModelFactory.create_model_(
+        model = AgentResponseModelFactory.create_model_(
             player,
             game_board=self.game_board,
             model_name=model_name,
@@ -168,7 +168,7 @@ class TurnManager:
             speech=speech)
         return model
                       
-    def respond_to(self, player: Debater, turn_prompt: str, public_response_prompt: str = None,
+    def respond_to(self, player: AbstractAgenticPlayer, turn_prompt: str, public_response_prompt: str = None,
                    private_thoughts_prompt: str = None, additional_thought_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False,
                    prefix_respond_to: bool = True): #TODO prefix_respond_to - rename to incl prompt 
         #TODO 2-  shuld broadcast not default to true?

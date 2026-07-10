@@ -9,12 +9,12 @@ if TYPE_CHECKING:
     from core.levels.game_designs.game_design import GameDesign
     from agents.game_host import GameMaster
     from core.gameboard import GameBoard
-    from agents.player import Debater
+    from agents.abstract_agentic_player import AbstractAgenticPlayer
     
  
     
 class SimulationEngine:
-    def __init__(self, agents: list[Debater], game_board: GameBoard, game_master: GameMaster, generator: CharacterGenerator,
+    def __init__(self, agents: list[AbstractAgenticPlayer], game_board: GameBoard, game_master: GameMaster, generator: CharacterGenerator,
                  game_design: GameDesign, api_client):
 
         self.game_master = game_master

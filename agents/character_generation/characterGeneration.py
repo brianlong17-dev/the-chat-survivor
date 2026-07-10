@@ -4,7 +4,7 @@ from functools import partial
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from agents.character_generation.character_lister import CharacterLister
-from agents.player import Debater
+from agents.agentic_player import AgenticPlayer
 
 class CharacterProfile(BaseModel):
     who: str = Field(description="If it's a name - what is the source of this person in popular culture or history?")
@@ -24,85 +24,21 @@ class CharacterProfile(BaseModel):
 ))
 class CharacterGenerator:
 
-    def __init__(self, game_sink, api_client):
+    def __init__(self, game_sink, api_client, agentic_player_classes=None):
         self.api_client = api_client
         self.game_sink = game_sink
         self.character_lister = CharacterLister()
         self.characters = self.character_lister.goats
         self.templates = self.character_lister.templates
+        self.agentic_player_classes=agentic_player_classes or [AgenticPlayer]
 
-    def genericPlayers(self, number_of_players):
-        
-        debaters = []
-        for i in range(number_of_players):
-            name, personality, speaking_style = self.templates[i % len(self.templates)]
-            debaters.append(
-                Debater(
-                    name,
-                    personality,
-                    api_client=self.api_client,
-                    speaking_style=speaking_style,
-                )
-            )
-            
-        return debaters
-    
+
     def generate_agents_from_names(self, names, allow_rename = True):
-        fn = partial(self.generate_debater, allow_rename=allow_rename)
+        fn = partial(self.generate_agent, allow_rename=allow_rename)
         with ThreadPoolExecutor(max_workers=min(32, len(names))) as executor:
             return list(executor.map(fn, names))
-        
-    def generate_balanced_cast(self, count) -> 'Debater':
-        cast = self.generate_balanced_cast_names(count)
-        return self.generate_agents_from_names(cast)
-        
-        
-        
-    def generate_balanced_cast_names(self, count) -> str:
-        cast = []
-        # Shuffle the pools so we don't always start with a 'Regular'
-        pools = list(self.character_lister.pools)
-        for_sure = list(self.character_lister.for_sure)
-        random.shuffle(pools)
-        
-        for i in range(count):
-            if for_sure:
-                current_pool = for_sure
-            else:
-                # Use modulo to loop back to the first pool if count > 5
-                current_pool = pools[i % len(pools)]
-            
-            if current_pool:
-                # Pick, remove, and add to cast
-                name = random.choice(current_pool)
-                current_pool.remove(name)
-                if not (name in cast):
-                    cast.append(name)
-               
-        if not cast:
-            return []
-        return cast
-    
-        
-    def generate_random_debaters(self, count) -> 'Debater':
-        cast = self.generate_random_debaters_names(count)
-        return self.generate_agents_from_names(cast)
-        
-        
-    def generate_random_debaters_names(self, count) -> str:
-        cast = self.character_lister.for_sure
-        while len(cast) < count:
-            character_name = random.choice(self.characters)
-            if character_name not in cast:
-                cast.append(character_name)
-                self.characters.remove(character_name) 
-        for character_name in cast:
-            self.game_sink.system_private(f"Selected: {character_name}...")
-        if not cast:
-            return []
-        return cast
 
-    def generate_debater(self, character_name: str, allow_rename = True) -> 'Debater':
+    def generate_agent(self, character_name: str, allow_rename = True) -> 'AgenticPlayer':
         if self.api_client._mock_output:
             allow_rename = False
         profile = self.api_client.create(
@@ -117,7 +53,8 @@ class CharacterGenerator:
         #print("Who: " + profile.who)
         #print("character_type: " + profile.character_type)
         #print("AD: " + profile.additional_depth)
-        return Debater(
+        agent_class=random.choice(self.agentic_player_classes)
+        return agent_class(
             name=final_name,
             initial_persona=f"{profile.persona}\n{profile.additional_depth}",
             api_client=self.api_client,

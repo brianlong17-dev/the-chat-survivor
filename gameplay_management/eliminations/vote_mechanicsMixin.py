@@ -47,7 +47,7 @@ class VoteMechanicsMixin(BaseRound):
         return f"{immunity_string}\n"
             
 
-    def _players_up_for_elimination(self, immunity_players: Optional[Sequence[str]]) -> List['Debater']:
+    def _players_up_for_elimination(self, immunity_players: Optional[Sequence[str]]) -> List['AbstractAgenticPlayer']:
         immunity_players = immunity_players or []
         return  [a for a in self.simulationEngine.agents if a.name not in immunity_players]
         

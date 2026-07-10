@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from agents.player import Debater
+from agents.agentic_player import AgenticPlayer
 from core.game_config import GameConfig
 from core.gameboard import GameBoard
 from core.phase_runner import PhaseRunner
@@ -90,7 +90,7 @@ def attach_test_runtime(board, simulation, game_manager, game_master=None):
 
 
 def make_debater(name, api_client):
-    return Debater(
+    return AgenticPlayer(
         name=name,
         initial_persona=f"{name} persona",
         speaking_style="normal",

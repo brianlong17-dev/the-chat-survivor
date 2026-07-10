@@ -54,7 +54,7 @@ def _slice(text: str, start_marker: str, end_markers: list) -> str:
 
 
 def parse_system_prompt(system_prompt: str) -> dict:
-    """Extract agent state from a rendered system prompt (see core/game_context/system_content.py)."""
+    """Extract agent state from a rendered system prompt (see agents/system_prompt.py)."""
     initial_persona = _slice(system_prompt, "Core Persona: ", ["\nAdditional Persona Coloring:", "\nUnique persona detail:", "\n\nCore Speaking Style:"])
     additional_persona_coloring = _slice(system_prompt, "\nAdditional Persona Coloring: ", ["\nUnique persona detail:", "\n\nCore Speaking Style:"])
     persona_unique_detail = _slice(system_prompt, "\nUnique persona detail: ", ["\n\nCore Speaking Style:"])
@@ -138,7 +138,7 @@ def reconstruct_agent(lines: list) -> dict:
     lines = sorted(lines, key=lambda l: l["timestamp"])
     # Walk lines in reverse, per-field: first non-empty wins.
     # Eliminated agents lose the strategy/assessment section in their later prompts
-    # (core/game_context/system_content.py:37), so we need to look further back for those.
+    # (agents/system_prompt.py:37), so we need to look further back for those.
     state = {"initial_persona": "", "additional_persona_coloring": "", "persona_unique_detail": "",
              "initial_speaking_style": "", "speaking_style_update": "",
              "strategy": "", "character_strategy": "", "position_assessment": "",

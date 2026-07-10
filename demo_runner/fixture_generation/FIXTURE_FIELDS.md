@@ -1,16 +1,16 @@
-# Fixture ↔ Debater state mapping
+# Fixture ↔ Agent state mapping
 
-How a fixture JSON entry maps to `Debater` state and to the rendered system prompt
-(`core/game_context/system_content.py`). Generate parses the prompt back into fixture
+How a fixture JSON entry maps to `Agent` state and to the rendered system prompt
+(`agents/system_prompt.py`). Generate parses the prompt back into fixture
 keys; game_setup applies fixture keys onto the live agent. When the prompt changes,
 both `generate_fixture.py` and `game_setup.py` drift — check here first.
 
 ## Fields the prompt renders today
 
-Source of truth: `SystemPrompt.player_system_prompt` in `core/game_context/system_content.py`.
+Source of truth: `SystemPrompt.player_system_prompt` in `agents/system_prompt.py`.
 
 ### Profile block (`=== YOUR PROFILE ===`)
-| Debater attr | Prompt label |
+| Agent attr | Prompt label |
 |---|---|
 | `initial_persona` | `Core Persona:` |
 | `additional_persona_coloring` | `Additional Persona Coloring:` |
@@ -19,17 +19,17 @@ Source of truth: `SystemPrompt.player_system_prompt` in `core/game_context/syste
 | `speaking_style_update` | `Speaking Style Additional Consideration:` |
 
 ### Life lessons (`=== LIFE LESSONS ===`)
-| Debater attr | Prompt |
+| Agent attr | Prompt |
 |---|---|
 | `life_lessons` | bulleted list under `Use these past learnings to guide your current behavior:` |
 
 ### Character impressions (`=== CHARACTER IMPRESSIONS ===`)
-| Debater attr | Prompt |
+| Agent attr | Prompt |
 |---|---|
 | `character_dictionary` | one line per entry: `- {name}: {impression}`, where `name` is the dict key with the `impression_` prefix stripped |
 
 ### Strategy block (`=== YOUR INTERNAL STRATEGY AND ASSESSMENT ===`, omitted when `game_over`)
-| Debater attr | Prompt label |
+| Agent attr | Prompt label |
 |---|---|
 | `game_strategy` | `Current Strategy:` |
 | `character_strategy` | `Character Strategy:` |

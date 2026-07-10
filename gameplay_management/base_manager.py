@@ -10,7 +10,7 @@ from prompts.gamePrompts import GamePromptLibrary
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from agents.player import Debater
+    from agents.abstract_agentic_player import AbstractAgenticPlayer
 
 
 class BaseRound:
@@ -104,7 +104,7 @@ class BaseRound:
     def cfg(self):
         return self.simulationEngine.gameplay_config
 
-    def _names(self, agents: Sequence["Debater"]) -> list[str]:
+    def _names(self, agents: Sequence["AbstractAgenticPlayer"]) -> list[str]:
         return [agent.name for agent in agents]
     
     def _opponent_names(self, player):
@@ -123,7 +123,7 @@ class BaseRound:
     def _agent_score(self, agent_name):
         return self.game_board.agent_scores[agent_name] 
 
-    def get_strategic_players(self, available_agents, top_player = True, multiple = False) -> list[Debater]:
+    def get_strategic_players(self, available_agents, top_player = True, multiple = False) -> list[AbstractAgenticPlayer]:
         """
         Selects a player from available_agents based on rank.
         mode="top": Picks from the leaders.

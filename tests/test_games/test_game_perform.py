@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from agents.player import Debater
+from agents.agentic_player import AgenticPlayer
 from core.gameboard import GameBoard
 from core.levels.phase_description import PhaseDescription
 from tests.helpers.game_test_helpers import QueuedClient, TestGameSink, TestSimulation, attach_test_runtime, host_messages, turn_payload
@@ -34,7 +34,7 @@ def _build_perform_game(agent_specs, initial_scores=None, class_name="GamePerfor
     game_cls = _load_game_perform_class(class_name)
     clients = {name: QueuedClient(responses) for name, responses in agent_specs.items()}
     agents = [
-        Debater(
+        AgenticPlayer(
             name=name,
             initial_persona=f"{name} persona",
             api_client=clients[name],

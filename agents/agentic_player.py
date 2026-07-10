@@ -1,21 +1,22 @@
 from collections import deque
 from pydantic import Field
-from core.game_context.system_content import SystemPrompt
+from agents.system_prompt import SystemPrompt
 from core.game_context.user_content import UserContent
 from core.game_context.summaries_builder import SummariesStringBuilder
-from agents.player_models import DynamicModelFactory
+from agents.player_response_models import AgentResponseModelFactory
 from prompts.gamePrompts import GamePromptLibrary
 from prompts.prompts import PromptLibrary
 from agents.base_agent import BaseAgent
+from agents.abstract_agentic_player import AbstractAgenticPlayer
 from typing import TYPE_CHECKING, Dict, Optional
 if TYPE_CHECKING:
     from gameplay_management import *
 
-class Debater(BaseAgent):
-    
-    
+class AgenticPlayer(AbstractAgenticPlayer):
+
+
     def __init__(self, name: str, initial_persona: str, api_client, speaking_style: str = ""):
-        super().__init__(name, api_client=api_client)
+        super().__init__(name, initial_persona, api_client=api_client, speaking_style=speaking_style)
         self.game_strategy = "Begin to take action and form strategy."
         self.life_lessons = deque(maxlen=8)
         self.phase_summaries_detailed = {}
@@ -43,6 +44,9 @@ class Debater(BaseAgent):
         self.speaking_style_update = None
         
     
+    def uses_character_dictionary(self):
+        return True
+
     def process_character_impressions(self, response):
         fields = [f for f in response.model_fields if f.startswith("impression_")]
         for field in fields:
@@ -52,21 +56,18 @@ class Debater(BaseAgent):
         for field in list(self.character_dictionary):
             if field not in fields:
                 del self.character_dictionary[field]
-    
-    def _system_prompt(self, game_board):
-        return SystemPrompt.render(self)
-    
-    def _get_full_user_content(self, game_board, turn_prompt, instruction_override=None) :
-        return UserContent.render(self, game_board, turn_prompt, instruction_override)
 
-    def take_turn_standard(self, turn_prompt, game_board, model, instruction_override=None, thinking=False,
-                           use_higher_model = False):
-        full_user_content = self._get_full_user_content(game_board, turn_prompt, instruction_override)
-        response = self.get_response(full_user_content, model, game_board, thinking, use_higher_model) 
+    def _system_prompt_class(self):
+        return SystemPrompt
+
+    #def _get_full_user_content(): Implemented on AbstractAgenticPlayer
+
+    #def take_turn_standard(): Implemented on AbstractAgenticPlayer
+
+    def _process_standard_turn_response(self, response):
         self.process_evolution_fields(response)
         self.process_character_impressions(response)
-        return response
-    
+
     #-----------
     #
     # turn fields
@@ -215,7 +216,7 @@ class Debater(BaseAgent):
 
         action_fields = self._summary_action_fields()
 
-        response_model = DynamicModelFactory.create_model_(
+        response_model = AgentResponseModelFactory.create_model_(
                 self,
                 game_board=game_board,
                 model_name="summariser",

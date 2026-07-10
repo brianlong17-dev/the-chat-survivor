@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 from gameplay_management.base_manager import BaseRound
 
 if TYPE_CHECKING:
-    from agents.player import Debater
+    from agents.agentic_player import AgenticPlayer
 
 @dataclass
 class Mob:
-    leader: "Debater"
+    leader: "AgenticPlayer"
     target: str  # target's name
-    followers: list["Debater"]
+    followers: list["AgenticPlayer"]
 
 class GameMob(BaseRound):
     

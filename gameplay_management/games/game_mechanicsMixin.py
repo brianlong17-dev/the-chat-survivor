@@ -3,7 +3,7 @@ import random
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from agents.player import Debater
+    from agents.agentic_player import AgenticPlayer
 
 class GameMechanicsMixin(BaseRound):
     
