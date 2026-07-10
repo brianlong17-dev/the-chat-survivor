@@ -123,17 +123,21 @@ class FinaleReunionRound(VoteMechanicsMixin):
 
     def host_intro_finalists(self):
         self._on_segment(self._INTRODUCTION)
-        prompt = "Respond to the host, and the other players. "
         player1, player2 = self.finalists[0], self.finalists[1]
         self._host_broadcast(f"Congratulations to our two finalists: {player1.name} and {player2.name}.")
 
+        turn_prompt="Respond to the host - be as grounded as you can- talk about real things that happened. Try to keep to under 5 lines. "
+        public_response_prompt=f"Your words which is also being heard by the jury: {self.format_list(self._names(self.dead_agents()))}"
+        
         player_1_highlights = self._get_highlights(player1).script
         self._host_broadcast(player_1_highlights, animate_as_player=True)
-        self._reunion_turn(player1, "", prompt, is_reply = True)
+        self.turn_manager.take_turn(player1, turn_prompt, public_response_prompt=public_response_prompt, broadcast=True, is_reply=True)
+       
 
         player_2_highlights = self._get_highlights(player2).script
         self._host_broadcast(player_2_highlights ,animate_as_player=True)
-        self._reunion_turn(player2, "", prompt, is_reply = True)
+        self.turn_manager.take_turn(player2, turn_prompt, public_response_prompt=public_response_prompt, broadcast=True, is_reply=True)
+       
 
         
 
