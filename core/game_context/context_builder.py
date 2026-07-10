@@ -147,7 +147,10 @@ class ContextBuilder:
 
         output = ""
         for i, message_entry in enumerate(message_block.message_entries):
-            output += f"\n{message_entry.speaker}: {message_entry.public_output}"
+            if message_entry.speaker:
+                output += f"\n{message_entry.speaker}: {message_entry.public_output}"
+            else:
+                output += f"\n{message_entry.public_output}"
             if message_entry.speaker == agent.name and message_entry.private_thought_brief:
                 output += f"\n[YOUR INTERNAL PRIVATE THOUGHT]: {message_entry.private_thought_brief} [/END THOUGHT] \n"
 

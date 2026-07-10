@@ -1,7 +1,9 @@
-from gameplay_management.base_manager import BaseRound
+from gameplay_management.discussion_rounds.discussion_base_round import DiscussionBaseRound
 
 
-class DiscussionRoundDirected(BaseRound):
+class DiscussionRoundDirected(DiscussionBaseRound):
+
+    short = False
 
     @classmethod
     def display_name(cls, cfg):
@@ -11,10 +13,8 @@ class DiscussionRoundDirected(BaseRound):
     def rules_description(cls, cfg):
         return "Discussion round with directed messages"
 
-    def run_game(self):
-        return self.run_round(short=False)
-
-    def run_round(self, short=False):
+    def run_round(self):
+        short = self.short
         settings = self.cfg.get_discussion_settings()
         group_allowed = self.cfg.directed_discussion_group_allowed
        

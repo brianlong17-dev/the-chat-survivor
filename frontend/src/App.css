@@ -1279,6 +1279,104 @@
 }
 .rw-label-toggle:hover { color: var(--text); }
 
+/* Give & Take — sequential turn list, one row per player move.
+   waiting/picked are a single bare line (nothing to show yet); revealed
+   stacks actor / connector / target vertically so each name gets the full
+   card width and never truncates. */
+.rw-gt-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+}
+
+.rw-gt-turn--waiting,
+.rw-gt-turn--picked {
+  border-style: dashed;
+}
+
+.rw-gt-turn--waiting {
+  opacity: 0.45;
+}
+
+.rw-gt-turn--picked {
+  opacity: 0.85;
+}
+
+.rw-gt-order {
+  width: 14px;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.6;
+  text-align: center;
+}
+
+.rw-gt-pending-label {
+  padding-left: 20px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.rw-gt-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.rw-gt-line--target {
+  padding-left: 20px;
+}
+
+.rw-gt-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.rw-gt-turn--picked .rw-gt-name,
+.rw-gt-turn--revealed .rw-gt-name {
+  color: var(--text);
+}
+
+.rw-gt-points {
+  flex-shrink: 0;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.rw-gt-connector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0;
+}
+
+.rw-gt-connector::before,
+.rw-gt-connector::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.rw-gt-arrow {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── Segment tracker ── */
 
 .segment-tracker {

@@ -1,28 +1,24 @@
 
-from gameplay_management.base_manager import BaseRound
+from gameplay_management.discussion_rounds.discussion_base_round import DiscussionBaseRound
 
-class DiscussionRound(BaseRound):
-    
+class DiscussionRound(DiscussionBaseRound):
+
     @classmethod
     def display_name(cls, cfg):
         return "Discussion Round"
-    
+
     @classmethod
     def rules_description(cls, cfg):
         return "Chat and strategise"
 
-    @classmethod
-    def is_discussion(cls):
-        return True
-    
-    def run_game(self):
+    def run_round(self):
         settings = self.cfg.get_discussion_settings()
         for loop in settings.loops:
             if loop.host_message:
                 self._host_broadcast(loop.host_message)
             for player in self.simulationEngine.agents:
                 formatted_thought_prompt = loop.formatted_additional_thought_prompt(self.format_list(self._opponent_names(player)))
-                    
+
                 self.turn_manager.take_turn(
                     player,
                     loop.turn_prompt,
@@ -31,5 +27,4 @@ class DiscussionRound(BaseRound):
                     broadcast=True,
                 )
         self.cfg.discussion_index += 1
-        
-    
+
