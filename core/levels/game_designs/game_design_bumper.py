@@ -30,7 +30,7 @@ class GameDesignBumper(GameDesignBeginner8):
 
         if agent_number == 10:
             rounds = [DiscussionRoundDirectedShort, GameTargetedChoiceGiveOrTake, VoteElectLeader]
-            cfg.set_directed_discussion_group_allowed(False)
+            cfg.set_directed_discussion_group_allowed(True)
             cfg.set_discussion_settings(
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
@@ -41,6 +41,7 @@ class GameDesignBumper(GameDesignBeginner8):
 
         if agent_number == 9:
             rounds = [GameCircle, DiscussionRoundDirectedShort, VoteElectLeader]
+            cfg.set_directed_discussion_group_allowed(True)
             cfg.set_discussion_settings(
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
@@ -51,7 +52,7 @@ class GameDesignBumper(GameDesignBeginner8):
 
         if agent_number == 8:
             rounds = [DiscussionRoundDirectedShort, GameGuess, VoteElectLeader]
-            cfg.set_directed_discussion_group_allowed(False)
+            cfg.set_directed_discussion_group_allowed(True)
             cfg.pd_get_reactions = False
             cfg.set_pd_pairing_random()
             cfg.allow_revote = False

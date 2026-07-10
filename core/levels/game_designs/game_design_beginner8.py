@@ -33,7 +33,7 @@ class GameDesignBeginner8(GameDesignBeginner):
 
         if agent_number == 7:
             rounds = [DiscussionRoundDirectedShort, GameTargetedChoiceGiveOrTake, VoteElectLeader]
-            cfg.set_directed_discussion_group_allowed(False)
+            cfg.set_directed_discussion_group_allowed(True)
             cfg.set_discussion_settings(
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
@@ -44,24 +44,25 @@ class GameDesignBeginner8(GameDesignBeginner):
 
         if agent_number == 6: #IntroRound, DiscussionRoundDirectedPreVote
             rounds = [GamePrisonersDilemma, DiscussionRoundDirectedShort , VoteElectLeader]
+            cfg.set_directed_discussion_group_allowed(False)
             cfg.set_discussion_settings(
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
-                        host_message="One more time, you'll elect a leader to send a player home- nominated players are safe. ",
-                        additional_thought_prompt="Soon the group will vote to elimate a player from the bottom two. Does that shift who you need on your side?",
-                        turn_prompt=("Speak about what happened in the last phase, discuss the upcoming elimination?"),)])
+                        host_message="Discuss the previous game, but soon you'll elect a leader to send a player home- any nominated players will be safe. ",
+                        additional_thought_prompt="Do you need to react to what happened in prisoner's dilemma?",
+                        turn_prompt=("Be confrontational and reactive if needed."),)])
             )
             return PhaseDescription(rounds=rounds)
-
+        
         if agent_number == 5:
             rounds = [GameTargetedChoiceGive, DiscussionRoundDirectedShort, VoteBottomTwo]
             cfg.set_directed_discussion_group_allowed(True)
             cfg.set_discussion_settings(
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
-                        host_message="No more electing a leader- from here on, you vote directly who to send home from the bottom two players.",
-                        additional_thought_prompt="The rules have changed- your vote now sends someone toward the exit directly. Who do you trust, and who can't you afford to have voting against you?",
-                        turn_prompt=("Speak about what happened in the last phase, discuss the upcoming elimination?"),)])
+                        host_message="There is time now to discuss the state of the game, but first an announcement: No more electing executioners. From here on, everyone will vote directly who to eliminate from the bottom two.",
+                        additional_thought_prompt="The rules have changed- every player's vote is equal and only the bottom two are in danger. Does that change your strategy? ",
+                        turn_prompt=("Speak about previous events or discuss the upcoming elimination."),)])
             )
             return PhaseDescription(rounds=rounds)
 
