@@ -106,13 +106,16 @@ class AgentResponseModelFactory:
 
     @classmethod
     def _add_character_fields(cls, ordered_fields, game_board, agent):
-        for name in game_board.agent_names():
-            if name == agent.name:
-                continue
+        others = [name for name in game_board.agent_names() if name != agent.name]
+        for i, name in enumerate(others):
             field_name = cls.impression_field(name)
+            if i == 0:
+                description = f"OPTIONAL: Since last turn, your updated impression of the following players- (don't lose any existing key memories, but update with any new noticings). {i + 1}: {name} "
+            else:
+                description = f"{i + 1}: {name}"
             ordered_fields[field_name] = (
-                Optional[str], 
-                Field(default=None,description=f"OPTIONAL: Since last turn, your updated impression of {name} - don't lose any existing key memories, but update with any new noticings. "),
+                Optional[str],
+                Field(default=None, description=description),
             )
         return ordered_fields
 

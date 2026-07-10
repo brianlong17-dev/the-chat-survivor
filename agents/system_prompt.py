@@ -29,7 +29,7 @@ class SystemPrompt:
             return "- No impressions yet.\n\n"
         lines = []
         for field, impression in agent.character_dictionary.items():
-            name = field.removeprefix("impression_")
+            name = field.removeprefix("impression_").replace("_", " ")
             lines.append(f"- {name}: {impression}")
         return "\n".join(lines) + "\n\n"
     

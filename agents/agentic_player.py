@@ -1,3 +1,4 @@
+import re
 from collections import deque
 from pydantic import Field
 from agents.system_prompt import SystemPrompt
@@ -138,6 +139,16 @@ class AgenticPlayer(AbstractAgenticPlayer):
             
             
 
+    def _split_sentences(self, text):
+        return [s.strip() for s in re.split(r'(?<=[.!?])\s+', text) if s.strip()]
+
+    def _clean_value_for_queue(self, existing_values, value):
+        seen = set()
+        for existing in existing_values:
+            seen.update(self._split_sentences(existing))
+        kept = [s for s in self._split_sentences(value) if s not in seen]
+        return " ".join(kept)
+
     def process_evolution_fields(self, turn):
         thought = getattr(turn, 'private_thoughts_brief', "")
         self.most_recent_internal_thought = thought
@@ -152,9 +163,9 @@ class AgenticPlayer(AbstractAgenticPlayer):
             current_attr_value = getattr(self, target_attr_name)
             
             if isinstance(current_attr_value, (list, deque)):
-                clean_val = value.strip()
+                clean_val = self._clean_value_for_queue(current_attr_value, value)
                 is_duplicate = any(clean_val.lower() == existing.lower() for existing in current_attr_value)
-                if not is_duplicate:
+                if not self._check_if_empty(clean_val) and not is_duplicate:
                     current_attr_value.append(clean_val)
             else:
                 setattr(self, target_attr_name, value)
@@ -264,4 +275,4 @@ class AgenticPlayer(AbstractAgenticPlayer):
         if new_lesson:
             self.life_lessons.append(new_lesson)
 
-        
+
