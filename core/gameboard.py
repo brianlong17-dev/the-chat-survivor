@@ -188,7 +188,7 @@ class GameBoard:
             self.game_sink.system_public(message, border_bottom = border_bottom)
         else:
             self.game_sink.system_private(message, border_bottom = border_bottom)
-            
+
     def log_boundary(self, boundary: str):
         self.game_log._update_history("", boundary)
 
