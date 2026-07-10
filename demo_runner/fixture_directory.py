@@ -70,6 +70,15 @@ FIXTURES = [
         finale=True,
     ),
     FixtureEntry(
+        name="meg_iroh_finale",
+        title="Meg March vs Uncle Iroh",
+        cast=["Meg March", "Uncle Iroh", "Aang", "Prince Zuko", "Azula", "Beth March", "Jo March", "Amy March"],
+        alive=["Meg March", "Uncle Iroh"],
+        pd_desc="Iroh radiates warmth and trust — everyone's favourite. Meg has quietly outlasted them all from the middle of the pack. One of them is underestimating the other.",
+        reunion_desc="Three of Meg's own sisters sit on this jury — and Iroh charmed every one of them on his way out.",
+        finale=True,
+    ),
+    FixtureEntry(
         name="reunion_amy_diana",
         title="Amy March vs Lady Diana",
         cast=["Amy March", "Lady Diana", "Morty Smith", "Lady Macbeth", "HAL 9000", "Jo March", "Michael Jackson", "Avatar Aang", "Gollum", "Buffy Summers", "Benoit Blanc"],
