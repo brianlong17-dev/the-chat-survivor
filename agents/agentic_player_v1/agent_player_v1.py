@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 _DESC_POSITION_ASSESSMENT = ("Based on your position in the scoreboard, what do you need to do? If it's a discussion round, what is your position in the upcoming round? Can you help yourself in some way?")
 _DESC_UPDATED_GAME_STRATEGY = ("Only populate if you want to update your game strategy. "
                                       "Based on how the game works, what is the smartest strategy?")
-_DESC_LIFE_LESSONS = ("A new lesson to you mind that you will take forward. This will shape your future descisions. Take key lessons only, so you don't cloud your decision making.")
+_DESC_LIFE_LESSONS = ("A new lesson to your mind that you will take forward. This will shape your future decisions. Take key lessons only, so you don't cloud your decision making.")
 _DESC_SPEAKING_STYLE = (
     "Only populate if your speaking style has evolved or shifted during this round — "
     "If nothing has changed, leave this blank. Do NOT explain or comment on why no change is needed. "
@@ -197,13 +197,13 @@ class AgenticPlayerV1(AbstractAgenticPlayer):
 
     def _build_summary_model(self, game_board):
 
-        brief_summary_field = {"brief_summary" : (str, Field(description="Write an a brief summary of the phase from your perspective- Include the most essential information you want to remember. A brief couple of bullet points. Eventually this will be all you have to access from early phases."))}
+        brief_summary_field = {"brief_summary" : (str, Field(description="Write a brief summary of the phase from your perspective- Include the most essential information you want to remember. A brief couple of bullet points. Eventually this will be all you have to access from early phases."))}
         if self.game_over:
             game_commentary_description = "As an ex-player, could you give us commentary on the game after the last phase- write something punchy we can use for a clip."
         else:
             game_commentary_description = "Given your place in the competition, how do you feel after that last phase? Anything you want to say to those supporting you at home?"
         game_commentary_field = {"game_commentary" : (str, Field(description=game_commentary_description))}
-        persona_uniqueness_field = {"persona_unique_detail" : (str, Field(description= "Inkeeping with the core of your character - what is one trait that you hold on to, in spite of the game, that makes you unique from other players? "))}
+        persona_uniqueness_field = {"persona_unique_detail" : (str, Field(description= "In keeping with the core of your character - what is one trait that you hold on to, in spite of the game, that makes you unique from other players? "))}
 
         public_response_prompt = "This is your summary- write in the first person, how you experienced the phase. Write every detail you think is important to commit to memory. This will only be seen by you. "
         if self.game_over:
@@ -296,6 +296,6 @@ class AgenticPlayerV1(AbstractAgenticPlayer):
                  "In keeping with your existing public persona, "
                  "If your persona had reason to evolve, what direction would your character evolve in? "
                  "In keeping with their existing character - "
-                 "You can add an aditional line.  "
+                 "You can add an additional line.  "
                  "Not worldview or strategy - only your outward persona. "
             )))

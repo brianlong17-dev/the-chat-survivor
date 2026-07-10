@@ -10,7 +10,7 @@ class CharacterProfile(BaseModel):
     who: str = Field(description="If it's a name - what is the source of this person in popular culture or history?")
     persona: str = Field(description="A detailed, first-person personality description, core beliefs, and strategic outlook if thrown into a game figure. What sensitive nuance behind this person?")
     speaking_style: str = Field(description="Their speaking style, how they talk, to preserve the character from context bleed. Do not write specific phrases. ")
-    name: Optional[str] = Field(description="If a charcter is nameless, or has non title descriptors in their name - ie Drunk Girl or BMO (adventure time). Then you may rename them: ie Tiffany or BMO, etc. If the source is specified i.e. Thomas Wake (The Lighthouse) just return the name.")
+    name: Optional[str] = Field(description="If a character is nameless, or has non title descriptors in their name - ie Drunk Girl or BMO (adventure time). Then you may rename them: ie Tiffany or BMO, etc. If the source is specified i.e. Thomas Wake (The Lighthouse) just return the name.")
     character_type: str = Field(description="Would you categorise this person as Hero, Baddie, Simpleton, Sweet, Complex Character or Shrewd Normal Character")
     additional_depth: str = Field(description="An extra line - (in first person):"
                                 "If Baddie: what is their other side- what makes them relatable, understandable, wounded, longing, secretly warm? What line in them draws compassion and understanding? "
@@ -19,7 +19,7 @@ class CharacterProfile(BaseModel):
                                 "Otherwise: What's a countervailing depth or compassion? ")
     non_verbal: bool = Field(description="Is this a non-verbal character that speaks only in a catchphrase or noise? Not a silent character but one noise rather than language. Ex: R2D2, Chewbacca, Grogu, Wall-e ")
     simplicity: bool = Field(default=False, description=(
-    "Only True for cases characters are better as simple, inpusilve, transparent thinkers - they're not especially coherent, or complex reasoners. "
+    "Only True for cases characters are better as simple, impulsive, transparent thinkers - they're not especially coherent, or complex reasoners. "
     "Examples :(Gollum, Patrick Star). False for characters who sound vapid, but scheme (Elle Woods, Lumpy Space Princess)."
 ))
 class CharacterGenerator:

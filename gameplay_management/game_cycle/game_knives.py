@@ -80,7 +80,7 @@ class GameKnives(CycleRound):
             "You can say something or stay silent. The lights are off — no one can see your decision. "
             "You can lie, boast, stay quiet... it's up to you. "
             if chatty
-            else "This wont be broadcast and can be left empty. "
+            else "This won't be broadcast and can be left empty. "
         )
         if self.SECRET_NOTES:
             public_response_prompt += "You also have the chance to pass a player a secret note. "

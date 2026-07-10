@@ -16,7 +16,7 @@ class GameTargetedChoiceSteal(BaseTargetedGame):
         return (
             f"Well, it's time to lay down your mark.. "
             f"In this round, you will get to *STEAL*. Whatever player you pick, you will receive {points_amount} points... and they will *LOSE* them! "
-            f"If you choose a player with less than {points_amount} points, their points wont go below zero, and you won't receive the full {points_amount} points."
+            f"If you choose a player with less than {points_amount} points, their points won't go below zero, and you won't receive the full {points_amount} points."
         )
 
     def _player_intro(self, player):

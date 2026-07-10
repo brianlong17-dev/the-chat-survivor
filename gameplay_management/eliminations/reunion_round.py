@@ -95,7 +95,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
         #TODO depreciate
         if optional:
             public_response_prompt += " Note: this is an optional turn. If you have nothing to say leave this blank. "
-            additional_thought_nudge = "This is an option turn- do you want to speak here? You have to option to leave public response blank."
+            additional_thought_nudge = "This is an optional turn- do you want to speak here? You have the option to leave public response blank."
         else:
             additional_thought_nudge = None
             
@@ -264,7 +264,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
     
     def _question_intro_script(self, player):
         return self.simulationEngine.game_master.create_host_script(
-                    directive = (f"{player.name} is about confront one of the finalists with a question . "
+                    directive = (f"{player.name} is about to confront one of the finalists with a question . "
                         f" You're introducing them, {player.name}. "
                         f"With the knowledge you have from {player.name}'s private conversation with the host, "
                         " - if they have concrete things to mention, mention them briefly in passing. "
@@ -275,7 +275,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
                         ),
                     additional_context = player.detailed_summaries_string(), 
                     context_explanation =
-                    f"This is the players history. (You should also see their private converstation with the host in the current round context)" ,
+                    f"This is the players history. (You should also see their private conversation with the host in the current round context)" ,
                     game_context = self.game_board.context_builder.current_round_formatted(player),
                     cot_prompts = [f"Explain {player.name}'s personal history with finalists. What sensitive moments in there could be upsetting? Include detail that you could mention when you introduce {player.name} to ask their question. "]
                 )

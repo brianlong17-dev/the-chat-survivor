@@ -35,7 +35,7 @@ class GameDesignBeginner(GameDesign):
             cfg.set_discussion_settings(
                 DiscussionRoundSettings(loops=[
                     DiscussionLoop(
-                        directed_turn_prompt="You meeting the other players for the first time! Direct messages can build early alliances. ",
+                        directed_turn_prompt="You're meeting the other players for the first time! Direct messages can build early alliances. ",
                         directed_public_response_prompt="Be conversational, chatty and reactive. "
                     )]),
                 DiscussionRoundSettings(loops=[

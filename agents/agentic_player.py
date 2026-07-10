@@ -126,7 +126,7 @@ class AgenticPlayer(AbstractAgenticPlayer):
         else:
              return (Optional[str], Field(default=None, description=(
                 "In keeping with initial persona and initial speaking style."
-                "To make you speaking style more colorful - Optional speaking style update: "
+                "To make your speaking style more colorful - Optional speaking style update: "
             )))
          
     def _persona_coloring_field_description(self):

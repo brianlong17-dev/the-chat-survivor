@@ -17,7 +17,7 @@ class GameMaster(BaseAgent):
         #TODO spruce up with the other one
         #Used in the wildcard selection
         return ( f"You oversee this game. You help to make the information manageable for the LLMs playing."
-                f"PAST SUMARRIES: {"\n".join(self.round_summaries)} "
+                f"PAST SUMMARIES: {"\n".join(self.round_summaries)} "
                  f"#########################"
                  f"Current round: {game_board.context_builder.current_round_formatted(self)}")
     
@@ -42,7 +42,7 @@ class GameMaster(BaseAgent):
             response_model=SummariseRoundComplex,
             messages=[
                 {"role": "system", "content": f"You oversee this game. You help to make the information manageable for the LLMs playing."},
-                {"role": "user", "content": f"PAST SUMARRIES: {"\n".join(self.round_summaries)} "
+                {"role": "user", "content": f"PAST SUMMARIES: {"\n".join(self.round_summaries)} "
                  f"#########################"
                  f"#########################"
                  f"Summarise the following round: {game_board.context_builder.current_round_formatted(self)} Scores:  {game_board.agent_scores}"}
@@ -88,7 +88,7 @@ class GameMaster(BaseAgent):
             response_model=model,
             messages=[
                 #in time we will put personality into the user content- favorites, opinions
-                {"role": "system", "content": f"You are the HOST of this game. We need to you to act as host, and the script is your public remarks. "
+                {"role": "system", "content": f"You are the HOST of this game. We need you to act as host, and the script is your public remarks. "
                  "The host is speaking with the players, but also with an audience in mind. "
                  "ONLY DIALOG - only the script- no direction or scene description. "},
                 #Ie the context is the players own recap of their journey- use this 

@@ -153,7 +153,7 @@ class GameCircle(CycleRound):
         #Intro message
         #self.double_shot = use_double_shots
         self.game_board.host_broadcast(self._intro_message())
-        self.game_board.host_broadcast(f"Remember! Being shot from the cirlce doesn't mean you're eliminated ! You're just out of this round. "
+        self.game_board.host_broadcast(f"Remember! Being shot from the circle doesn't mean you're eliminated ! You're just out of this round. "
                                       "Everyone will still be in the game- this isn't an elimination. ")
 
         while len(circle) > 3:

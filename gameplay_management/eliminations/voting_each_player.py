@@ -30,7 +30,7 @@ class VoteEachPlayer(VoteMechanicsMixin):
         
         immunity_players = self._validate_immunity(immunity_players)
         if len(self.simulationEngine.agents) <= 2:
-            print("WARNING: Only 2 players. Shoudln't run here")
+            print("WARNING: Only 2 players. Shouldn't run here")
             #maybe run other vote instead
     
         players_up_for_elimination = [a.name for a in self._players_up_for_elimination(immunity_players)]

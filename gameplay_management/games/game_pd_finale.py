@@ -189,7 +189,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         
         if is_upset:
             winner_msg = (f"In a result NO ONE saw coming... Our winner is *{winner.name.upper()}*!")
-            loser_question = f"This is an utter shock - no one can quite believe it. Least of all, {loser.name}, who almost had it all- {loser.name}, how are feeling right now?"
+            loser_question = f"This is an utter shock - no one can quite believe it. Least of all, {loser.name}, who almost had it all- {loser.name}, how are you feeling right now?"
         else:
             winner_msg = (f"That means we finally have our winner! *{winner.name.upper()}*!")
             loser_question = f"Well now, we must go to {loser.name}. Although you couldn't quite get across the finish line you played an incredible game today. How do you feel? Do you have any final words?"
@@ -277,7 +277,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         result_msg = self._process_results_and_points(choices[0], choices[1], agent0, agent1)
 
         if self._is_tie(agent0, agent1):
-            commentary = f"This means {follower.name} has lept into a tie for first place! "
+            commentary = f"This means {follower.name} has leapt into a tie for first place! "
             self._host_broadcast(f"{result_msg} {commentary}")
             self.run_tie(agent0, agent1, is_second_game = True)
             
@@ -335,7 +335,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     
     def _reg_intro(self, is_coronation, tie_possible, leader):
         intro =  (f"Our two finalists stand here before us: {self.format_list(self._names(self.agents))}.\n\n")
-        points_rules = "If you both split each player gets 3 points. Both steal- each player gets 1 point. If only player steals, they get 5 points while their opponent gets 0. "
+        points_rules = "If you both split each player gets 3 points. Both steal- each player gets 1 point. If only one player steals, they get 5 points while their opponent gets 0. "
         if is_coronation:
             intro += (f"With {leader.name}'s score so far ahead, it seems the outcome is a foregone conclusion. "
             "This game is a matter of sportsmanship- will you Split as a sign of respect, or Steal to the last? ")

@@ -16,14 +16,14 @@ class Mob:
 class GameMob(BaseRound):
     
     """ This is a first pass at the game
-    The mechanics dont really work- 
-    I think consolodating the mobs isnt a good choice. 
-    They should see the mobs 
+    The mechanics don't really work-
+    I think consolidating the mobs isn't a good choice.
+    They should see the mobs
     and be able to choose to leave or stay.
     If you're leader you take your followers with you.
     Anyway - the leaders need to pitch.
-    Also i thought of a bribing mechanic - where if player B is targetted .
-    the can make a pot of their points to whoever moves over.
+    Also I thought of a bribing mechanic - where if player B is targeted .
+    they can make a pot of their points to whoever moves over.
     """
 
     PASS = "Pass"
@@ -91,7 +91,7 @@ class GameMob(BaseRound):
         
         questions = [f"{agent.name}, as an unwilling leader, who do you choose to target? ",
                      f"Unfortunately {agent.name}, the time to follow is over- now it's time to lead. Who will you target? ",
-                     f"Some are born to lead, others... have leadership thrust upon them. {agent.name}, you time has come. Who will you target? "]
+                     f"Some are born to lead, others... have leadership thrust upon them. {agent.name}, your time has come. Who will you target? "]
         self._host_broadcast_multiple_choice(questions)
         
         valid_targets = [a.name for a in self.agents if a.name != agent.name]
@@ -134,7 +134,7 @@ class GameMob(BaseRound):
         action_fields = self.turn_manager.create_choice_field(
             "mob_choice",
             choices,
-            ("Choose a player to TARGET. If you want to join someone elses mob, choose PASS. "
+            ("Choose a player to TARGET. If you want to join someone else's mob, choose PASS. "
             "By choosing a name - you are choosing to lead a mob against this person. "
             "If you prefer to join someone else - choose pass- you can join their mob later. ")
             

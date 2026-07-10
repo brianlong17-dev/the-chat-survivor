@@ -170,7 +170,7 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         )
         
         additional_thought_nudge="What points are available? How will the next elimination work? Do you need points or alliance?"
-        public_response_prompt = "A one liner, for AFTER your result has been revealed. (Not neccessary to re-state your choice as it will already be revealed.)."
+        public_response_prompt = "A one liner, for AFTER your result has been revealed. (Not necessary to re-state your choice as it will already be revealed.)."
         result = self.get_split_or_steal(player, turn_prompt, public_response_prompt, additional_thought_nudge)
         self._widget_update_entry(player.name, opponent.name, state="picked")
         return result
@@ -265,7 +265,7 @@ class GamePrisonersDilemma(GameMechanicsMixin):
             turn_prompt = (f"Each player plays each player- you will face off against both {others_names} (and they will play each other). \n"
             f"BEFORE YOU PLAY- You have the opportunity to strategise- Trick a player into splitting? Really arrange to split? Turn the tables two on one? \n"
             f"Remember: {self.points_rules_string_technical()}")
-            additional_thought_nudge = "Is there any advanced strategy you could try here? Or simply share pleasentries. "
+            additional_thought_nudge = "Is there any advanced strategy you could try here? Or simply share pleasantries. "
             public_response_prompt = f"What will you say to {others_names}? Keep it brief, and to strategy. "
             self.turn_manager.take_turn(agent, turn_prompt= turn_prompt, additional_thought_nudge=additional_thought_nudge, 
                                         public_response_prompt = public_response_prompt,
