@@ -2237,8 +2237,8 @@
 }
 
 .demo-cast-chip--dead {
-  opacity: 0.4;
-  text-decoration: line-through;
+  opacity: 0.5;
+  color: var(--text-dim);
 }
 
 .demo-cast-divider {
@@ -2274,51 +2274,12 @@
   gap: 16px;
 }
 
-.fixture-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
-}
-
-.fixture-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  padding: 12px 14px;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  transition: border-color 0.15s;
-}
-
-.fixture-card:hover {
-  border-color: var(--text-dim);
-}
-
-.fixture-card--selected {
-  border-color: var(--accent);
-}
-
-.fixture-card-title {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  color: var(--text);
-  letter-spacing: 0.04em;
-}
-
-.fixture-card--selected .fixture-card-title {
-  color: var(--accent);
-}
-
-.fixture-card-desc {
-  font-size: 11px;
+.finale-intro {
+  font-size: 12px;
   color: var(--text-dim);
-  line-height: 1.4;
-}
-
-.finale-controls {
-  margin-top: 0;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 0 4px;
 }
 
 .finale-row-label {
@@ -2330,8 +2291,390 @@
   margin-bottom: -4px;
 }
 
-.fixture-card-grid--small {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+/* Step 1 — Format */
+.format-step {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.format-info-card {
+  width: 408px;
+  height: 448px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.format-info-card--active {
+  border-color: var(--accent);
+}
+
+.format-info-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  flex: 1;
+}
+
+.format-info-title {
+  font-family: var(--font-ui);
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.format-info-desc {
+  font-size: 13px;
+  color: #999;
+  line-height: 1.6;
+  white-space: pre-line;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding-right: 8px;
+}
+
+.format-info-empty {
+  margin: auto;
+  text-align: center;
+  font-size: 12px;
+  color: #444;
+  letter-spacing: 0.05em;
+}
+
+.format-btn-stack {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  flex: 1;
+}
+
+.format-btn-rows {
+  display: flex;
+  flex-direction: column;
+  align-content: flex-start;
+  flex: 1;
+}
+
+.format-btn-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.format-btn-row:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+@media (max-width: 700px) {
+  .format-step {
+    flex-direction: column;
+  }
+
+  .format-info-card {
+    order: 2;
+    width: 100%;
+    height: auto;
+    min-height: 240px;
+  }
+
+  .format-btn-stack,
+  .format-btn-rows {
+    flex: none;
+  }
+}
+
+.format-btn {
+  text-align: left;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  align-self: flex-start;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+
+.format-btn:hover {
+  border-color: var(--accent);
+}
+
+.format-btn--selected {
+  background: var(--bg3);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Steps 2 & 3 — collapsible substeps */
+.finale-substep {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.finale-subheader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.finale-subheader-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.finale-subheader .collapsible-caret {
+  font-size: 11px;
+}
+
+.finale-subheader:hover .finale-subheader-left {
+  color: var(--accent);
+}
+
+.finale-subcount {
+  font-size: 11px;
+  color: #555;
+}
+
+.finale-subbody {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.25s ease, opacity 0.25s ease;
+}
+
+.finale-subbody.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.finale-subbody-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Step 2 — fixture grid */
+.fixture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.fixture-grid-break {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+
+.fixture-card2 {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.fixture-card2:hover {
+  border-color: var(--accent);
+}
+
+.fixture-card2--selected {
+  border-color: var(--accent);
+}
+
+.fixture-card2--stub {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.fixture-card2--simple {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+}
+
+.fixture-card2-title {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.fixture-card2-title > span {
+  white-space: nowrap;
+}
+
+.fixture-card2--selected .fixture-card2-title {
+  color: var(--accent);
+}
+
+.fixture-vs {
+  font-size: 10px;
+  color: #555;
+  letter-spacing: 0.1em;
+}
+
+.fixture-card2-meta {
+  font-size: 10px;
+  color: #555;
+  letter-spacing: 0.05em;
+}
+
+.fixture-card2-names {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fixture-card2-name {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fixture-card2-name--b {
+  color: #888;
+}
+
+.fixture-card2--selected .fixture-card2-name {
+  color: var(--accent);
+}
+
+.fixture-card2--selected .fixture-card2-name--b {
+  color: color-mix(in srgb, var(--accent) 55%, #888);
+}
+
+.fixture-card2-stub {
+  width: 44px;
+  flex-shrink: 0;
+  background: #1a1a1a;
+  border-left: 1px dashed #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+}
+
+.fixture-card2-stub-dash {
+  color: #444;
+}
+
+.fixture-card2--selected .fixture-card2-stub {
+  background: #1e1e1e;
+  border-left-color: #444;
+}
+
+/* Step 3 — watch / play panel */
+.watchplay-panel {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.matchup-line {
+  font-family: var(--font-ui);
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.matchup-name {
+  color: var(--accent);
+}
+
+.matchup-vs {
+  font-size: 13px;
+  color: #555;
+  letter-spacing: 0.15em;
+}
+
+.matchup-round {
+  font-size: 14px;
+  color: #777;
+  letter-spacing: 0.05em;
+}
+
+.matchup-desc {
+  font-size: 13px;
+  color: #999;
+  line-height: 1.6;
+  max-width: 640px;
+  white-space: pre-line;
+}
+
+.matchup-desc a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.matchup-desc a:hover {
+  opacity: 0.8;
+}
+
+.watchplay-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 6px;
+  border-top: 1px solid #222;
+  flex-wrap: wrap;
 }
 
 /* ── Feed tabs ── */

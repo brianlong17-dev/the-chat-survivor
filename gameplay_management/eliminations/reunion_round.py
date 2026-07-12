@@ -88,7 +88,11 @@ class FinaleReunionRound(VoteMechanicsMixin):
         
         self._host_broadcast("Finalists- what is the last thing you would like to say to the players before the vote?")
         for agent in self.finalists:
-            self._reunion_turn(agent, "", "Respond to the host, and the other players. (Quick response - you'll have time for a proper address later). ", is_reply = True)
+            self.turn_manager.take_turn(agent,
+                    f"Respond to the host, and make your final turn before the vote. You can actually sway votes here- listen to the feedback, and think of all voters: {self._dead_agent_names()}",
+                    public_response_prompt="Make it count, refer to specific votes. What specific examples can you hit to sway them? (3-4 lines). ",
+                    broadcast=True, is_reply=True)
+            
         self.time_to_vote()
 
     def _reunion_turn(self, agent, turn_prompt, public_response_prompt, optional=False, private_thoughts_prompt = None, is_reply = False):
@@ -120,14 +124,15 @@ class FinaleReunionRound(VoteMechanicsMixin):
             "This is the players own game summary- use it, but also keep in mind it's from their own perspective. ",
             self._host_current_round_history()
         )
-
+    def _dead_agent_names(self):
+        return self.format_list(self._names(self.dead_agents()))
     def host_intro_finalists(self):
         self._on_segment(self._INTRODUCTION)
         player1, player2 = self.finalists[0], self.finalists[1]
         self._host_broadcast(f"Congratulations to our two finalists: {player1.name} and {player2.name}.")
 
         turn_prompt="Respond to the host - be as grounded as you can- talk about real things that happened. Try to keep to under 5 lines. "
-        public_response_prompt=f"Your words which is also being heard by the jury: {self.format_list(self._names(self.dead_agents()))}"
+        public_response_prompt=f"Your words which is also being heard by the jury: {self._dead_agent_names()}"
         
         player_1_highlights = self._get_highlights(player1).script
         self._host_broadcast(player_1_highlights, animate_as_player=True)
@@ -187,7 +192,7 @@ class FinaleReunionRound(VoteMechanicsMixin):
             turn_prompt = (
                 f"It is time to cast your vote. "
                 f"Vote for one of the finalists: {self.format_list(finalist_names)}. "
-                f"Who do you vote for, and why? Please include specific detail of your personal relationship and specific observed moments.  "
+                f"Who do you vote for, and why? Ground your answer in specfific examples- but this is really your space to express your emotional truth. "
             )
 
         action_fields = self.turn_manager._choose_name_field(
@@ -303,11 +308,11 @@ class FinaleReunionRound(VoteMechanicsMixin):
                 self._host_broadcast(script, animate_as_player=True)
                 #------ Ask the question ------
                 public_response_prompt = (
-                    "You've been identified as a player who could have a question- maybe you could have your mind changed? "
-                    "Or maybe you're more irate- its more of a statement. "
-                    "Now is your chance to put something to one of the finalists and get a response."
+                    "You are facing the finalist. "
+                    "Direct a question or statement to them to get a response. "
+                    "Be speficic and to the point - max 3 lines. "
                 )
-                turn_prompt = "Direct a question or statement to one of the finalists."
+                turn_prompt = "Questions and Answers: Pick a finalist- a question or statement."
                 additional_thought_nudge = "What could you ask that would change your mind? What would cause the most drama? "
                 result = self.turn_manager._ask_directed_question(
                     player, self._names(self.finalists), turn_prompt, public_response_prompt, additional_thought_nudge, is_reply = True
@@ -318,6 +323,6 @@ class FinaleReunionRound(VoteMechanicsMixin):
                 if chosen_name:
                     chosen_agent = self._agent_by_name(chosen_name.strip())
                     if chosen_agent:
-                        self._reunion_turn(chosen_agent, "", f"Respond to {player_name}'s question. Directly say anything else you want to say.", is_reply = True)
+                        self._reunion_turn(chosen_agent, "", f"Respond to {player_name}'s question. Be specific supporting your claims. This is your chance to genuinely change minds to win- make it count. Quick answers prefered (max 4 lines). ", is_reply = True)
                         self._reunion_turn(player, f"{chosen_agent.name} has responded to your question. Do you have anything to say in response to their answer? Do not repeat what you said in your question. - Max 2 lines -", "Anything else to add?", 
                                            optional=True, private_thoughts_prompt = "They responded to your question. Did they answer well enough? Do you have anything left to say to them, or to the other voters? You will have another chance to share your mind when you vote. ", is_reply = True)

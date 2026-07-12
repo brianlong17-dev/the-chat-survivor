@@ -87,6 +87,7 @@ async def get_modules():
                 "game": m.game,
             }
             for m in MODULES
+            if not m.hidden
         ]
     }
 
@@ -98,6 +99,7 @@ async def get_modules():
 @app.get("/api/fixtures")
 async def get_fixtures():
     from demo_runner.fixture_directory import FIXTURES
+    from demo_runner.game_setup import load_fixture
     return {
         "fixtures": [
             {
@@ -109,8 +111,11 @@ async def get_fixtures():
                 "reunion_desc": f.reunion_desc,
                 "game_desc": f.game_desc,
                 "finale": f.finale,
+                "break_before": f.break_before,
+                "scores": load_fixture(f"{f.name}.json")["scores"],
             }
             for f in FIXTURES
+            if not f.hidden
         ]
     }
 
