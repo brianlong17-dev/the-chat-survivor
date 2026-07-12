@@ -203,7 +203,7 @@ class AgenticPlayer(AbstractAgenticPlayer):
         fields = {}
         detailed_phase_summary_prompt = "This is your summary- write in the first person, how you experienced the phase. Write every detail you think is important to commit to memory. This will only be seen by you. Maintain every detail about every player that you want to remember strategically. Remember how you felt. If you have a grudge, or an alliance- include it. "
         if self.game_over:
-            detailed_phase_summary_prompt += "Remember, you have been eliminated and you are now in the audience observing. What do you think of the players, who's doing well, what do you think of their strategies, who do you want to win?"
+            detailed_phase_summary_prompt += "You are observing as an eliminated player who will later vote to crown a finalist. Write your decription of phase, include how you feel about each player. "
 
         fields["personal_detailed_phase_summary"] = (
                 str, Field(description=detailed_phase_summary_prompt))
@@ -242,12 +242,13 @@ class AgenticPlayer(AbstractAgenticPlayer):
         #But other models will be brief - this needs to prompted to be detailed
         self.currently_summarising=True
         phase_number = game_board.phase_number
-        prompt = ("From your perspective, write a summary of what happened in this phase. "
-                  "Include all information that you think is relevant to retain, as this will be your memory of the phase going forward."
-                  "THIS IS PRIVATE- No one will see. ")
+        prompt = ("PRIVATE TURN: From your perspective, write a summary of what happened in this phase. "
+            "This will be your logged memory of this phase going forward. ")
+        if not self.game_over:
+            prompt += ("Retain everything that happened to you, but retain all specific strategic regarding other players that could be important later. ")
         if self.game_over:
-            prompt += ("Don't forget, you have been eliminated, but your opinion matters- you may be asked to vote for a favorite later. "
-            "Who's playing a good game, who are you rooting for, what drama are you most compelled by? ")
+            prompt += ("You will be asked to vote in the finale to crown a winner. Retain all information about your impressions of each player. "
+                       "How do you feel about how they treated your allies or enemies? ")
         
         context_string = self._summarise_phase_context_string(game_board)
         use_higher_model_for_summary = not self.game_over

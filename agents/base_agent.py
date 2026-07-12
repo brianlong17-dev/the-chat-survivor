@@ -16,6 +16,7 @@ class BaseAgent:
         self._log_path = None           # set on first write, reused within a run
         self.brevity_jail = False
         self.last_message_id = None
+        self._request_lower_model=False
 
     def __repr__(self):
         return f"<{type(self).__name__} {self.name}>"
@@ -148,13 +149,19 @@ class BaseAgent:
             response_model=response_model,
             messages=messages,
             thinking=thinking,
-            use_higher_model=use_higher_model
+            use_higher_model=use_higher_model,
+            use_lower_model=self._request_lower_model
         )
         
         
         
         if self.debug_log:
-            api_model = self.api_client.higher_model if use_higher_model else self.api_client.default_model 
+            if use_higher_model:
+                api_model = self.api_client.higher_model
+            elif self._request_lower_model and self.api_client.lower_model:
+                api_model = self.api_client.lower_model
+            else:
+                api_model = self.api_client.default_model
             self._log_call_index += 1
             self._write_log_entry(response_model, api_model, messages, response)
 

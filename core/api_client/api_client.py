@@ -21,16 +21,16 @@ class BudgetExceeded(Exception):
     pass
 
 class APIClient:
-    def __init__(self, client, model: str, higher_model_name: str,  sink: GameEventSink = None,
-                 token_budget: int = None, model_3 = None) -> None:
+    def __init__(self, client, model: str, higher_model_name: str, lower_model_name=None,  sink: GameEventSink = None,
+                 token_budget: int = None) -> None:
         if token_budget is None:
             raise ValueError("token_budget is required")
         self._mock_output = False
         self._client = client
         self.default_model = model
         self.higher_model = higher_model_name
-        self.model_3 = model_3
-        if not sink: 
+        self.lower_model = lower_model_name
+        if not sink:
             self.sink = NoopGameSink()
         else:
             self.sink = sink
@@ -108,14 +108,20 @@ class APIClient:
                     raise
         return response, result
     
-    def create(self, response_model, messages: list, thinking=False, use_higher_model = False, use_model_3 = False):
+    def create(self, response_model, messages: list, thinking=False, use_higher_model = False, use_lower_model=False):
         if self._mock_output:
             return self._mock_response(response_model)
         if self._record_manager._total_api_tokens > self.token_budget:
             raise BudgetExceeded(f"Token budget of {self.token_budget} exceeded")
-        api_model = self.default_model if not use_higher_model else self.higher_model
-        if use_model_3 and self.model_3:
-            api_model = self.model_3
+        
+        if use_higher_model:
+            api_model = self.higher_model
+        elif use_lower_model and self.lower_model:
+            api_model = self.lower_model
+        else:
+            api_model = self.default_model
+            
+
         caller = _caller()
         start = time.monotonic()
         response, result = self._make_call(messages, api_model, response_model, thinking=thinking)

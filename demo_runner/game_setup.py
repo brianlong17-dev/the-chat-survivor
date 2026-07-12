@@ -44,6 +44,9 @@ def apply_agent_state(agents: dict, agent_state: dict):
             agent.phase_summaries_detailed[int(phase_str)] = text
         for phase_str, text in state["summaries_brief"].items():
             agent.phase_summaries_brief[int(phase_str)] = text
+            
+        if agent.name == 'Gollum':
+            agent._request_lower_model=True
 
 
 
