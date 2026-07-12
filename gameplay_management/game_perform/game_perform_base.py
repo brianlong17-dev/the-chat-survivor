@@ -77,7 +77,7 @@ class GamePerformBase(GameMechanicsMixin):
         average = round(sum(scores.values()) / len(scores)) if scores else 0
         summary = (
             f"*Scores for {performer_name}* — {individual}\n"
-            f"*Average score*: {average}\n"
+            f"*Final score: {average}*\n"
         )
         return summary, average
 
@@ -137,12 +137,13 @@ class GamePerformBase(GameMechanicsMixin):
 
         # --- Final scoreboard -------------------------------------------------
         round_summary_str = ",  ".join(
-            f"{name}: {score}" for name, score in round_scores.items()
+            f"{name}: {score}"
+            for name, score in sorted(round_scores.items(), key=lambda x: x[1], reverse=True)
         )
         overall_str = ",  ".join(
-            f"{name}: {score}" for name, score in self.game_board.agent_scores.items()
+            f"{name}: {score}"
+            for name, score in sorted(self.game_board.agent_scores.items(), key=lambda x: x[1], reverse=True)
         )
         self.game_board.host_broadcast(
             f"{self._results_header} — {round_summary_str}\n"
-            f"Final standings after the round: {overall_str}\n"
         )

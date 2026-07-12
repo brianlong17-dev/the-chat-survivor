@@ -5,6 +5,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from agents.character_generation.character_lister import CharacterLister
 from agents.agentic_player import AgenticPlayer
+from agents.agentic_player_v1.agent_player_v1 import AgenticPlayerV1
 
 class CharacterProfile(BaseModel):
     who: str = Field(description="If it's a name - what is the source of this person in popular culture or history?")
@@ -30,7 +31,7 @@ class CharacterGenerator:
         self.character_lister = CharacterLister()
         self.characters = self.character_lister.goats
         self.templates = self.character_lister.templates
-        self.agentic_player_classes=agentic_player_classes or [AgenticPlayer]
+        self.agentic_player_classes=agentic_player_classes or [AgenticPlayer] #[AgenticPlayer, AgenticPlayerV1]
 
 
     def generate_agents_from_names(self, names, allow_rename = True):
@@ -54,6 +55,7 @@ class CharacterGenerator:
         #print("character_type: " + profile.character_type)
         #print("AD: " + profile.additional_depth)
         agent_class=random.choice(self.agentic_player_classes)
+        #print(f"{final_name}: {agent_class.__name__}")
         return agent_class(
             name=final_name,
             initial_persona=f"{profile.persona}\n{profile.additional_depth}",
