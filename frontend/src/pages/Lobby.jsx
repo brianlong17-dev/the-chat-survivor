@@ -122,6 +122,16 @@ export default function Lobby({ onStart }) {
     }
   }
 
+  const randomize = () => {
+    const target = Math.min(maxPlayers - (humanSlotActive ? 1 : 0), hardSelectableAI)
+    const pool = [...new Set([...Object.values(tabs).flat(), ...customNames])]
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[pool[i], pool[j]] = [pool[j], pool[i]]
+    }
+    setSelected(pool.slice(0, Math.max(0, target)))
+  }
+
   const onChipDrop = (toIndex) => {
     if (dragIndex === null || dragIndex === toIndex) return
     const next = [...displayChips]
@@ -196,7 +206,18 @@ export default function Lobby({ onStart }) {
       </div>
 
       <div className="lobby-selected">
-        <span className="lobby-selected-label">Players ({activeCount}/{maxPlayers}{inactiveCount > 0 ? ` (+${inactiveCount} inactive)` : ''})</span>
+        <span className="lobby-selected-label">
+          Players ({activeCount}/{maxPlayers}{inactiveCount > 0 ? ` (+${inactiveCount} inactive)` : ''})
+          <button className="lobby-dice" onClick={randomize} title="Randomly fill players" aria-label="Randomly fill players">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2.5 14 V5.5 L5 3 H13.5 V11.5 L11 14 Z" />
+              <path d="M2.5 5.5 H11 M11 5.5 L13.5 3 M11 5.5 V14" />
+              <circle cx="4.9" cy="7.7" r="0.9" fill="currentColor" stroke="none" />
+              <circle cx="8.6" cy="11.8" r="0.9" fill="currentColor" stroke="none" />
+              <circle cx="12.2" cy="8.4" r="0.75" fill="currentColor" stroke="none" />
+            </svg>
+          </button>
+        </span>
         <div className="lobby-chips">
           {displayChips.map((c, i) => {
             const isActive = i < maxPlayers

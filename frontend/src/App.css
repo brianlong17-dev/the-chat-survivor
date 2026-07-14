@@ -1680,8 +1680,25 @@
   letter-spacing: 0.25em;
   color: var(--text-dim);
   text-transform: uppercase;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 10px;
+}
+
+.lobby-dice {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  color: var(--text-dim);
+  transition: color 0.15s, transform 0.15s;
+}
+
+.lobby-dice:hover {
+  color: var(--accent);
+  transform: rotate(-15deg);
 }
 
 .lobby-chips {

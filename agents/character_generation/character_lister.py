@@ -53,11 +53,15 @@ class CharacterLister:
               "King Bumi",   "Avatar Aang", "Katara", "Sokka", ]
 
     goats = ['Morty Smith', 'Lady Macbeth', 'Donald Trump', 'Gollum', 'Logan Roy', 'Elle Woods',
-             'Lumpy Space Princess', 'Jake the Dog', 'Catherine Earnshaw', "Thomas Wake (The Lighthouse)",
-             'Heathcliffe', 'Professor Quirrell', 'Miranda Priestly', 'Buffy Summers',
+             'Lumpy Space Princess', 'Lemongrab', 'Jake the Dog', 'Pennywise', 'Catherine Earnshaw', "Thomas Wake (The Lighthouse)",
+             'Heathcliffe', 'Professor Quirrell', 'Buffy Summers',
              'Amy March', 'Jo March', 'Drunk Frat Girl', "Cabbage Merchant (Avatar)", "Benoit Blanc",
              "Patrick Bateman"
              ]
+    
+    ireland = ['Michael D Higgins', 'Michael Healy Rae', 'Danny Healy Rae', 'Michael O Leary', 'Bono',
+               'Bob Geldof', 'Charlie Haughey', 'Eamon Dunphy', 'Maura Higgins'
+               ]
     
     past_goats = [ 'GLaDOS',  'Hermione Granger', 'Dennis Reynolds', 'Michael Scott']
     

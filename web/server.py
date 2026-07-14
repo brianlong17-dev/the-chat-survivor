@@ -63,8 +63,8 @@ async def get_characters():
             "Succession": lister.succession,
             "Little Women": lister.marches,
             "Avatar": lister.avatar,
-            "Meryls": lister.streep,
             "The Killer": lister.the_killer,
+            "Ireland": lister.ireland,
             "All": _all
         }
     }

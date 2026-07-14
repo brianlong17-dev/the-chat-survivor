@@ -35,31 +35,25 @@ class ModuleEntry:
     hidden: bool = False
 
 
-reunion_desc = (""" 
-This is the classic finale- eliminated players to crown a winner.
+reunion_desc = """This is the classic finale- eliminated players to crown a winner.
 
-It raises the stakes on the game- every character has their own rivalries and alliances. 
+It raises the stakes on the game- every character has their own rivalries and alliances.
 
-Eliminated player remain as background viewers, creating summarisation memories of each phase.
+Eliminated players remain as background viewers, creating summarisation memories of each phase.
 
 Instead of keeping these in context, we have a pre-interview where they use the memories to surface their opinions.
 
 The agentic host finally appears here- he creates player introductions by using their memories of the game.
 
-In future the host will be a full game agent with its own views and memories.
-                
-""")
+In future the host will be a full game agent with its own views and memories."""
 
-pd_finale_desc = ("""
-The classic split or steal finale.
+pd_finale_desc = """The classic split or steal finale.
 
 Two characters whose scores are tied have the opportunity to share the crown.
 
 If not, it's a matter of integrity and manipulation if they can overtake their opponent on scores.
 
-It's an amazing look into long term strategic deception- Uncle Iroh vs Meg March is an absolute highlight.
-
-""")
+It's an amazing look into long term strategic deception- Uncle Iroh vs Meg March is an absolute highlight."""
 MODULES = [
     ModuleEntry(
         id="reunion",
@@ -79,15 +73,13 @@ MODULES = [
         id="knives",
         title="Knives",
         module_class=GameKnives,
-        description=("""This is Murder in the Dark meets Murder on the Orient Express.
-        Each player has one knife to start with. The lights go out- the most stabbed player is removed- but if you survive, you now control the knives.
-        
-        I also introduced private messages in this round- you can also send players an anonymous note.
-        
-        Really this game just needs a strong UI widget, and some refinement- but the idea does work.
-                     
-                     """),
-        
+        description="""This is Murder in the Dark meets Murder on the Orient Express.
+
+Each player has one knife to start with. The lights go out- the most stabbed player is removed- but if you survive, you now control the knives.
+
+I also introduced private messages in this round- you can also send players an anonymous note.
+
+Really this game just needs a strong UI widget, and some refinement- but the idea does work.""",
         game=True,
     ),
     ModuleEntry(
@@ -96,18 +88,15 @@ MODULES = [
         module_class=GameMob,
         description="""Players form mobs behind a leader and pile onto a target.
 
-        This is a cool concept- it separates the leaders from the pacifists.
+This is a cool concept- it separates the leaders from the pacifists.
 
-        You step up to target a player- if you get enough people to support you, you steal their points.
+You step up to target a player- if you get enough people to support you, you steal their points.
 
-        It's a cool mechanism, and it really pits leaders against one another. Maybe it will work better with a larger cast, like 10+.
+It's a cool mechanism, and it really pits leaders against one another. Maybe it will work better with a larger cast, like 10+.
 
-        It benefits from fluid group dynamics.
+It benefits from fluid group dynamics.
 
-        Again, it just needs some refinement and a strong UI widget.
-
-
-        """,
+Again, it just needs some refinement and a strong UI widget.""",
         game=True,
     ),
     ModuleEntry(
@@ -116,38 +105,31 @@ MODULES = [
         module_class=GameCircle,
         description="""A shooting-circle standoff — survivors split the bonus.
 
-        This is the most successful of the parlor games. One player gets a gun, another gets a shield.
-        Shield has a choice- who else to protect? The gun must choose from the remaining players who to remove from the circle.
+This is the most successful of the parlor games. One player gets a gun, another gets a shield.
+Shield has a choice- who else to protect? The gun must choose from the remaining players who to remove from the circle.
 
+This is quick and dramatic, and really raises the stakes and forms grudges.
 
-        This is quick and dramatic, and really raises the stakes and forms grudges.
+Because each player can plead it gets long.
 
-        Because each player can plead it gets long.
+In this module I experimented with rolling context compressions.
 
-        In this module I experimented with rolling context compressions.
+I also introduced an optional response mechanism. Each optional response you pass increases your buffer by 0.4.
 
-        I also introduced an optional response mechanism. Each optional response you pass increases your buffer by 0.4.
-
-        You need 1 to respond, so when you speak up becomes strategic. This mechanism manages noise and manages token use.
-
-
-        """,
+You need 1 to respond, so when you speak up becomes strategic. This mechanism manages noise and manages token use.""",
         game=True,
     ),
     ModuleEntry(
         id="sob_story",
         title="Sob Story",
         module_class=GamePerformSobStory,
-        description="""This is really reality TV inspired. I thought, how can they perform in a way 
-        that is variable on character? The sob story of course.
-        
-        If you run multiple rounds they adopt strategic vulnerability.
-        
-        The problem here is actually the scoring- they tend to rate each other along alliances and scores.
-        
-        It's definitely a fun section, especially as a player trying to get pity points- not easy!
-        
-        """,
+        description="""This is really reality TV inspired. I thought, how can they perform in a way that is variable on character? The sob story of course.
+
+If you run multiple rounds they adopt strategic vulnerability.
+
+The problem here is actually the scoring- they tend to rate each other along alliances and scores.
+
+It's definitely a fun section, especially as a player trying to get pity points- not easy!""",
         game=True,
     ),
     ModuleEntry(
@@ -155,12 +137,10 @@ MODULES = [
         title="Comedy Roast",
         module_class=GamePerformComedyRoast,
         description="""This is the counter point to sob story- same format but comedy roasts.
-        
-        It was really a quick pass at the concept, but they are SO bad at being funny. 
-        
-        A really interesting engineering challenge to work on to try and make this funny.
-        
-        """,
+
+It was really a quick pass at the concept, but they are SO bad at being funny.
+
+A really interesting engineering challenge to work on to try and make this funny.""",
         game=True,
     ),
     ModuleEntry(
@@ -168,11 +148,9 @@ MODULES = [
         title="Wisdom of the Crowd",
         module_class=GameWisdom,
         description="""Vote on superlatives — match the crowd or win the vote to score points.
-        This is a mechanism to protect outsiders- questions like who is the biggest threat, outsider, unique voice etc.
-        
-        It also uses a single turn to generate all the responses. In the end it's too much text for a single round,
-        so I want to editorialise it before it's integrated.
-        """,
+This is a mechanism to protect outsiders- questions like who is the biggest threat, outsider, unique voice etc.
+
+It also uses a single turn to generate all the responses. In the end it's too much text for a single round, so I want to editorialise it before it's integrated.""",
         game=True,
     ),
     ModuleEntry(
@@ -180,10 +158,8 @@ MODULES = [
         title="Sacrificer",
         module_class=GameTargetedChoiceSacrifice,
         description="""Use your own points to hurt another player.
-        
-        Is it worth your own points to take points off someone else? In the end it's a bonkers mechanic that doesn't really make sense in practice.
-        
-        """,
+
+Is it worth your own points to take points off someone else? In the end it's a bonkers mechanic that doesn't really make sense in practice.""",
         game=True,
     ),
     ModuleEntry(
@@ -230,7 +206,7 @@ MODULES = [
         id="rps",
         title="Rock Paper Scissors",
         module_class=GameRockPaperScissors,
-        description="A really basic demo of a 1v1 game. ",
+        description="A really basic demo of a 1v1 game.",
         game=True,
         hidden=True,
     ),
@@ -238,7 +214,7 @@ MODULES = [
         id="pd",
         title="Prisoner's Dilemma",
         module_class=GamePrisonersDilemma,
-        description="The classic social game. ",
+        description="The classic social game.",
         game=True,
         hidden=True,
     ),
@@ -254,7 +230,7 @@ MODULES = [
         id="give_take",
         title="Give and Take",
         module_class=GameTargetedChoiceGiveOrTake,
-        description="As it says on the tin really! ",
+        description="As it says on the tin really!",
         game=True,
         hidden=True,
     ),

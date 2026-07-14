@@ -71,7 +71,7 @@ class APIClient:
             thinking_config = types.ThinkingConfig(thinking_budget=0, include_thoughts=False)
         system_content = next((m["content"] for m in messages if m["role"] == "system"), None)
         user_content = next((m["content"] for m in messages if m["role"] == "user"), None)
-        max_429_retries = 5
+        max_429_retries = 8
         backoff = 2
         for attempt in range(max_429_retries):
             try: 
