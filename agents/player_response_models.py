@@ -86,7 +86,7 @@ class AgentResponseModelFactory:
         if mobile_outputs and not speech:
             pub_prompt += f"\n (1-3 lines) "
         
-        ordered_fields["public_response_length"] = (str, Field(description="Would a one or two word reply here pack a punch? Or a one liner? Or is a longer response needed? "))
+        ordered_fields["public_response_length"] = (str, Field(description="What response length does this warrent- couple of words? A one liner? Longer? "))
         ordered_fields["public_response"] = (str, Field(description=pub_prompt))
         #....action 
         if action_fields and action_post_response:
