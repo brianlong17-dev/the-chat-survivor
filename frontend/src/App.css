@@ -1701,6 +1701,21 @@
   transform: rotate(-15deg);
 }
 
+.lobby-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  margin-left: 2px;
+  display: inline-flex;
+  color: var(--text-dim);
+  transition: color 0.15s;
+}
+
+.lobby-clear:hover {
+  color: var(--accent);
+}
+
 .lobby-chips {
   display: flex;
   flex-wrap: wrap;

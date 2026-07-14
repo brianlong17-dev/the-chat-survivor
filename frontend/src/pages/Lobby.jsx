@@ -21,6 +21,7 @@ export default function Lobby({ onStart }) {
   const [dragOverIndex, setDragOverIndex] = useState(null)
   const [turnstileEnabled, setTurnstileEnabled] = useState(null)
   const [turnstileToken, setTurnstileToken] = useState(null)
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
   const turnstileRef = useRef(null)
 
   useEffect(() => {
@@ -132,6 +133,11 @@ export default function Lobby({ onStart }) {
     setSelected(pool.slice(0, Math.max(0, target)))
   }
 
+  const clearCast = () => {
+    setSelected([])
+    setHumanIndex(null)
+  }
+
   const onChipDrop = (toIndex) => {
     if (dragIndex === null || dragIndex === toIndex) return
     const next = [...displayChips]
@@ -184,6 +190,18 @@ export default function Lobby({ onStart }) {
     <div className="lobby">
       <h1 className="lobby-title">THE CHAT SURVIVOR</h1>
 
+      {clearConfirmOpen && (
+        <div className="modal-overlay" onClick={() => setClearConfirmOpen(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div className="modal-title">Clear the current cast?</div>
+            <div className="modal-actions">
+              <button className="modal-btn" onClick={() => setClearConfirmOpen(false)}>Cancel</button>
+              <button className="modal-btn modal-btn-primary" onClick={() => { clearCast(); setClearConfirmOpen(false) }}>Yes</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="lobby-levels">
         <span className="lobby-selected-label">Level</span>
         <div className="level-cards">
@@ -217,6 +235,13 @@ export default function Lobby({ onStart }) {
               <circle cx="12.2" cy="8.4" r="0.75" fill="currentColor" stroke="none" />
             </svg>
           </button>
+          {displayChips.length > 0 && (
+            <button className="lobby-clear" onClick={() => setClearConfirmOpen(true)} title="Clear cast" aria-label="Clear cast">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+                <path d="M4 4 L12 12 M12 4 L4 12" />
+              </svg>
+            </button>
+          )}
         </span>
         <div className="lobby-chips">
           {displayChips.map((c, i) => {
