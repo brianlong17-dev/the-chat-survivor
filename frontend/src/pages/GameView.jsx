@@ -10,9 +10,9 @@ import PrivateChatsPanel from '../components/PrivateChatsPanel'
 export default function GameView({
   status, events, scores, evicted,
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
-  submitInput, sendNext, skipAnimation, exitGame, transcribe, onAnimationComplete, skipRef,
+  submitInput, sendNext, skipAnimation, exitGame, restartGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
-  privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound
+  privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound, devMode
 }) {
   const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs, autoExpandThoughts } = settings
 
@@ -257,6 +257,11 @@ export default function GameView({
               </button>
             )
           })()}
+          {devMode && (status === 'done' || status === 'error') && (
+            <button className="next-turn-btn" onClick={restartGame} title="Restart from scratch (dev)">
+              ⟳ Refresh
+            </button>
+          )}
           <span className={`start-btn status-${status}`} style={{ cursor: 'default' }}>
             {status === 'connecting' && 'Connecting…'}
             {status === 'running' && (awaitingNext && !autoRun && !isAnimating ? 'Waiting…' : 'Running…')}

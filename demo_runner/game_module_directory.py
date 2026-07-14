@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Type
+from dataclasses import dataclass, field
+from typing import List, Tuple, Type
 
 from gameplay_management.base_manager import BaseRound
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
@@ -22,6 +22,8 @@ from gameplay_management.game_targeted.game_targeted_give_or_take import GameTar
 from gameplay_management.game_targeted.game_targeted_give import GameTargetedChoiceGive
 from gameplay_management.game_targeted.game_targeted_steal import GameTargetedChoiceSteal
 from gameplay_management.game_targeted.game_targeted_sacrifice import GameTargetedChoiceSacrifice
+from gameplay_management.discussion_rounds.discussion_round_directed_short import DiscussionRoundDirectedShort
+from gameplay_management.discussion_rounds.discussion_round_directed import DiscussionRoundDirected
 
 
 @dataclass
@@ -33,6 +35,7 @@ class ModuleEntry:
     finale: bool = False
     game: bool = False
     hidden: bool = False
+    cfgs: List[Tuple[str, object]] = field(default_factory=list)
 
 
 reunion_desc = """This is the classic finale- eliminated players to crown a winner.
@@ -256,8 +259,18 @@ Is it worth your own points to take points off someone else? In the end it's a b
         module_class=None,
         description="test",
         game=True,
-        hidden=True,
+        hidden=False,
     ),
+    ModuleEntry(
+        id="discussionDirected",
+        title="Discussion Round Directed",
+        module_class=DiscussionRoundDirected,
+        description="test",
+        game=True,
+        cfgs=[("set_directed_discussion_group_allowed", True)],
+        hidden=False,
+    ),
+    
 ]
 
 

@@ -10,7 +10,6 @@ class BaseAgent:
         self.name = name
         self.api_client = api_client
         self.color = color
-        self.most_recent_internal_thought = ""
         self.debug_log = False          # set to True on any agent to enable logging
         self._log_call_index = 0        # monotonic counter per agent instance
         self._log_path = None           # set on first write, reused within a run

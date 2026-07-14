@@ -34,7 +34,8 @@ class AgenticPlayer(AbstractAgenticPlayer):
         self._mask_drop=False
         
         self.character_strategy = None
-        
+        self.emotional_state = None
+
         #persona
         self.initial_persona = initial_persona
         self.additional_persona_coloring = None
@@ -93,10 +94,10 @@ class AgenticPlayer(AbstractAgenticPlayer):
                 str, Field(description=f"In the past round do you see another player hallucinate or lie? Be careful not to repeat it"))
         fields["bandwagon"] = (
                 str, Field(description=f"Is everyone jumping on a repeated thought? Do you agree? If not, say so"))
-        fields["feeling"] = (
-                str, Field(description=f"Based on your initial persona, how are you really feeling inside? Just a line, or two. "))
+        fields["emotional_state"] = (
+                str, Field(description=f"Emotional state - given the events since your last turn on top of your previous emotional state: {self.emotional_state}. Just word, or two. "))
         fields["outer_mood"] = (
-                str, Field(description=f"What mood are you outwardly expressing? Just a word or two. "))
+                str, Field(description=f"Given your intiial persona and how you feel: What mood are you outwardly expressing?  "))
         return fields
         
     
@@ -156,11 +157,8 @@ class AgenticPlayer(AbstractAgenticPlayer):
             current_attr_value.append(clean_val)
 
     def process_evolution_fields(self, turn):
-        thought = getattr(turn, 'private_thoughts_brief', "")
-        self.most_recent_internal_thought = thought
 
-        personality_field_names = list(self.evolution_fields()) + list(self.logic_fields())
-
+        personality_field_names = list(self.evolution_fields()) + list(self.logic_fields()) + ['emotional_state']
 
         for target_attr_name in personality_field_names:
             value = getattr(turn, target_attr_name, None)

@@ -47,7 +47,12 @@ class CharacterLister:
                   
                  ]
     
-    avatar = avatar_tla = ["Toph Beifong", "Prince Zuko", "Uncle Iroh", 
+    inside_out = ["Joy (Inside Out)", "Sadness (Inside Out)", "Fear (Inside Out)",
+                  "Anger (Inside Out)", "Disgust (Inside Out)", "Riley (Inside Out)",
+                  "Anxiety (Inside Out)", "Envy (Inside Out)", "Embarrassment (Inside Out)",
+                  "Ennui (Inside Out)"]
+
+    avatar = avatar_tla = ["Toph Beifong", "Prince Zuko", "Uncle Iroh",
               "Azula", "Ty Lee", "Cabbage Merchant (Avatar)",
               "Mai (Avatar)", "Fire Lord Ozai", "Suki (Avatar)", 
               "King Bumi",   "Avatar Aang", "Katara", "Sokka", ]

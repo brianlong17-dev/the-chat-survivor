@@ -14,12 +14,16 @@ import IdleLayout from './components/IdleLayout'
 export default function App() {
   const [settings, setSettings] = useState(loadSettings)
   const [transcriptionEnabled, setTranscriptionEnabled] = useState(false)
+  const [devMode, setDevMode] = useState(false)
 
   useEffect(() => {
     fetch('/api/flags')
       .then(r => r.json())
-      .then(data => setTranscriptionEnabled(data.transcription_enabled))
-      .catch(() => setTranscriptionEnabled(false))
+      .then(data => {
+        setTranscriptionEnabled(data.transcription_enabled)
+        setDevMode(data.dev_mode)
+      })
+      .catch(() => { setTranscriptionEnabled(false); setDevMode(false) })
   }, [])
 
   const updateSetting = (key, value) => {
@@ -36,7 +40,7 @@ export default function App() {
 
   if (status !== 'idle') {
     const exitGame = () => { socket.exitGame(); navigate('/') }
-    return <GameViewRouter {...socket} exitGame={exitGame} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} />
+    return <GameViewRouter {...socket} exitGame={exitGame} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} devMode={devMode} />
   }
 
   return (

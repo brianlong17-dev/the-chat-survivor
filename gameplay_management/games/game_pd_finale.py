@@ -68,8 +68,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self.turn_manager.take_turn(player,
             turn_prompt=f"Read {opponent.name}'s last message. "
                         "This is your final response before the reveal. "
-                        f"React to what they said. Do not reveal your choice.\n "
-                        f"Remember your last thoughts: {player.most_recent_internal_thought}\n",
+                        f"React to what they said. Do not reveal your choice.\n ",
             public_response_prompt=f"Your last word before the game. Play it however you want. {coronation_string} {self.sfx}",
             game_logic_fields={"method": (str, Field(description="Do you want to influence your opponent? If so, how?"))},
             broadcast=True, 

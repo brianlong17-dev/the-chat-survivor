@@ -27,8 +27,10 @@ def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_n
     engine, agent_data, scores, elimination_order = _set_up_fixture(fixture_id, game_design, sink, api_client)
     _initialise_agents(engine, agent_data, scores, elimination_order, human_name=human_name)
     
+    _set_up_cfg(module, engine)
+    
     if module.module_class == None:
-        _set_up_cfg(engine)
+        _set_up_cfg_test(engine)
     
     if module.game:
         engine.phase_runner.run_phase(phase_desc)
@@ -38,7 +40,12 @@ def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_n
 def _get_test_phase_description(module):
     return PhaseDescription(rounds=[GamePrisonersDilemma], should_summarise_phase=False)
 
-def _set_up_cfg(engine):
+def _set_up_cfg(module, engine):
+    cfg = engine.gameplay_config
+    for name, value in module.cfgs:
+        getattr(cfg, name)(value)
+
+def _set_up_cfg_test(engine):
     cfg = engine.gameplay_config
     cfg.set_pd_pairing_all()
     

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from agents.abstract_agentic_player import AbstractAgenticPlayer
     
 
-default_public_response_prompt="Convey your mood and feeling. "
+default_public_response_prompt="Convey your mood and feeling. No length obligation. "
         
 default_private_thought_prompt="Your internal thoughts. Think in voice. Strategy, feelings, and private observations. "
 
@@ -86,6 +86,7 @@ class AgentResponseModelFactory:
         if mobile_outputs and not speech:
             pub_prompt += f"\n (1-3 lines) "
         
+        ordered_fields["public_response_length"] = (str, Field(description="Would a one or two word reply here pack a punch? Or a one liner? Or is a longer response needed? "))
         ordered_fields["public_response"] = (str, Field(description=pub_prompt))
         #....action 
         if action_fields and action_post_response:

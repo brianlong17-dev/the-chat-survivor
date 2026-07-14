@@ -82,7 +82,10 @@ class SystemPrompt:
             f"Current Strategy: {agent.game_strategy}\n"
             f"Character Strategy: {agent.character_strategy}\n\n")
             
-        output_string += "===\n\n"
+        if agent.emotional_state:
+            output_string += "===\n\n"
+            output_string += f"Emotional state: {agent.emotional_state}\n\n"
+            output_string += "===\n\n"
         
         if agent.initialising:
             output_string += f"\n{cls.system_prompt_init()}"

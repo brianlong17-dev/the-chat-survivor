@@ -62,9 +62,9 @@ class BaseRound:
             f"---------------------------------------------------------------------\n"
             f"!!!GAME OVER!!!\n"
             f"You're being removed! React to what just happened{elimination_context}\n"
-            f"(NOTE: Speak as your inner-thoughts self - drop any fake strategic persona.)\n"
+            f"(NOTE: Drop any pretense hiding your true intentions.)\n"
             f"---------------------------------------------------------------------\n"
-            f"Last chance to speak your mind:")
+            f"Your response:")
         
         final_words_prompt = ("Mask drop moment- let your inner voice speak. Speak directly to specific players.")
         if False: #host_question:

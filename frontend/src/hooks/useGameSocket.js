@@ -30,6 +30,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const [playerNames, setPlayerNames] = useState([])
 
   const wsRef = useRef(null)
+  const lastConnectRef = useRef(null)
   const transcribePendingRef = useRef(null)
   const autoRunRef = useRef(autoRun)
   useEffect(() => { autoRunRef.current = autoRun }, [autoRun])
@@ -179,6 +180,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
 
   const connect = useCallback((wsUrl, initMsg) => {
     if (wsRef.current) return
+    lastConnectRef.current = { wsUrl, initMsg }
     setStatus('connecting')
     setEvents([])
     setScores(null)
@@ -269,6 +271,16 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     awaitingNextRef.current = false
   }, [])
 
+  const restartGame = useCallback(() => {
+    const last = lastConnectRef.current
+    if (!last) return
+    if (wsRef.current) {
+      try { wsRef.current.onclose = null; wsRef.current.close() } catch (e) {}
+      wsRef.current = null
+    }
+    connect(last.wsUrl, last.initMsg)
+  }, [connect])
+
   const transcribe = useCallback((blob, hints = []) => {
     return new Promise((resolve) => {
       if (!wsRef.current) { resolve(''); return }
@@ -305,7 +317,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     status, events, scores, evicted,
     inputRequest, awaitingNext,  awaitingNextRound, phaseRounds, currentRoundIndex, feedMarkers, segmentTitles,
     widget, privateConversations, playerNames,
-    startGame, startDemo, startReplay, submitInput, sendNext, sendNextRound, skipAnimation, exitGame, transcribe,
+    startGame, startDemo, startReplay, submitInput, sendNext, sendNextRound, skipAnimation, exitGame, restartGame, transcribe,
     onAnimationComplete, skipRef, isAnimating: isAnimatingState,
   }
 }
