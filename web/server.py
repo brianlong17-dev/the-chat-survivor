@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from web import rate_limits
-from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, GAME_ENABLED,
+from web.server_config import (ALLOWED_ORIGINS, DEMO_ENABLED, DEV_MODE, GAME_ENABLED,
     TRANSCRIPTION_ENABLED, TURNSTILE_ENABLED)
 from web.server_helpers import handle_transcribe
 from web.ws_game import router as game_router
@@ -34,7 +34,7 @@ app.include_router(replay_router)
 
 @app.get("/api/flags")
 async def get_flags():
-    return {"game_enabled": GAME_ENABLED, "demo_enabled": DEMO_ENABLED, "transcription_enabled": TRANSCRIPTION_ENABLED, "turnstile_enabled": TURNSTILE_ENABLED}
+    return {"game_enabled": GAME_ENABLED, "demo_enabled": DEMO_ENABLED, "transcription_enabled": TRANSCRIPTION_ENABLED, "turnstile_enabled": TURNSTILE_ENABLED, "dev_mode": DEV_MODE}
 
 
 # ---------------------------------------------------------------------------
@@ -63,6 +63,7 @@ async def get_characters():
             "Succession": lister.succession,
             "Little Women": lister.marches,
             "Avatar": lister.avatar,
+            "Inside Out": lister.inside_out,
             "The Killer": lister.the_killer,
             "Ireland": lister.ireland,
             "All": _all
