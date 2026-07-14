@@ -4,7 +4,7 @@ from functools import partial
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from agents.character_generation.character_lister import CharacterLister
-from agents.agentic_player import AgenticPlayer
+from agents.agentic_player_v2.agentic_player import AgenticPlayer
 from agents.agentic_player_v1.agent_player_v1 import AgenticPlayerV1
 
 class CharacterProfile(BaseModel):
@@ -45,7 +45,7 @@ class CharacterGenerator:
         profile = self.api_client.create(
             response_model=CharacterProfile,
             messages=[
-                {"role": "system", "content": "You are generating a starting profile for an AI social simulation player. The name is typically of someone from popular culture, that it should be based on. "},
+                {"role": "system", "content": "You are generating a starting profile for a character starting in a competitive gameshow. They should be as competitive as their character allows. The name is typically of someone from popular culture, that it should be based on. "},
                 {"role": "user", "content": f"Create a rich, first-person persona and a physical form description for the historical figure or character: {character_name}. Make them colorful. "}
             ],
             use_higher_model=True

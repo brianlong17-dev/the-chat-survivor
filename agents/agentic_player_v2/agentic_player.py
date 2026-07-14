@@ -1,7 +1,7 @@
 import re
 from collections import deque
 from pydantic import Field
-from agents.system_prompt import SystemPrompt
+from agents.agentic_player_v2.system_prompt import SystemPrompt
 from core.game_context.user_content import UserContent
 from core.game_context.summaries_builder import SummariesStringBuilder
 from agents.player_response_models import AgentResponseModelFactory
@@ -107,7 +107,7 @@ class AgenticPlayer(AbstractAgenticPlayer):
                                         ("Only populate if you want to update your game strategy. "
                                         "Based on your initial persona written in initial speaking style- what's your long term game plan? "))) 
         fields["life_lessons"] =  (Optional[str], Field(default=None, description=
-                                ("OPTIONAL: New information to form a new life lesson. Write from your persona. ")))
+                                ("OPTIONAL: What new strategic lessons have you learned? Write from your persona. ")))
         
         fields["additional_persona_coloring"] = self._persona_coloring_field_description()
         fields["character_strategy"] =( Optional[str], Field(default=None, description=
@@ -130,12 +130,11 @@ class AgenticPlayer(AbstractAgenticPlayer):
             )))
          
     def _persona_coloring_field_description(self):
-        description = ("Add a splash of colour to your Unique Persona Detail? In keeping with your existing persona, written in your speaking style- perhaps a new fun element that gives you an edge in the game? Or just something you feel is missing? ")
         if self.additional_persona_coloring:
-            return (Optional[str], Field(default=None, description=f"Optional: Update unique persona detail? In keeping with your existing persona, written in your speaking style- a fun new persona element?"))
+            return (Optional[str], Field(default=None, description=f"What persona aspect to you want to lead with in order to strategically navigate the game? "))
              
         else:
-            return (str, Field(description=f"Add a fun persona detail that makes you stand out from the rest of the players- what adds colour and spark to your character? "))
+            return (str, Field(description=f"Add persona detail that you bring to the forefront when meeting new people in the game. "))
             
             
 
@@ -149,24 +148,28 @@ class AgenticPlayer(AbstractAgenticPlayer):
         kept = [s for s in self._split_sentences(value) if s not in seen]
         return " ".join(kept)
 
+    def _add_value_to_queue(self, value, target_attr_name):
+        current_attr_value = getattr(self, target_attr_name)
+        clean_val = self._clean_value_for_queue(current_attr_value, value)
+        is_duplicate = any(clean_val.lower() == existing.lower() for existing in current_attr_value)
+        if not self._check_if_empty(clean_val) and not is_duplicate:
+            current_attr_value.append(clean_val)
+
     def process_evolution_fields(self, turn):
         thought = getattr(turn, 'private_thoughts_brief', "")
         self.most_recent_internal_thought = thought
-      
+
         personality_field_names = list(self.evolution_fields()) + list(self.logic_fields())
-        
-        
+
+
         for target_attr_name in personality_field_names:
             value = getattr(turn, target_attr_name, None)
             if self._check_if_empty(value):
                 continue
             current_attr_value = getattr(self, target_attr_name)
-            
+
             if isinstance(current_attr_value, (list, deque)):
-                clean_val = self._clean_value_for_queue(current_attr_value, value)
-                is_duplicate = any(clean_val.lower() == existing.lower() for existing in current_attr_value)
-                if not self._check_if_empty(clean_val) and not is_duplicate:
-                    current_attr_value.append(clean_val)
+                self._add_value_to_queue(value, target_attr_name)
             else:
                 setattr(self, target_attr_name, value)
 
@@ -274,6 +277,6 @@ class AgenticPlayer(AbstractAgenticPlayer):
             self.life_lessons.clear()
             self.life_lessons.extend(response.compressed_life_lessons)
         if new_lesson:
-            self.life_lessons.append(new_lesson)
+            self._add_value_to_queue(new_lesson, 'life_lessons')
 
 

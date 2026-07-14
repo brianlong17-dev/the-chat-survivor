@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from agents.agentic_player import AgenticPlayer
+from agents.agentic_player_v2.agentic_player import AgenticPlayer
 from core.gameboard import GameBoard
 from core.levels.phase_description import PhaseDescription
 from tests.helpers.game_test_helpers import QueuedClient, TestGameSink, TestSimulation, attach_test_runtime, host_messages, turn_payload

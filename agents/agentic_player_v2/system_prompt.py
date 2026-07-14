@@ -80,19 +80,25 @@ class SystemPrompt:
             f"{optional_response_buffer_string}"
             f"=== YOUR INTERNAL STRATEGY AND ASSESSMENT ===\n"
             f"Current Strategy: {agent.game_strategy}\n"
-            f"Character Strategy: {agent.character_strategy}\n")
+            f"Character Strategy: {agent.character_strategy}\n\n")
+            
+        output_string += "===\n\n"
         
         if agent.initialising:
             output_string += f"\n{cls.system_prompt_init()}"
         
-        brevity_prompt = ("Public responses should feel reactive and conversational- not a speech or statement. "
-        "Occasional shortness can be powerful. Instead of a paragraph, try a short biting line. ")
-        
-        if agent._mask_drop or agent.game_over: #combine?
-            output_string += "THE GAME IS OVER. There's nothing left to win or lose. NB: Drop any pretense or false persona. \n"
-        else:
-            output_string += "INSTRUCTION: Reason through your character. Speak publicly through your speaking style. \n"
-            if agent.brevity_jail:
-                output_string += f"\n {brevity_prompt}"
+        output_string += cls._instruction_string(agent)
 
         return output_string
+    
+    @classmethod
+    def _instruction_string(cls, agent):
+        brevity_prompt = ("Public responses should feel reactive and conversational- not a speech or statement. "
+        "Occasional shortness can be powerful. Instead of a paragraph, try a short biting line. ")
+        if agent._mask_drop or agent.game_over:
+            instruction_string = "THE GAME IS OVER. There's nothing left to win or lose. NB: Drop any pretense or false persona. \n\n"
+        else:
+            instruction_string = "Reason through your character. Be conversational and reactive, not perfomative. " 
+            if agent.brevity_jail:
+                instruction_string += f"\n\n {brevity_prompt}"
+        return instruction_string

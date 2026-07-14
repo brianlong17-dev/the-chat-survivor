@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from agents.abstract_agentic_player import AbstractAgenticPlayer
     
 
-default_public_response_prompt="Say what you want- Your thoughts and feelings should come through. (Don't repeat other messages. Say little if you have nothing new to say.)"
+default_public_response_prompt="Convey your mood and feeling. "
         
 default_private_thought_prompt="Your internal thoughts. Think in voice. Strategy, feelings, and private observations. "
 
@@ -80,7 +80,9 @@ class AgentResponseModelFactory:
         if action_fields and not action_post_response:
             ordered_fields.update(action_fields)
         #...... public response
-        pub_prompt = public_response_prompt or default_public_response_prompt
+        pub_prompt = default_public_response_prompt
+        if public_response_prompt:
+            pub_prompt += f" {public_response_prompt}"
         if mobile_outputs and not speech:
             pub_prompt += f"\n (1-3 lines) "
         

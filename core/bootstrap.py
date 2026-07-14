@@ -7,7 +7,7 @@ from agents.game_host import GameMaster
 from core.gameboard import GameBoard
 from core.sinks.console_sink import ConsoleGameEventSink
 from core.simulation_engine import SimulationEngine
-from agents.agentic_player import AgenticPlayer
+from agents.agentic_player_v2.agentic_player import AgenticPlayer
 from agents.human_player import Human
 
 

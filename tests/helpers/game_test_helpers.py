@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from agents.agentic_player import AgenticPlayer
+from agents.agentic_player_v2.agentic_player import AgenticPlayer
 from core.game_config import GameConfig
 from core.gameboard import GameBoard
 from core.phase_runner import PhaseRunner

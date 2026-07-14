@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from gameplay_management.base_manager import BaseRound
 
 if TYPE_CHECKING:
-    from agents.agentic_player import AgenticPlayer
+    from agents.agentic_player_v2.agentic_player import AgenticPlayer
 
 @dataclass
 class Mob:
