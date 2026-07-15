@@ -1,5 +1,3 @@
-from typing import Optional, Sequence
-
 from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 
 
@@ -12,8 +10,8 @@ class VoteWinnerChooses(VotingRoundBase):
     def rules_description(cls, cfg):
         return "The player leading the scores will choose who leaves the game IMMEDIATELY."
 
-    def run_vote(self, immunity_players: Optional[Sequence[str]]):
-        self.run_voting_winner_chooses(immunity_players)
+    def run_vote(self):
+        self.run_voting_winner_chooses()
     
     def _host_intro(self, chooser, up_for_elimination):
         return (
@@ -23,14 +21,10 @@ class VoteWinnerChooses(VotingRoundBase):
         )
     
         
-    def run_voting_winner_chooses(self, immunity_players: Optional[Sequence[str]] = None, with_pass_option: bool = False):
+    def run_voting_winner_chooses(self, with_pass_option: bool = False):
         
         leading_player= self.get_strategic_players(self.simulationEngine.agents, top_player = True)[0]
-        immunity_players = self._validate_immunity(immunity_players)
-        up_for_elimination = [
-            name for name in self.game_board.agent_names()
-            if name != leading_player.name and name not in immunity_players
-        ]
+        up_for_elimination = self._names(self.agents)
 
         self.game_board.host_broadcast(self._host_intro(leading_player, up_for_elimination))
         

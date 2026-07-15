@@ -1,6 +1,5 @@
 import random
 from collections import Counter
-from typing import Optional, Sequence
 
 from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 
@@ -30,7 +29,7 @@ class VoteElectLeader(VotingRoundBase):
         return intro
 
 
-    def run_vote(self, immunity_players: Optional[Sequence[str]]):
+    def run_vote(self):
         self.immunity_plus = True
         # 1. intro
         intro = self._game_intro()

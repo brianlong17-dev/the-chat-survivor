@@ -15,8 +15,6 @@ from gameplay_management.game_targeted.game_targeted_steal import GameTargetedCh
 from gameplay_management.game_targeted.game_targeted_sacrifice import GameTargetedChoiceSacrifice
 from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
 from gameplay_management.eliminations.voting_lowest_points import VoteLowestPoints
-from gameplay_management.immunities.highest_points_immunity import HighestPointsImmunity
-from gameplay_management.immunities.wildcard_immunity import WildcardImmunity
 from gameplay_management.eliminations.reunion_round import FinaleReunionRound
 from gameplay_management.game_cycle.game_circle import GameCircle
 from gameplay_management.game_cycle.game_knives import GameKnives
@@ -73,7 +71,7 @@ class GameDesign:
     
     @classmethod
     def make_phase(cls, pre_game_discussion_rounds, game, pre_vote_discussion_rounds,
-                   vote, post_vote_discussion_rounds, immunity_types, config_mutations=None):
+                   vote, post_vote_discussion_rounds, config_mutations=None):
         rounds = []
 
         for _ in range(pre_game_discussion_rounds):
@@ -88,7 +86,7 @@ class GameDesign:
         for _ in range(post_vote_discussion_rounds):
             rounds.append(DiscussionRound)
 
-        return PhaseDescription(rounds=rounds, immunity_types=immunity_types, config_mutations=config_mutations or [])
+        return PhaseDescription(rounds=rounds, config_mutations=config_mutations or [])
         
     @classmethod 
     def server_timeout_string(cls):

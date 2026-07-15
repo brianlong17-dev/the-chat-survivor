@@ -1,4 +1,3 @@
-from typing import Optional, Sequence
 import random
 from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 
@@ -17,8 +16,8 @@ class VoteLowestPoints(VotingRoundBase):
         return (f"The player with the lowest score will now be removed from the game. "
                 f"In the event of a tie, a player will be chosen at random.\n\n")
 
-    def run_vote(self, immunity_players: Optional[Sequence[str]]):
-        self.run_voting_lowest_points_removed(immunity_players)
+    def run_vote(self):
+        self.run_voting_lowest_points_removed()
         
     def _winner_speech(self, winner):
         final_q = (f"Congrats to {winner.name}! How does it feel to be a winner? ")
@@ -30,13 +29,10 @@ class VoteLowestPoints(VotingRoundBase):
             broadcast=True)
        
         
-    def run_voting_lowest_points_removed(self, immunity_players: Optional[Sequence[str]] = None, with_pass_option: bool = False):
-        immunity_players = self._validate_immunity(immunity_players)
-        players_up_for_elimination = self._players_up_for_elimination(immunity_players)
-        lowest_players = self.get_strategic_players(players_up_for_elimination, top_player = False, multiple = True)
+    def run_voting_lowest_points_removed(self, with_pass_option: bool = False):
+        lowest_players = self.get_strategic_players(self.agents, top_player = False, multiple = True)
         is_finale = len(self.agents) == 2
         
-        #TODO potentially, there can be a unified host string, alarms, plus rules.
         if is_finale:
             host_string = "The time has come- our game has come to its conclusion. "
         else:

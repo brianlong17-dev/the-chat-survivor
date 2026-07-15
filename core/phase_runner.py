@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING
 
 from core.shared_helpers import is_dev_mode
-from gameplay_management.immunities.immunity_mechanicsMixin import ImmunityMechanicsMixin
 from gameplay_management.discussion_rounds.discussion_settings import DiscussionRoundSettings
 
 
@@ -10,9 +9,6 @@ from gameplay_management.discussion_rounds.discussion_settings import Discussion
 if TYPE_CHECKING:
     from core.simulation_engine import SimulationEngine
     from core.levels.phase_description import PhaseDescription
-
-
-
     
 class PhaseRunner:
     def __init__(self, simulation_engine: 'SimulationEngine'):
@@ -21,7 +17,6 @@ class PhaseRunner:
         self.current_round_index = 0
         self._dev_mode = is_dev_mode()
         
-
     @property
     def game_board(self):
         return self.simulation_engine.game_board
@@ -35,29 +30,12 @@ class PhaseRunner:
     
     def removed_agent_names(self):
         return [agent.name for agent in self.simulation_engine.dead_agents]
-
-    def run_vote_round_with_immunity_types(self, round_class, immunity_types):
-        immune_players = []
-        if immunity_types:
-            for immunity_type in immunity_types:
-                result = immunity_type(self.game_board, self.simulation_engine).run_immunity()
-                immune_players.extend(result)
-        immune_players = list(dict.fromkeys(immune_players)) #remove any dupes
-        round_class(self.game_board, self.simulation_engine).run_vote(immunity_players=immune_players)
-
     
     def get_phase_progress_string(self):
         return self.current_phase_description.phase_progress_string(self._cfg, self.current_round_index)
 
     def _introduce_phase(self):
-        cfg = self._cfg
-        host_intro = self.current_phase_description.phase_intro_string(self.game_board.phase_number,
-                                    len(self.agent_names()), cfg)
-        system_phase_summary = self.current_phase_description.phase_summary_string(cfg)
-        round_names = [r.display_name(cfg) for r in self.current_phase_description.rounds]
-        if host_intro:
-            self.game_board.host_broadcast(host_intro)
-        #self.game_board.system_broadcast(system_phase_summary, private = True, border_bottom=True)
+        round_names = [r.display_name(self._cfg) for r in self.current_phase_description.rounds]
         self.game_board.game_sink.on_phase_rounds(round_names)
         
     def _introduce_game(self):
@@ -69,7 +47,7 @@ class PhaseRunner:
     def _use_round_gate(self):
         return self.game_board.first_message_send and not self._dev_mode
     
-    def run_round(self, round, immunity_types):
+    def run_round(self, round):
         if self._use_round_gate():
             self.game_board.game_sink.wait_for_continue_next_round()
         self.current_round_index += 1
@@ -82,12 +60,10 @@ class PhaseRunner:
             self._introduce_game()
 
         if round.is_vote():
-            self.run_vote_round_with_immunity_types(round, immunity_types)
+            round(self.game_board, self.simulation_engine).run_vote()
         else:
             round(self.game_board, self.simulation_engine).run_game()
         
-        
-        #self.game_board.system_broadcast(self.game_board.agent_scores)
         round_summary = self.simulation_engine.game_master.summariseRound(self.game_board)
         
         self.game_board.endRound(round_summary)
@@ -138,7 +114,7 @@ class PhaseRunner:
         self.current_phase_description = phase_description
         self.game_board.new_phase()
         for round in phase_description.rounds:
-            self.run_round(round, phase_description.immunity_types)
+            self.run_round(round,)
             self._impose_brevity_jail()
             
         

@@ -16,7 +16,6 @@ def test_run_voting_winner_chooses_selects_target_and_eliminates():
     alice = agents[0]
     eliminated = []
 
-    game._validate_immunity = lambda immunity: []
     game.get_strategic_players = lambda _agents, top_player=True, limit=1: [alice]
     game.eliminate_player_by_name = lambda name: eliminated.append(name)
 

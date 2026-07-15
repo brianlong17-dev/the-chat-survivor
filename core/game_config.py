@@ -98,11 +98,6 @@ class GameConfig:
         self.vote_bottom_two_expand_ties = False
         self.vote_dont_miss = True
         self.vote_missed_points = 2
-
-        # --------------------------------------------------------------
-        # Immunities
-        # --------------------------------------------------------------
-        self.immunity_highest_points_only_one = False
         
         # --------------------------------------------------------------
         # Cycle round settings (compression & optional responses)

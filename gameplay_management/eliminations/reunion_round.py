@@ -66,7 +66,7 @@ class FinaleReunionRound(VotingRoundBase):
     def _on_segment(self, segment):
         self.game_board.game_sink.on_feed_marker(segment)
         
-    def run_vote(self, immunity_players = None):
+    def run_vote(self):
         
         #- set up -#
         self._set_segment_titles(self._SEGMENTS)

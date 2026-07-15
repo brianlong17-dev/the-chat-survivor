@@ -1,5 +1,4 @@
 from collections import Counter
-from typing import Optional, Sequence
 from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 
 class VoteBottomTwo(VotingRoundBase):
@@ -20,22 +19,18 @@ class VoteBottomTwo(VotingRoundBase):
             
         return rules_string
            
-    def run_vote(self, immunity_players: Optional[Sequence[str]]):
+    def run_vote(self):
         self.elimination_context=None
-        self.run_voting_bottom_players(immunity_players, expand_ties = self.cfg.vote_bottom_two_expand_ties,
+        self.run_voting_bottom_players(expand_ties = self.cfg.vote_bottom_two_expand_ties,
                                        dont_miss = self.cfg.vote_dont_miss)
 
     
-    def run_voting_bottom_players(self, immunity_players: Optional[Sequence[str]] = None, dont_miss: bool = True, expand_ties: bool = False):
+    def run_voting_bottom_players(self, dont_miss: bool = True, expand_ties: bool = False):
 
         self._initial_vote_tally = None
-        immunity_players = self._validate_immunity(immunity_players)
-        players_up_for_elimination = self._players_up_for_elimination(immunity_players)
-        players_up_for_elimination = self.get_bottom_players(players_up_for_elimination, min = 2, expand_ties=expand_ties)
+        players_up_for_elimination = self.get_bottom_players(self.agents, min = 2, expand_ties=expand_ties)
         host_intro_msg = "Welcome to the elimination round. "
         host_intro_msg += (self.rules_description_detailed())
-        host_intro_msg += self.immunity_string(immunity_players, 
-                                               self._names(players_up_for_elimination))
         if len(players_up_for_elimination) > 2:
             host_intro_msg += "Since we have a tie at the bottom of scoreboard, additional players will face the vote. "
         host_intro_msg += self._facing_the_vote_string(self._names(players_up_for_elimination))
