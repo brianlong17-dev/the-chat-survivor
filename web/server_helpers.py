@@ -10,29 +10,15 @@ from datetime import datetime
 import httpx
 from fastapi import WebSocket
 
-from core.shared_web_game_functionality import sanitize_text
+from core.shared_helpers import get_master_logger, sanitize_text
 from web.server_config import MAX_AUDIO_BYTES, DEV_MODE, MAX_INPUT_LENGTH, TRANSCRIPTION_ENABLED
 
 TURNSTILE_SECRET = os.getenv("TURNSTILE_SECRET")
 if not TURNSTILE_SECRET: # and TURNSTILE_ENABLED --  for now always crash
     raise RuntimeError("TURNSTILE_ENABLED is on but TURNSTILE_SECRET is not set")
 
-_GAME_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs", "gamelogs")
-_game_logger = None
-
-
 def _get_game_logger() -> logging.Logger:
-    """Lazily build the game-start logger so importing this module has no filesystem side effects."""
-    global _game_logger
-    if _game_logger is None:
-        os.makedirs(_GAME_LOG_DIR, exist_ok=True)
-        handler = logging.FileHandler(os.path.join(_GAME_LOG_DIR, "master_game_log"))
-        handler.setFormatter(logging.Formatter("%(message)s"))
-        logger = logging.getLogger("game")
-        logger.setLevel(logging.INFO)
-        logger.addHandler(handler)
-        _game_logger = logger
-    return _game_logger
+    return get_master_logger("game", "master_game_log")
 
 
 def sanitize_name(name: str) -> str:

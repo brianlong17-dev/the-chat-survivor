@@ -7,6 +7,7 @@ from datetime import date
 
 from fastapi import WebSocket
 
+from core.shared_helpers import get_master_logger
 from web.server_config import (DAILY_DEMO_CAP, DAILY_GAME_CAP, DAILY_TOKEN_CAP,
     MAX_CONCURRENT_GAMES, RATE_LIMITS_DB_PATH, CHECK_IP,
 )
@@ -47,11 +48,30 @@ def _connect():
 
 def _ensure_today(conn) -> str:
     today = date.today().isoformat()
-    conn.execute(
+    cursor = conn.execute(
         "INSERT OR IGNORE INTO daily_counts(date, games, demos, tokens) VALUES (?, 0, 0, 0)",
         (today,),
     )
+    if cursor.rowcount > 0:
+        _log_previous_day(conn, today)
     return today
+
+
+def _log_previous_day(conn, today: str) -> None:
+    """Called once, on the first ensure of a new day — writes the prior day's final tally to the master log."""
+    row = conn.execute(
+        "SELECT date, games, demos, tokens FROM daily_counts WHERE date < ? ORDER BY date DESC LIMIT 1",
+        (today,),
+    ).fetchone()
+    if row is None:
+        return
+    prev_date, games, demos, tokens = row
+    get_master_logger("daily_tokens", "daily_token_log").info(json.dumps({
+        "date": prev_date,
+        "games": games,
+        "demos": demos,
+        "tokens": tokens,
+    }))
 
 
 def _read_today() -> tuple[str, int, int, int]:
@@ -63,6 +83,7 @@ def _read_today() -> tuple[str, int, int, int]:
             (today,),
         ).fetchone()
         return today, row[0], row[1], row[2]
+
 
 async def daily_and_concurrency_check(websocket: WebSocket, kind: str, ip_address: str) -> bool:
     if not await check_concurrency_and_get_slot(websocket, ip_address):
@@ -122,7 +143,6 @@ async def check_token_cap(websocket: WebSocket) -> bool:
 
 
 def record_token_usage(api_client) -> None:
-    #edge case - server crashes? this isn't recorded 
     if api_client is None:
         return
     total = api_client.usage_totals().get("total", 0)
@@ -135,7 +155,6 @@ def record_token_usage(api_client) -> None:
             (total, today),
         )
         conn.commit()
-
 
 def release_slot(api_client, ip_address: str) -> None:
     global _active_games
@@ -154,7 +173,7 @@ def release_unused_slot(ip_address: str | None = None) -> None:
         if ip_address and ip_address in _active_ip_addresses:
             _active_ip_addresses.remove(ip_address)
 
-def snapshot() -> dict:
+def snapshot() -> dict: 
     today, games, demos, tokens = _read_today()
     return {
         "date": today,
@@ -170,6 +189,5 @@ def snapshot() -> dict:
         "active_games": _active_games,
         "max_concurrent": MAX_CONCURRENT_GAMES,
     }
-
 
 _init_db()

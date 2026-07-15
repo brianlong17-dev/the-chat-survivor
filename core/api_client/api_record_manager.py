@@ -6,6 +6,8 @@ import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 
+from core.shared_helpers import get_master_logger
+
 
 @dataclass(frozen=True)
 class CallRecord:
@@ -73,15 +75,23 @@ class APIRecordManager:
             }
 
     @staticmethod
-    def _extract_usage(response) -> tuple[int | None, int | None, int | None, int | None]:
+    def _first_present(usage, *names: str) -> int | None:
+        for name in names:
+            value = getattr(usage, name, None)
+            if value is not None:
+                return value
+        return None
+
+    @classmethod
+    def _extract_usage(cls, response) -> tuple[int | None, int | None, int | None, int | None]:
         usage = getattr(response, "usage_metadata", None) or getattr(response, "usage", None)
         if usage is None:
             return None, None, None, None
 
-        prompt = getattr(usage, "prompt_token_count", None) or getattr(usage, "prompt_tokens", None)
-        completion = getattr(usage, "candidates_token_count", None) or getattr(usage, "completion_tokens", None)
-        thinking = getattr(usage, "thoughts_token_count", None) or getattr(usage, "thinking_tokens", None)
-        api_total = getattr(usage, "total_token_count", None) or getattr(usage, "total_tokens", None)
+        prompt = cls._first_present(usage, "prompt_token_count", "prompt_tokens")
+        completion = cls._first_present(usage, "candidates_token_count", "completion_tokens")
+        thinking = cls._first_present(usage, "thoughts_token_count", "thinking_tokens")
+        api_total = cls._first_present(usage, "total_token_count", "total_tokens")
         return prompt, completion, thinking, api_total
 
 
@@ -129,10 +139,14 @@ class APIRecordManager:
                   f"{stats['thinking']:>7,} think  "
                   f"{stats['ms']:>5}ms")
         print(f"{'─' * w}\n")
-        if self._log_path:
-            summary_path = self._log_path.replace(".jsonl", "_summary.json")
-            with open(summary_path, "w", encoding="utf-8") as f:
-                json.dump(s, f, indent=2)
+
+        game_id = os.path.splitext(os.path.basename(self._log_path))[0] if self._log_path else None
+        entry = {
+            "game_id": game_id,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            **s,
+        }
+        get_master_logger("api_summary", "api_summary_log").info(json.dumps(entry, ensure_ascii=False))
 
 
 #------------------------------

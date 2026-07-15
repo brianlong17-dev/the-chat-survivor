@@ -1,7 +1,7 @@
 from collections import deque
 from pydantic import Field, ValidationError
 from agents.agentic_player_v2.agentic_player import AgenticPlayer
-from core.shared_web_game_functionality import sanitize_text
+from core.shared_helpers import sanitize_text
 from typing import get_args, get_origin, Literal
 from typing import TYPE_CHECKING, Dict, Optional
 

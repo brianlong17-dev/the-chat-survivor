@@ -1,5 +1,5 @@
 from core.game_config import GameConfig
-from core.shared_web_game_functionality import INACTIVITY_TIMEOUT, is_dev_mode
+from core.shared_helpers import INACTIVITY_TIMEOUT, is_dev_mode
 from core.levels.phase_description import PhaseDescription
 from gameplay_management.discussion_rounds.discussion_round import DiscussionRound
 from gameplay_management.discussion_rounds.discussion_round_directed import DiscussionRoundDirected

@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING
 
-from core.shared_web_game_functionality import is_dev_mode
+from core.shared_helpers import is_dev_mode
 from gameplay_management.immunities.immunity_mechanicsMixin import ImmunityMechanicsMixin
 from gameplay_management.discussion_rounds.discussion_settings import DiscussionRoundSettings
 

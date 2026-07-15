@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from core.shared_web_game_functionality import INACTIVITY_TIMEOUT, is_dev_mode  # noqa: F401 — re-exported for visibility
+from core.shared_helpers import INACTIVITY_TIMEOUT, is_dev_mode  # noqa: F401 — re-exported for visibility
 
 load_dotenv(override=True)
 

@@ -12,7 +12,7 @@ from fastapi import WebSocket
 
 from core.sinks.game_sink import GameEventSink
 from core import backend_config
-from core.shared_web_game_functionality import INACTIVITY_TIMEOUT
+from core.shared_helpers import INACTIVITY_TIMEOUT
 INACTIVITY_MESSAGE = f"Session timed out due to inactivity ({INACTIVITY_TIMEOUT//60} minutes)"
 
 class InactivityTimeout(Exception):
