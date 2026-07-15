@@ -1,17 +1,17 @@
 """MCP server exposing character-log inspection tools.
 
 Run standalone (stdio transport):
-    uv run python -m persona_mcp.server
+    uv run python -m mcp_service.server
 
 Register with Claude Code:
-    claude mcp add persona-tools -- uv run python -m persona_mcp.server
+    claude mcp add persona-tools -- uv run python -m mcp_service.server
 
 The docstrings below are the interface the model reads to decide when and how
 to call each tool — they describe *when to use this*, not just what it does.
 """
 from mcp.server.fastmcp import FastMCP
 
-from persona_mcp.core import (
+from mcp_service.core import (
     DEFAULT_LOG_DIR,
     MASTER_LOG_DIR,
     MoodTimeline,

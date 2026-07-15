@@ -51,7 +51,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for a full breakdown of how the component
 3. Install dependencies:
    uv sync
 4. Run the game *in terminal*:
-   uv run main.py 
+   uv run core/run_terminal.py 
    
 ## Web Frontend 
 

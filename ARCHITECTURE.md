@@ -211,7 +211,7 @@ A representative example: **Prisoner's Dilemma** ([game_prisoners_dilemma.py](ga
 - [`/ws/demo`](web/ws_demo.py) — a fixture-backed demo module.
 - [`/ws/replay`](web/ws_replay.py) — fires a saved tape back through the socket with no LLM calls, stripping live-only events.
 
-Around them sits real production plumbing: Cloudflare Turnstile verification, per-IP daily and concurrency limits plus a token cap backed by a SQLite database ([rate_limits.py](web/rate_limits.py)), input sanitisation and length caps, non-blocking audio transcription, and structured game-start logging. The CLI ([main.py](main.py)) and every web surface share the exact same engine — only the sink differs.
+Around them sits real production plumbing: Cloudflare Turnstile verification, per-IP daily and concurrency limits plus a token cap backed by a SQLite database ([rate_limits.py](web/rate_limits.py)), input sanitisation and length caps, non-blocking audio transcription, and structured game-start logging. The CLI ([run_terminal.py](core/run_terminal.py)) and every web surface share the exact same engine — only the sink differs.
 
 ### Demos, fixtures, and replay
 

@@ -30,7 +30,7 @@ back as JSON text).
 ## Run standalone
 
 ```bash
-uv run python -m persona_mcp.server
+uv run python -m mcp_service.server
 ```
 
 ## Register with Claude Code
@@ -38,7 +38,7 @@ uv run python -m persona_mcp.server
 Already wired via `.mcp.json` at the repo root. Equivalent CLI:
 
 ```bash
-claude mcp add persona-tools --scope project -- uv run python -m persona_mcp.server
+claude mcp add persona-tools --scope project -- uv run python -m mcp_service.server
 ```
 
 Then in a session, ask e.g. *"how did Aang's persona drift this game?"* and the
