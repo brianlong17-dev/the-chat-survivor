@@ -2,15 +2,16 @@ import asyncio
 import base64
 import json
 import logging
+import logging.handlers
 import os
 import traceback
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 import httpx
 from fastapi import WebSocket
 
-from core.shared_helpers import get_master_logger, sanitize_text
+from core.shared_helpers import get_master_logger, sanitize_text, MASTER_LOG_DIR
 from web.server_config import MAX_AUDIO_BYTES, DEV_MODE, MAX_INPUT_LENGTH, TRANSCRIPTION_ENABLED
 
 TURNSTILE_SECRET = os.getenv("TURNSTILE_SECRET")
@@ -19,6 +20,24 @@ if not TURNSTILE_SECRET: # and TURNSTILE_ENABLED --  for now always crash
 
 def _get_game_logger() -> logging.Logger:
     return get_master_logger("game", "master_game_log")
+
+
+_error_logger: logging.Logger | None = None
+
+
+def _get_error_logger() -> logging.Logger:
+    global _error_logger
+    if _error_logger is None:
+        os.makedirs(MASTER_LOG_DIR, exist_ok=True)
+        handler = logging.handlers.RotatingFileHandler(
+            os.path.join(MASTER_LOG_DIR, "error_log"), maxBytes=5_000_000, backupCount=3
+        )
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        logger = logging.getLogger("error")
+        logger.setLevel(logging.INFO)
+        logger.addHandler(handler)
+        _error_logger = logger
+    return _error_logger
 
 
 def sanitize_name(name: str) -> str:
@@ -94,6 +113,12 @@ async def _run_game_thread(thread, api_client, websocket, sink):
 def _send_error(websocket, loop, exc):
     """Safe to call from any thread."""
     traceback.print_exc()
+    _get_error_logger().info(json.dumps({
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "type": type(exc).__name__,
+        "message": str(exc),
+        "traceback": traceback.format_exc(),
+    }, ensure_ascii=False))
     message = f"{exc}\n\n{traceback.format_exc()}" if DEV_MODE else str(exc)
     try:
         asyncio.run_coroutine_threadsafe(
