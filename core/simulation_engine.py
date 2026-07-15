@@ -52,6 +52,10 @@ class SimulationEngine:
         self.initialiseGameBoard()
         self.run_phase_loop()
     
+    def run_demo_phase(self, phase):
+        self.phase_runner.run_phase(phase)
+        self.api_client.print_and_write_summary()
+        
     def run_phase_loop(self):
         while len(self.agents) > 1 and not self.game_board.game_over:
             phase = self.game_design.get_phase_description(self.game_board.phase_number + 1, len(self.agents), self.gameplay_config)

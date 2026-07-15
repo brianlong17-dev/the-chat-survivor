@@ -16,11 +16,7 @@ def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_n
     if not module:
         raise ValueError(f"Unknown module: {module_id}")
     
-    if module.module_class == None:
-        phase_desc = _get_test_phase_description(module)
-
-    else:
-        phase_desc = PhaseDescription(rounds=[module.module_class], should_summarise_phase=False)
+    phase_desc = PhaseDescription(rounds=[module.module_class], should_summarise_phase=False)
 
     game_design = TestingGameDesign([phase_desc])
 
@@ -32,10 +28,8 @@ def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_n
     if module.module_class == None:
         _set_up_cfg_test(engine)
     
-    if module.game:
-        engine.phase_runner.run_phase(phase_desc)
-    else:
-        engine.run_phase_loop()
+    engine.run_demo_phase(phase_desc)
+    
 
 def _get_test_phase_description(module):
     return PhaseDescription(rounds=[GamePrisonersDilemma], should_summarise_phase=False)
