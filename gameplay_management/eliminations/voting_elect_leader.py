@@ -139,7 +139,7 @@ class VoteElectLeader(VotingRoundBase):
                              "If you could have given someone the axe, who would it have been? ")
         self._host_broadcast(host_question)
         self.turn_manager.respond_to(self._agent_by_name(winner_name), turn_prompt=f"Respond to the events of the round: {loser_name}'s last words, and to the hosts question: {host_question}",
-                                     private_thoughts_prompt="What do you want to reveal? ", prefix_respond_to=False, broadcast=True)
+                                     private_thoughts_prompt="What do you want to reveal? ", prefix_turn_prompt=False, broadcast=True)
         
         #go to winner for reaction 
 
@@ -156,7 +156,7 @@ class VoteElectLeader(VotingRoundBase):
                     pleader,
                     turn_prompt=f"You are at risk of being sent home by {nominee}. Make your final plea — why should they spare you?",
                     private_thoughts_prompt="What is your read on the executioner? What angle will actually move them?",
-                    prefix_respond_to=False,
+                    prefix_turn_prompt=False,
                     broadcast=True,
                     is_reply=True
                 )

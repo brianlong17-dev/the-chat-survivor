@@ -160,7 +160,7 @@ class GameGuess(GameMechanicsMixin):
         if agents_for_response:
             with ThreadPoolExecutor() as executor:
                 for player in agents_for_response:
-                    future = executor.submit(self.turn_manager.respond_to, player, result_string)
+                    future = executor.submit(self.turn_manager.respond_to, player, result_string, broadcast=False)
                     reaction_futures.append((player, future))
 
             

@@ -114,8 +114,9 @@ class PhaseRunner:
         self.current_phase_description = phase_description
         self.game_board.new_phase()
         for round in phase_description.rounds:
-            self.run_round(round,)
-            self._impose_brevity_jail()
+            self.run_round(round)
+            #TODO probably fixed with the response model field 
+            #self._impose_brevity_jail()
             
         
         if phase_description.should_summarise_phase:

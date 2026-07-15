@@ -168,11 +168,10 @@ class TurnManager:
         return model
                       
     def respond_to(self, player: AbstractAgenticPlayer, turn_prompt: str, public_response_prompt: str = None,
-                   private_thoughts_prompt: str = None, additional_thought_prompt: str = None, instruction_override = None, broadcast = False, is_reply = False,
-                   prefix_respond_to: bool = True): #TODO prefix_respond_to - rename to incl prompt 
-        #TODO 2-  shuld broadcast not default to true?
+                   private_thoughts_prompt: str = None, additional_thought_prompt: str = None, instruction_override = None, broadcast = True, is_reply = False,
+                   prefix_turn_prompt: bool = True):
 
-        if prefix_respond_to:
+        if prefix_turn_prompt:
             turn_prompt = f"Respond to: \n{turn_prompt}"
         return self.take_turn(player, turn_prompt, 
                               public_response_prompt=public_response_prompt,
@@ -181,13 +180,6 @@ class TurnManager:
                               additional_thought_nudge=additional_thought_prompt,
                               broadcast = broadcast,
                               is_reply = is_reply)
-
-    def get_response(self, player, context_msg, action_fields = None, additional_thought_nudge = None, broadcast = False):
-        #safe to remove?
-        return self.take_turn(player, context_msg,
-                              additional_thought_nudge=additional_thought_nudge,
-                              action_fields=action_fields,
-                              broadcast = broadcast)
 
     def _ask_directed_question(self, player, possible_target_names, turn_prompt,
                                public_response_prompt, additional_thought_nudge = None, is_reply = False):
@@ -238,6 +230,11 @@ class TurnManager:
             self.base_manager.debug_print(f"{agent.name} passes, buffer: {agent.optional_response_buffer}")
             self.base_manager.debug_print(f"{agent.name} thoughts: {result.private_thoughts}")
         return result
+        
+    def _low_buffer_message(self, agent):
+        self.base_manager.private_system_message(agent, "Your turn here was passed as your optional response buffer was too low.")
+
+    # --- Output --- #
 
     def _format_public_response(self, response, pre_message_choice_reveal=None, post_message_choice_reveal=None, include_target_name=False):
         public_response = response.public_response
@@ -264,9 +261,6 @@ class TurnManager:
             directed_to_name = None if directed_to_name == 'Group' else directed_to_name
         return public_response, directed_to_name
 
-                
-                
-    
     def _output_response(self, player, response, single_message_overwrite=None, pre_message_choice_reveal=None, post_message_choice_reveal=None, is_reply=False, delay=0,
                          include_target_name=False):
         
@@ -280,6 +274,3 @@ class TurnManager:
         self.game_board.handle_public_private_output(player,
                 public_response, private_thoughts, private_thoughts_brief, delay=delay,
                 is_reply=is_reply, directed_to_name=directed_to_name)
-        
-    def _low_buffer_message(self, agent):
-        self.base_manager.private_system_message(agent, "Your turn here was passed as your optional response buffer was too low.")

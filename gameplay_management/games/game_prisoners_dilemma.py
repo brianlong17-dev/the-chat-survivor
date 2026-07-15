@@ -248,7 +248,7 @@ class GamePrisonersDilemma(GameMechanicsMixin):
 
     
     def respond_to_return_sender(self, agent, msg):
-        return (agent, self.turn_manager.respond_to(agent, msg))
+        return (agent, self.turn_manager.respond_to(agent, msg, broadcast=False))
     
     def _execute_pairs(self, pairs):
         for agent0, agent1 in pairs:

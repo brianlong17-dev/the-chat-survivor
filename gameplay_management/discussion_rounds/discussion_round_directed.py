@@ -59,5 +59,5 @@ class DiscussionRoundDirected(DiscussionBaseRound):
 
                     user_prompt = f"Respond directly to {player.name}'s last message to you. Don't ask a question in response. {appendage}"
                     self.turn_manager.respond_to(chosen_agent, user_prompt, public_response_prompt="Your public response. ",
-                                                broadcast=True, is_reply=True, prefix_respond_to=False)
+                                                broadcast=True, is_reply=True, prefix_turn_prompt=False)
         self.cfg.discussion_index += 1
