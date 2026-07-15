@@ -7,7 +7,7 @@ from core.phase_runner import PhaseRunner
 if TYPE_CHECKING:
     from agents.character_generation.characterGeneration import CharacterGenerator
     from core.levels.game_designs.game_design import GameDesign
-    from agents.game_host import GameMaster
+    from agents.game_host.game_host import GameMaster
     from core.gameboard import GameBoard
     from agents.abstract_agentic_player import AbstractAgenticPlayer
     

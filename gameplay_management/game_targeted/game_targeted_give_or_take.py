@@ -1,5 +1,4 @@
 from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
-from prompts.gamePrompts import GamePromptLibrary
 
 
 class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
@@ -29,7 +28,7 @@ class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
     def run_game(self):
         self._init_queue(self._shuffled_agents())
         self._init_widget()
-        points_amount = GamePromptLibrary.targeted_games_points
+        points_amount = self.cfg.targeted_points_award
         game_instruction = (
             f"Choose one player, then decide whether to GIVE them {points_amount} points "
             f"or TAKE {points_amount} points from them. "

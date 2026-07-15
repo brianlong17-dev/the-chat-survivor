@@ -1,9 +1,8 @@
 from collections import Counter
 from typing import Optional, Sequence
-from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
-from prompts.gamePrompts import GamePromptLibrary
+from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 
-class VoteBottomTwo(VoteMechanicsMixin):
+class VoteBottomTwo(VotingRoundBase):
 
     @classmethod
     def display_name(cls, cfg):
@@ -17,7 +16,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
         cfg = self.cfg
         rules_string = self.rules_description(cfg)
         if cfg.vote_dont_miss:
-            rules_string += GamePromptLibrary.dont_miss_string.format(points=cfg.vote_missed_points)
+            rules_string += self.dont_miss_string.format(points=cfg.vote_missed_points)
             
         return rules_string
            
@@ -164,7 +163,7 @@ class VoteBottomTwo(VoteMechanicsMixin):
     
     
     def _dispense_victim_points(self, victim_name):
-        points_per_survived_vote = GamePromptLibrary.points_per_survived_vote
+        points_per_survived_vote = self.cfg.points_per_survived_vote
         
         
         vote_counts = Counter({name: count for name, count in self._initial_vote_tally.items() if name and name != victim_name})

@@ -3,8 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, create_model
 from agents.base_agent import BaseAgent
-from models.game_models import DynamicGameModelFactory, SummariseRoundComplex
-from prompts.prompts import PromptLibrary
+from agents.game_host.game_host_model import DynamicGameModelFactory, SummariseRoundComplex
 
 class GameMaster(BaseAgent):
     def __init__(self, api_client):

@@ -1,7 +1,6 @@
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
 from pydantic import Field
 
-from prompts.votePrompts import VotePromptLibrary
 
 class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
 
@@ -221,7 +220,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         return max(self.agents, key=lambda a: self._agent_score(a.name))
         
     def _eliminate_player(self, loser):
-        host_message = VotePromptLibrary.elimination_host_msg.format(victim_name=loser.name.upper())
+        host_message = self.cfg.pre_eviction_message.format(victim_name=loser.name.upper())
         self.game_board.host_broadcast(host_message)
         self.simulationEngine.eliminate_player(loser)
         

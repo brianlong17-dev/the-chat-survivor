@@ -1,6 +1,5 @@
 from types import SimpleNamespace
 
-from prompts.votePrompts import VotePromptLibrary
 from tests.helpers.game_test_helpers import build_vote_game, host_messages
 
 
@@ -16,7 +15,7 @@ def test_process_vote_rounds_returns_clear_winner():
 
     assert victim_name == "Bob"
     assert returned_votes == [SimpleNamespace(action="x")]
-    assert host_messages(board)[-1] == VotePromptLibrary.voting_tally_msg.format(
+    assert host_messages(board)[-1] == "🗳️ VOTING TALLY: {tally}".format(
         tally="Bob: 2 votes, Alice: 1 votes"
     )
 
@@ -54,13 +53,13 @@ def test_process_vote_rounds_complete_deadlock_uses_deadlock_message():
     victim_name, _ = game.process_vote_rounds(["Alice", "Bob", "Cara"])
 
     assert victim_name == "Bob"
-    assert VotePromptLibrary.voting_round_complete_deadlock_msg.format(max_votes=1) in host_messages(board)
+    assert "🌀 COMPLETE DEADLOCK. Everyone received {max_votes} vote(s)! You must REVOTE.".format(max_votes=1) in host_messages(board)
 
 
 def test_process_vote_rounds_after_max_revotes_randomly_eliminates(monkeypatch):
     game, board, _agents, _clients = build_vote_game({"Alice": [], "Bob": []})
     initial_votes = [SimpleNamespace(action="Alice")]
-    monkeypatch.setattr("gameplay_management.eliminations.vote_mechanicsMixin.random.choice", lambda players: players[1])
+    monkeypatch.setattr("gameplay_management.eliminations.voting_round_base.random.choice", lambda players: players[1])
 
     victim_name, returned_votes = game.process_vote_rounds(
         ["Alice", "Bob"], revote_count=4, initial_votes=initial_votes
@@ -68,7 +67,7 @@ def test_process_vote_rounds_after_max_revotes_randomly_eliminates(monkeypatch):
 
     assert victim_name == "Bob"
     assert returned_votes == initial_votes
-    assert host_messages(board)[-1] == VotePromptLibrary.voting_round_random_elimination_msg
+    assert host_messages(board)[-1] == "⚡ The tribe is too stubborn. The Judge steps in and eliminates someone at random!"
 
 
 def test_process_vote_rounds_uses_explicit_initial_votes_if_provided():

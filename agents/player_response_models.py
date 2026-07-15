@@ -1,6 +1,5 @@
 from typing import Dict, List, Literal, Optional, Type, TYPE_CHECKING
 from pydantic import BaseModel, Field, create_model, field_validator, validator
-from prompts.prompts import PromptLibrary
 
 import warnings
 if TYPE_CHECKING:

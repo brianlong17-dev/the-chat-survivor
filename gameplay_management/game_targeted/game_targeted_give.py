@@ -1,5 +1,4 @@
 from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
-from prompts.gamePrompts import GamePromptLibrary
 
 
 class GameTargetedChoiceGive(BaseTargetedGame):
@@ -26,7 +25,7 @@ class GameTargetedChoiceGive(BaseTargetedGame):
     def run_game(self):
         self._init_queue(self._shuffled_agents())
         self._init_widget()
-        points_amount = GamePromptLibrary.targeted_games_points
+        points_amount = self.cfg.targeted_points_award
         game_instruction = f"Choose one player to receive {points_amount} points. Explain why."
 
         self.game_board.host_broadcast(self._give_game_intro(points_amount),  animate_as_player=True)

@@ -1,4 +1,3 @@
-from prompts.votePrompts import VotePromptLibrary
 from tests.helpers.game_test_helpers import build_vote_game, host_messages, messages_for, turn_payload
 
 
@@ -12,7 +11,7 @@ def test_eliminate_player_by_name_removes_player_and_collects_final_words():
 
     game.eliminate_player_by_name("Bob")
 
-    assert host_messages(board)[0] == VotePromptLibrary.elimination_host_msg.format(victim_name="Bob")
+    assert host_messages(board)[0] == "A JOURNEY COMES TO AN END- THE RESULTS ARE FINAL. {victim_name} HAS BEEN EJECTED FROM THE CHAT. 💀".format(victim_name="Bob")
     assert [agent.name for agent in game.simulationEngine.agents] == ["Alice"]
     assert "Bob" in board.phase_runner.removed_agent_names()
     assert len(clients["Bob"].calls) == 1

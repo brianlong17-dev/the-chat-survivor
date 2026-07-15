@@ -1,6 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
-from prompts.gamePrompts import GamePromptLibrary
 
 
 class GameRockPaperScissors(GameMechanicsMixin):
@@ -31,9 +30,12 @@ class GameRockPaperScissors(GameMechanicsMixin):
         )
 
     def _get_rps_choice(self, player, opponent):
-        turn_prompt = GamePromptLibrary.rps_game_prompt.format(
-            opponent_name=opponent.name,
-            points_string=self._points_string(),
+        turn_prompt = (
+            "ROCK PAPER SCISSORS!\n"
+            f"You are facing {opponent.name}.\n"
+            "Points on the line:\n"
+            f"{self._points_string()}"
+            "Choose your move — what will it be?"
         )
         choices = ["rock", "paper", "scissors"]
         action_fields = self.turn_manager.create_choice_field("action", choices)

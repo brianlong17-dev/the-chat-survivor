@@ -2,10 +2,10 @@ import random
 from collections import Counter
 from typing import Optional, Sequence
 
-from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
+from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 
 
-class VoteElectLeader(VoteMechanicsMixin):
+class VoteElectLeader(VotingRoundBase):
     @classmethod
     def display_name(cls, cfg):
         return "Elect the Executioner"

@@ -1,4 +1,3 @@
-from prompts.votePrompts import VotePromptLibrary
 from tests.helpers.game_test_helpers import build_vote_game, host_messages
 
 
@@ -12,7 +11,7 @@ def test_validate_immunity_all_players_immune_clears_and_broadcasts():
     game, board, _agents, _clients = build_vote_game({"Alice": [], "Bob": [], "Cara": []})
     result = game._validate_immunity(["Alice", "Bob", "Cara"])
     assert result == []
-    assert host_messages(board)[-1] == VotePromptLibrary.immunity_all_players_reset
+    assert host_messages(board)[-1] == "All players have immunity this round! This means... NO ONE HAS IMMUNITY. You are all again at risk of being voted out."
 
 
 def test_validate_immunity_dedupes_names_preserving_order():
@@ -36,7 +35,7 @@ def test_run_voting_round_basic_all_players_immune_resets_and_still_votes():
 
     assert seen["process"] == [["Alice", "Bob", "Cara"]]
     assert seen["eliminate"] == ["Bob"]
-    assert VotePromptLibrary.immunity_all_players_reset in host_messages(board)
+    assert "All players have immunity this round! This means... NO ONE HAS IMMUNITY. You are all again at risk of being voted out." in host_messages(board)
 
 
 def test_immunity_string_includes_immune_and_eligible_names():
@@ -45,5 +44,5 @@ def test_immunity_string_includes_immune_and_eligible_names():
     assert "Alice" in text
     assert "Bob" in text
     assert "Cara" in text
-    assert VotePromptLibrary.immunity_players_prefix in text
-    assert VotePromptLibrary.elimination_players_prefix in text
+    assert "The following players have immunity, and cannot be voted for to leave in this round of voting:" in text
+    assert "The following players are up for elimination:" in text

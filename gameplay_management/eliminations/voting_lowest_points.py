@@ -1,9 +1,9 @@
 from typing import Optional, Sequence
 import random
-from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
+from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 
 
-class VoteLowestPoints(VoteMechanicsMixin):
+class VoteLowestPoints(VotingRoundBase):
     @classmethod
     def display_name(cls, cfg):
         return "Farewell, to thee of points so lowest"

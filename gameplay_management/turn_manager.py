@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, Optional
 from pydantic import Field, create_model
 from agents.player_response_models import AgentResponseModelFactory
-from prompts.gamePrompts import GamePromptLibrary
 
 if TYPE_CHECKING:
     from agents.abstract_agentic_player import AbstractAgenticPlayer

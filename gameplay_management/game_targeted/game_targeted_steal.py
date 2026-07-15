@@ -1,5 +1,4 @@
 from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
-from prompts.gamePrompts import GamePromptLibrary
 
 
 class GameTargetedChoiceSteal(BaseTargetedGame):
@@ -28,7 +27,7 @@ class GameTargetedChoiceSteal(BaseTargetedGame):
     def run_game(self):
         self._init_queue(self._shuffled_agents())
         self._init_widget()
-        points_amount = GamePromptLibrary.targeted_games_points
+        points_amount = self.cfg.targeted_points_steal
         game_instruction = (
             f"Choose one player to steal {points_amount} points from. "
             f"If you steal from a player with less than {points_amount}, you'll only get whatever points they have, maybe zero. "

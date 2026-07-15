@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 from agents.character_generation.characterGeneration import CharacterGenerator
-from agents.game_host import GameMaster
+from agents.game_host.game_host import GameMaster
 from core.gameboard import GameBoard
 from core.sinks.console_sink import ConsoleGameEventSink
 from core.simulation_engine import SimulationEngine

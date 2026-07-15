@@ -1,9 +1,9 @@
 from typing import Optional, Sequence
 
-from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
+from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 
 
-class VoteWinnerChooses(VoteMechanicsMixin):
+class VoteWinnerChooses(VotingRoundBase):
     @classmethod
     def display_name(cls, cfg):
         return "The Leader Executes"

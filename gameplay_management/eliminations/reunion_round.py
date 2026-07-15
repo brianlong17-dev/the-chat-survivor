@@ -1,11 +1,10 @@
 
 import random
-from gameplay_management.eliminations.vote_mechanicsMixin import VoteMechanicsMixin
-from prompts.gamePrompts import GamePromptLibrary
+from gameplay_management.eliminations.voting_round_base import VotingRoundBase
 from pydantic import Field
 from concurrent.futures import ThreadPoolExecutor
 
-class FinaleReunionRound(VoteMechanicsMixin):
+class FinaleReunionRound(VotingRoundBase):
     
     _WAKEUP = "Wakeup"
     _INTRODUCTION = "Introduction"

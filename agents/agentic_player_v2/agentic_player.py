@@ -5,8 +5,6 @@ from agents.agentic_player_v2.system_prompt import SystemPrompt
 from core.game_context.user_content import UserContent
 from core.game_context.summaries_builder import SummariesStringBuilder
 from agents.player_response_models import AgentResponseModelFactory
-from prompts.gamePrompts import GamePromptLibrary
-from prompts.prompts import PromptLibrary
 from agents.base_agent import BaseAgent
 from agents.abstract_agentic_player import AbstractAgenticPlayer
 from typing import TYPE_CHECKING, Dict, Optional

@@ -8,7 +8,6 @@ from gameplay_management.game_cycle.game_knives import GameKnives
 from gameplay_management.game_cycle.game_circle import GameCircle
 from gameplay_management.game_cycle.game_mob import GameMob
 from gameplay_management.eliminations.voting_bottom_two import VoteBottomTwo
-from gameplay_management.eliminations.voting_each_player import VoteEachPlayer
 from gameplay_management.eliminations.voting_elect_leader import VoteElectLeader
 from gameplay_management.eliminations.voting_lowest_points import VoteLowestPoints
 from gameplay_management.eliminations.voting_winner_chooses import VoteWinnerChooses
@@ -178,14 +177,6 @@ Is it worth your own points to take points off someone else? In the end it's a b
         title="Bottom Two Vote",
         module_class=VoteBottomTwo,
         description="The two lowest-scoring players face the vote — the group decides who goes home.",
-        game=True,
-        hidden=True,
-    ),
-    ModuleEntry(
-        id="direct_democracy",
-        title="Direct Democracy",
-        module_class=VoteEachPlayer,
-        description="Each player votes to eliminate, the player with the most votes is removed.",
         game=True,
         hidden=True,
     ),
