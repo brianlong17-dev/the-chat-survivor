@@ -1,8 +1,14 @@
 {
   "mcpServers": {
-    "persona-tools": {
+    "chat-survivor-local": {
       "command": "uv",
-      "args": ["run", "python", "-m", "mcp_service.server"]
+      "args": ["run", "python", "-m", "mcp_service.server"],
+      "env": { "MCP_LOCAL": "true" }
+    },
+    "chat-survivor-deployed": {
+      "type": "http",
+      "url": "https://thechatsurvivor.com/mcp/",
+      "headers": { "Authorization": "Bearer ${MCP_AUTH}" }
     }
   }
 }
