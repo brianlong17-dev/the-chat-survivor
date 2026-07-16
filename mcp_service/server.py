@@ -9,7 +9,10 @@ Register with Claude Code:
 The docstrings below are the interface the model reads to decide when and how
 to call each tool — they describe *when to use this*, not just what it does.
 """
-from mcp.server.fastmcp import FastMCP
+import os
+
+from fastmcp import FastMCP
+from fastmcp.server.auth import StaticTokenVerifier
 
 from mcp_service.core import (
     DEFAULT_LOG_DIR,
@@ -26,8 +29,17 @@ from mcp_service.core import (
     list_agents,
 )
 
-mcp = FastMCP("persona-tools")
 
+if os.environ.get("MCP_LOCAL"):
+    mcp = FastMCP("Chat Survivor Local")
+else:
+    AUTH_TOKEN = os.environ["MCP_AUTH"]
+    auth = StaticTokenVerifier(
+        tokens={
+            AUTH_TOKEN: {"client_id": "me"}
+        }
+    )
+    mcp = FastMCP("Chat Survivor Deployed MCP", auth=auth)
 
 @mcp.tool()
 def persona_drift(agent_name: str, log_dir: str = DEFAULT_LOG_DIR) -> PersonaDiff:
@@ -115,4 +127,7 @@ def latest_log(agent_name: str) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    if os.environ.get("MCP_LOCAL"):
+        mcp.run()
+    else:
+        mcp.run(transport="streamable-http", host="127.0.0.1", port=8001)

@@ -2,7 +2,7 @@
   "mcpServers": {
     "persona-tools": {
       "command": "uv",
-      "args": ["run", "python", "-m", "persona_mcp.server"]
+      "args": ["run", "python", "-m", "mcp_service.server"]
     }
   }
 }
