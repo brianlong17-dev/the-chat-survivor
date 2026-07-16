@@ -81,7 +81,7 @@ def setup_game_from_fixture(
     eliminate_after: if set, eliminates all agents beyond this index after setup.
     """
     from core.bootstrap import create_engine
-    from tests.helpers.testing_game_design import TestingGameDesign
+    from core.levels.game_designs.game_design_testing import TestingGameDesign
 
     agent_state = load_fixture(fixture_filename)
     all_names = list(agent_state.keys())

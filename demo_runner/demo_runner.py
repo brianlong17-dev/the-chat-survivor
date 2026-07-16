@@ -4,7 +4,7 @@ from demo_runner.game_setup import load_fixture, apply_agent_state, add_human
 
 from core.bootstrap import create_engine
 from core.levels.phase_description import PhaseDescription
-from tests.helpers.testing_game_design import TestingGameDesign
+from core.levels.game_designs.game_design_testing import TestingGameDesign
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
 
 def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_name: str = None):
