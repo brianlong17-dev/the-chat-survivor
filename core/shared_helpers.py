@@ -40,4 +40,4 @@ def sanitize_text(text: str) -> str:
     return text
 
 
-INACTIVITY_TIMEOUT = 900  # seconds before idle round gate disconnects the session
+INACTIVITY_TIMEOUT = 3600  # seconds before idle round gate disconnects the session
