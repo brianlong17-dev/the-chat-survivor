@@ -63,7 +63,7 @@ class GameConfig:
         self.pd_pairing_choice_none = 'none'
         self.pd_pairing_choice_random = 'random'
         self.pd_pairing_choice_lowest = 'lowest'
-        self.pd_pairing_choice_all = 'all'
+        self.pd_pairing_round_robin = 'round_robin'
         self.pd_get_reactions = True
         self.pd_pairing_method = self.pd_pairing_choice_none
 
@@ -137,7 +137,7 @@ class GameConfig:
         self.pd_pairing_method = self.pd_pairing_choice_lowest
 
     def set_pd_pairing_all(self):
-        self.pd_pairing_method = self.pd_pairing_choice_all
+        self.pd_pairing_method = self.pd_pairing_round_robin
         
     def set_directed_discussion_group_allowed(self, boolean):
         self.directed_discussion_group_allowed = boolean

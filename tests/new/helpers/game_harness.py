@@ -176,6 +176,11 @@ class GameHarness:
         self._board.append_agent_points(player, points)
         return self
 
+    def configure(self, method: str, *args) -> "GameHarness":
+        for phase in self._phases:
+            phase.config_mutations.append((method, args))
+        return self
+
     def _current_round(self) -> str | None:
         runner = self._engine.phase_runner
         description = runner.current_phase_description
