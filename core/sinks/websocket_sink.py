@@ -27,9 +27,10 @@ def _prune_logs(log_dir: str, keep: int) -> None:
 class WebSocketSink(GameEventSink):
     """Serialises game events to JSON and broadcasts over a websocket."""
 
-    def __init__(self, websocket: WebSocket, loop: asyncio.AbstractEventLoop):
+    def __init__(self, websocket: WebSocket, loop: asyncio.AbstractEventLoop, should_kick_idle=None):
         self.websocket = websocket
         self.loop = loop
+        self._should_kick_idle = should_kick_idle or (lambda: False)
         self._disconnected = False
         self._input_queue: queue.Queue = queue.Queue()
         self._round_gate = threading.Event()
@@ -152,7 +153,7 @@ class WebSocketSink(GameEventSink):
     # -- Human input ----------------------------------------------------------
 
     def wait_for_continue_next_round(self):
-        if not self._round_gate.wait(timeout=INACTIVITY_TIMEOUT):
+        while not self._round_gate.wait(timeout=INACTIVITY_TIMEOUT):
             self._on_timeout()
         self._round_gate.clear()
         if self._disconnected:
@@ -166,25 +167,31 @@ class WebSocketSink(GameEventSink):
         
     def get_user_input_simple(self, field_name: str, description: str) -> str:
         self._send({"type": "input_request", "field": field_name, "description": description})
-        try:
-            result = self._input_queue.get(timeout=INACTIVITY_TIMEOUT)
-        except queue.Empty:
-            self._on_timeout()
+        while True:
+            try:
+                result = self._input_queue.get(timeout=INACTIVITY_TIMEOUT)
+                break
+            except queue.Empty:
+                self._on_timeout()
         if self._disconnected:
             raise RuntimeError("Client disconnected")
         return result
 
     def get_user_input_multiple_choice(self, field_name, description, choices):
         self._send({"type": "input_request", "field": field_name, "description": description, "choices": choices})
-        try:
-            result = self._input_queue.get(timeout=INACTIVITY_TIMEOUT) #this will be None if its disconnected
-        except queue.Empty:
-            self._on_timeout()
+        while True:
+            try:
+                result = self._input_queue.get(timeout=INACTIVITY_TIMEOUT) #this will be None if its disconnected
+                break
+            except queue.Empty:
+                self._on_timeout()
         if self._disconnected:
             raise RuntimeError("Client disconnected")
         return result
     
     def _on_timeout(self):
+        if not self._should_kick_idle():
+            return
         self.system_private(INACTIVITY_MESSAGE)
         raise InactivityTimeout()
 

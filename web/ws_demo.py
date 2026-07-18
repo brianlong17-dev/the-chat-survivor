@@ -69,7 +69,7 @@ async def demo_ws(websocket: WebSocket):
     api_client = None
 
     try:
-        sink = WebSocketSink(websocket, loop)
+        sink = WebSocketSink(websocket, loop, should_kick_idle=rate_limits.is_at_capacity)
         api_client = create_api_client(sink, token_budget=DEMO_TOKEN_BUDGET)
         fixture_choice = msg["fixture_choice"][:MAX_NAME_LENGTH] if msg.get("fixture_choice") else None
 

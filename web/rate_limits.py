@@ -112,6 +112,11 @@ async def check_and_increment_daily(websocket: WebSocket, kind: str) -> bool:
     return False
 
 
+def is_at_capacity() -> bool:
+    with _active_games_lock:
+        return _active_games >= MAX_CONCURRENT_GAMES
+
+
 async def check_concurrency_and_get_slot(websocket: WebSocket, ip_address: str) -> bool:
     global _active_games
     global _active_ip_addresses
