@@ -350,7 +350,7 @@ function PopWrap({ children, onComplete }) {
   )
 }
 
-function PublicAction({ speaker, message, color, animate_as_player, onComplete, skipRef, animateText, message_id, runthroughId, pop_wrap }) {
+function PublicAction({ speaker, message, color, animate_as_player, is_human, onComplete, skipRef, animateText, message_id, runthroughId, pop_wrap }) {
   const isHost = speaker === 'HOST'
   const isSystem = speaker === 'SYSTEM'   // shouldn't happen (backend asserts), render harmlessly
 
@@ -361,7 +361,7 @@ function PublicAction({ speaker, message, color, animate_as_player, onComplete, 
   const body = (suppressComplete) => {
     if (isSystem) return <span className="message-text">{renderBold(message)}</span>
     const complete = suppressComplete ? undefined : onComplete
-    if (animate_as_player) return <WordByWord text={message} onComplete={complete} skipRef={skipRef} animateText={animateText} />
+    if (animate_as_player && !is_human) return <WordByWord text={message} onComplete={complete} skipRef={skipRef} animateText={animateText} />
     if (isHost)   return <HostStagger text={message} onComplete={complete} skipRef={skipRef} animateText={animateText} />
     return <span className="message-text">{renderBold(message)}</span>
   }
