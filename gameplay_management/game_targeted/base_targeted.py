@@ -3,6 +3,9 @@ from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
 
 class BaseTargetedGame(GameMechanicsMixin):
 
+    def _push_scores_private(self):
+        self.game_board.system_broadcast(self.game_board.score_string(), private=True)
+
     def _init_queue(self, agents):
         self._agent_queue = list(agents)
 

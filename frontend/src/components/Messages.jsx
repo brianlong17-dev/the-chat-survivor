@@ -397,7 +397,7 @@ function PrivateThought({ speaker, message, color, autoExpand }) {
       <button className="thought-toggle" onClick={() => setOpen(o => !o)}>
         {open ? '▼' : '▶'}{' '}
         <span style={{ color }}>{speaker}</span>
-        <span className="thought-label"> (thinking...)</span>
+        <span className="thought-label"> (private thoughts)</span>
       </button>
       {open && <p className="thought-text">{message}</p>}
     </div>
