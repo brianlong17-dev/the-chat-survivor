@@ -7,7 +7,7 @@ from core.levels.phase_description import PhaseDescription
 from core.levels.game_designs.game_design_testing import TestingGameDesign
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
 
-def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_name: str = None):
+def create_engine_for_demo(module_id: str, fixture_id: str, sink, api_client, human_name: str = None):
     fixture = FIXTURE_MAP.get(fixture_id)
     if not fixture:
         raise ValueError(f"Unknown fixture: {fixture_id}")
@@ -27,8 +27,8 @@ def run_from_frontend(module_id: str, fixture_id: str, sink, api_client, human_n
     
     if module.module_class == None:
         _set_up_cfg_test(engine)
-    
-    engine.run_demo_phase(phase_desc)
+
+    return engine, phase_desc
     
 
 def _get_test_phase_description(module):

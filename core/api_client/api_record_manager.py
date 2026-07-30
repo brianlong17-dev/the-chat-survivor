@@ -61,6 +61,7 @@ class APIRecordManager:
             self._total_api_tokens += total or 0
 
         _write(self._log_path, record)
+        return record
 
     def usage_totals(self) -> dict:
         with self._lock:
@@ -123,7 +124,7 @@ class APIRecordManager:
             "by_caller": by_caller,
         }
 
-    def print_and_write_summary(self) -> None:
+    def print_and_write_summary(self, game_id=None) -> None:
         s = self.summary()
         w = 80
         print(f"\n{'─' * w}")
@@ -140,7 +141,8 @@ class APIRecordManager:
                   f"{stats['ms']:>5}ms")
         print(f"{'─' * w}\n")
 
-        game_id = os.path.splitext(os.path.basename(self._log_path))[0] if self._log_path else None
+        if game_id is None:
+            game_id = os.path.splitext(os.path.basename(self._log_path))[0] if self._log_path else None
         entry = {
             "game_id": game_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),

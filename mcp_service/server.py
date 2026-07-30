@@ -16,17 +16,20 @@ from fastmcp.server.auth import StaticTokenVerifier
 
 from mcp_service.core import (
     DEFAULT_LOG_DIR,
+    GAME_LOG_DIR,
     MASTER_LOG_DIR,
     MoodTimeline,
     PersonaDiff,
     character_usage_counts,
     get_api_summary_log,
     get_daily_token_log,
+    get_game_log_text,
     get_latest_log_text,
     get_master_game_log,
     get_mood_timeline,
     get_persona_diff,
     list_agents,
+    list_game_logs as get_recent_game_logs,
 )
 
 
@@ -114,6 +117,37 @@ def daily_token_log(days: int = 30, log_dir: str = MASTER_LOG_DIR) -> dict:
     that day. Use this to spot daily spend trends, not per-game detail.
     """
     return get_daily_token_log(days, log_dir)
+
+
+@mcp.tool()
+def list_game_logs(limit: int = 20, log_dir: str = GAME_LOG_DIR) -> list[dict]:
+    """List the most recent full game-event logs from the deployed site, newest
+    first. Each entry is one played game or demo (up to the last 400 kept on
+    disk). Use a `log_file` from here with `game_log_text` to read that game,
+    or leave it blank there for the latest one.
+    """
+    return get_recent_game_logs(limit, log_dir)
+
+
+@mcp.tool()
+def game_log_text(
+    log_file: str = "",
+    log_dir: str = GAME_LOG_DIR,
+    public_only: bool = True,
+    include_round_summary: bool = False,
+) -> str:
+    """Return the readable transcript of one game played on the deployed site,
+    in order: host intros, round/phase markers, "speaker: message" for every
+    public line, and the final winner.
+
+    This is the ground-truth "what actually happened" view, not a summary.
+    Leave `log_file` blank to get whatever game was most recently played;
+    otherwise pass a filename from `list_game_logs`. Set public_only=False to
+    also include private thoughts, private conversations, evictions, and raw
+    score payloads for deeper debugging. Set include_round_summary=True to
+    bring back the host's behind-the-scenes recap of each round.
+    """
+    return get_game_log_text(log_file, log_dir, public_only, include_round_summary)
 
 
 @mcp.resource("persona://{agent_name}/latest")

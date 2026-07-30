@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING
 
 from core.game_config import GameConfig
 from core.phase_runner import PhaseRunner
+import uuid
+from datetime import datetime, timezone
 
 if TYPE_CHECKING:
     from agents.character_generation.characterGeneration import CharacterGenerator
@@ -31,6 +33,13 @@ class SimulationEngine:
         self.agents = agents
         self._select_debug_targets()
         self.dead_agents = []
+        
+        self.game_id = self._generate_game_id()
+        self.api_client.game_id = self.game_id
+        
+    
+    def _generate_game_id(self):
+        return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
             
     def initialiseGameBoard(self):
         self.game_board.initialize_agents(self.agents)

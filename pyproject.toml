@@ -17,6 +17,10 @@ dependencies = [
     "python-multipart>=0.0.22",
     "mcp[cli]>=1.28.1",
     "fastmcp>=3.4.4",
+    "opentelemetry-instrumentation-fastapi>=0.65b0",
+    "opentelemetry-instrumentation-asgi>=0.65b0",
+    "opentelemetry-instrumentation-requests>=0.65b0",
+    "opentelemetry-instrumentation-google-genai>=1.0b1",
 ]
 
 [dependency-groups]

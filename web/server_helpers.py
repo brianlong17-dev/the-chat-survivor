@@ -5,7 +5,6 @@ import logging
 import logging.handlers
 import os
 import traceback
-import uuid
 from datetime import datetime, timezone
 
 import httpx
@@ -71,11 +70,11 @@ async def _notify_game_start(ntfy_url, msg):
         pass
 
 
-def log_game_start(is_game, id, player_names, human_name, ip_address, token_budget):
+def log_game_start(is_game, id, player_names, human_name, ip_address, token_budget, game_id):
     event = "game_start" if is_game else "demo_start"
     _get_game_logger().info(json.dumps({
         "event": event,
-        "game_id": str(uuid.uuid4()),
+        "game_id": game_id,
         "level_id" if is_game else "demo_id": id,
         "player_names": player_names,
         "human_name": human_name,

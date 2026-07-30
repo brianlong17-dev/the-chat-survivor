@@ -36,6 +36,7 @@ class APIClient:
             self.sink = sink
         self._record_manager = APIRecordManager()
         self.token_budget = min(token_budget, MAX_TOKENS_PER_GAME_CAP)
+        self.game_id = None
         
     def _mock_response(self, response_model):
         long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, \n \n sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -108,30 +109,32 @@ class APIClient:
                     raise
         return response, result
     
-    def create(self, response_model, messages: list, thinking=False, use_higher_model = False, use_lower_model=False):
+    def create(self, response_model, messages: list, thinking=False, use_higher_model = False, use_lower_model=False, span=None):
         if self._mock_output:
             return self._mock_response(response_model)
         if self._record_manager._total_api_tokens > self.token_budget:
             raise BudgetExceeded(f"Token budget of {self.token_budget} exceeded")
-        
+
         if use_higher_model:
             api_model = self.higher_model
         elif use_lower_model and self.lower_model:
             api_model = self.lower_model
         else:
             api_model = self.default_model
-            
+
 
         caller = _caller()
         start = time.monotonic()
         response, result = self._make_call(messages, api_model, response_model, thinking=thinking)
-        self._record_manager.log_call(
+        record = self._record_manager.log_call(
             caller=caller,
             api_model=api_model,
             response_model=response_model,
             response=response,
             start=start,
         )
+        if span is not None:
+            _tag_span(span, record, thinking=thinking, game_id=self.game_id)
         return result
 
     def transcribe(self, audio_bytes: bytes, mime_type: str = "audio/webm", model: str | None = None, hints: list[str] | None = None) -> str:
@@ -153,7 +156,7 @@ class APIClient:
         return self._record_manager.summary()
 
     def print_and_write_summary(self) -> None:
-        self._record_manager.print_and_write_summary()
+        self._record_manager.print_and_write_summary(self.game_id)
 
     def usage_totals(self) -> dict:
         return self._record_manager.usage_totals()
@@ -162,6 +165,23 @@ class APIClient:
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 _SKIP = {"core.api_client", "agents.base_agent"}
+
+
+def _tag_span(span, record, thinking: bool, game_id=None) -> None:
+    if game_id is not None:
+        span.set_attribute("game.id", game_id)
+    span.set_attribute("llm.model", record.model)
+    span.set_attribute("llm.caller", record.caller)
+    span.set_attribute("llm.thinking", thinking)
+    span.set_attribute("llm.duration_ms", record.duration_ms)
+    for name, value in (
+        ("llm.tokens.prompt", record.prompt_tokens),
+        ("llm.tokens.completion", record.completion_tokens),
+        ("llm.tokens.thinking", record.thinking_tokens),
+        ("llm.tokens.total", record.total_tokens),
+    ):
+        if value is not None:
+            span.set_attribute(name, value)
 
 
 def _is_rate_limit(exc: Exception) -> bool:

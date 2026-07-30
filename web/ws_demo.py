@@ -6,7 +6,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from core.api_client import create_api_client
 from core.sinks.websocket_sink import WebSocketSink
-from demo_runner.demo_runner import run_from_frontend
+from demo_runner.demo_runner import create_engine_for_demo
 from demo_runner.game_module_directory import MODULE_MAP
 from web import rate_limits
 from web.server_config import DEMO_ENABLED, TURNSTILE_ENABLED, MAX_NAME_LENGTH, DEMO_TOKEN_BUDGET
@@ -75,16 +75,17 @@ async def demo_ws(websocket: WebSocket):
 
         def run_demo():
             try:
-                run_from_frontend(demo_id, fixture_choice, sink, api_client, human_name=human_name)
-                
+                engine, phase_desc = create_engine_for_demo(demo_id, fixture_choice, sink, api_client, human_name=human_name)
+                log_game_start(is_game=False, id=demo_id, player_names=[], human_name=human_name,
+                       ip_address=get_client_ip(websocket), token_budget=DEMO_TOKEN_BUDGET, game_id=engine.game_id)
+                engine.run_demo_phase(phase_desc)
             except Exception as e:
                 _send_error(websocket, loop, e)
 
         thread = threading.Thread(target=run_demo, daemon=True)
         thread.start()
 
-        log_game_start(is_game=False, id=demo_id, player_names=[], human_name=human_name,
-                       ip_address=get_client_ip(websocket), token_budget=DEMO_TOKEN_BUDGET)
+        
 
         await _run_game_thread(thread, api_client, websocket, sink)
 

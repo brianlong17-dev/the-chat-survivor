@@ -36,3 +36,5 @@ tests/test_agents/TEST_PLAN_player.md
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+
+otel.env

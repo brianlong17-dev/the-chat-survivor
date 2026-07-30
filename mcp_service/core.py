@@ -14,6 +14,7 @@ from typing import TypedDict
 
 DEFAULT_LOG_DIR = "logs/characterlogs"
 MASTER_LOG_DIR = "logs/master_logs"
+GAME_LOG_DIR = "logs/gamelogs"
 
 
 class PersonaDiff(TypedDict):
@@ -201,3 +202,118 @@ def list_agents(log_dir: str = DEFAULT_LOG_DIR) -> list[str]:
         base = os.path.basename(path)
         names.add(base.rsplit("_", 3)[0])
     return sorted(n for n in names if n)
+
+
+def list_game_logs(limit: int = 20, log_dir: str = GAME_LOG_DIR) -> list[dict]:
+    """List the most recent full game-event logs (one file per played game or
+    demo), newest first. Each file is the raw event tape the frontend received
+    over the websocket. Use `log_file` from here with `get_game_log_text`."""
+    files = sorted(glob.glob(os.path.join(log_dir, "game_*.jsonl")))
+    return [
+        {"log_file": os.path.basename(f), "size_bytes": os.path.getsize(f)}
+        for f in reversed(files[-limit:])
+    ]
+
+
+def _resolve_game_log(log_file: str, log_dir: str) -> str:
+    if log_file:
+        safe = os.path.basename(log_file)
+        path = os.path.join(log_dir, safe)
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f"No game log '{log_file}' in {log_dir}")
+        return path
+    files = sorted(glob.glob(os.path.join(log_dir, "game_*.jsonl")))
+    if not files:
+        raise FileNotFoundError(f"No game logs found in {log_dir}")
+    return files[-1]
+
+
+# Event types that carry no narrative content worth surfacing in a transcript.
+_GAME_LOG_NOISE_TYPES = {
+    "linebreak", "loading", "loading_done", "delay", "cast", "set_segments",
+    "feed_marker", "widget_update", "input_request", "next_round_request",
+    "inner_workings", "phase_intro", "phase_rounds", "phase_round_index",
+}
+
+# Event types kept when public_only=True: the feed a viewer actually sees,
+# plus enough structure (phase/round/host markers) to follow along.
+_PUBLIC_EVENT_TYPES = {
+    "game_intro", "phase_header", "round_start", "round_summary",
+    "public_action", "system_public", "game_over",
+}
+
+
+def _render_game_log_event(e: dict) -> str | None:
+    t = e.get("type")
+    if t == "game_intro":
+        return f"[INTRO] {e.get('message', '')}"
+    if t == "phase_header":
+        return f"\n=== Phase {e.get('phase_number')} ==="
+    if t == "round_start":
+        return f"\n--- Round {e.get('round_number')} --- (scores: {e.get('scores', '')})"
+    if t == "round_summary":
+        return f"[ROUND SUMMARY] {e.get('summary', '')}"
+    if t == "public_action":
+        speaker = e.get("speaker", "?")
+        message = e.get("message", "")
+        target = e.get("directed_to_name")
+        return f"{speaker} -> {target}: {message}" if target else f"{speaker}: {message}"
+    if t == "private_thought":
+        return f"  ({e.get('speaker', '?')} thinks: {e.get('message', '')})"
+    if t == "private_conversation":
+        participants = ", ".join(e.get("participants", []))
+        body = "\n".join(
+            f"  {m.get('speaker')}: {m.get('message')}" for m in e.get("messages", [])
+        )
+        return f"[PRIVATE — {participants}]\n{body}"
+    if t == "system_public":
+        return f"[HOST] {e.get('message', '')}"
+    if t == "system_private":
+        return f"[HOST-PRIVATE] {e.get('message', '')}"
+    if t == "points_update":
+        return f"[SCORES] {e.get('scores')}"
+    if t == "evicted_update":
+        return f"[EVICTED] {', '.join(e.get('evicted_names', []))}"
+    if t == "warning":
+        return f"[WARNING] {e.get('message', '')}"
+    if t == "game_over":
+        return f"\n=== GAME OVER — winners: {', '.join(e.get('winners', []))} ==="
+    if t in _GAME_LOG_NOISE_TYPES:
+        return None
+    return f"[{t}] {json.dumps({k: v for k, v in e.items() if k != 'type'}, ensure_ascii=False)}"
+
+
+def get_game_log_text(
+    log_file: str = "",
+    log_dir: str = GAME_LOG_DIR,
+    public_only: bool = True,
+    include_round_summary: bool = False,
+) -> str:
+    """Return a readable transcript of one full game as it was played on the
+    deployed site, in chronological order.
+
+    With public_only=True (the default): just what a viewer saw — host intros,
+    round/phase markers, and "speaker: message" for every public line, plus
+    the final outcome. This is almost always what you want for "what happened
+    in this game". With public_only=False: also includes private thoughts,
+    private conversations, evictions, and score payloads for deeper debugging.
+
+    Round summaries (the host's behind-the-scenes recap of each round) are
+    left out by default since they restate what the messages already show —
+    pass include_round_summary=True to bring them back.
+
+    Leave `log_file` empty for the most recently played game, or pass a
+    filename from `list_game_logs`."""
+    path = _resolve_game_log(log_file, log_dir)
+    events = load_calls(path)
+    lines = [f"# {os.path.basename(path)} ({len(events)} events)", ""]
+    for e in events:
+        t = e.get("type")
+        if public_only and t not in _PUBLIC_EVENT_TYPES:
+            continue
+        if t == "round_summary" and not include_round_summary:
+            continue
+        rendered = _render_game_log_event(e)
+        if rendered is not None:
+            lines.append(rendered)
+    return "\n".join(lines)

@@ -3,6 +3,7 @@ import os
 import uuid
 from abc import abstractmethod
 from datetime import datetime, timezone
+from opentelemetry import trace
 
 
 class BaseAgent:
@@ -16,6 +17,7 @@ class BaseAgent:
         self.brevity_jail = False
         self.last_message_id = None
         self._request_lower_model=False
+        self.tracer = trace.get_tracer("chat_survivor.game")
 
     def __repr__(self):
         return f"<{type(self).__name__} {self.name}>"
@@ -144,14 +146,17 @@ class BaseAgent:
             {"role": "user",   "content": user_content},
         ]
 
-        response = self.api_client.create(
-            response_model=response_model,
-            messages=messages,
-            thinking=thinking,
-            use_higher_model=use_higher_model,
-            use_lower_model=self._request_lower_model
-        )
-        
+        with self.tracer.start_as_current_span("agent_turn") as span:
+            span.set_attribute("game.character", self.name)
+            response = self.api_client.create(
+                response_model=response_model,
+                messages=messages,
+                thinking=thinking,
+                use_higher_model=use_higher_model,
+                use_lower_model=self._request_lower_model,
+                span=span
+            )
+            
         
         
         if self.debug_log:

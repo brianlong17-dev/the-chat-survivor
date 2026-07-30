@@ -99,10 +99,14 @@ async def game_ws(websocket: WebSocket):
     try:
         sink = WebSocketSink(websocket, loop, should_kick_idle=rate_limits.is_at_capacity)
         api_client = create_api_client(sink, token_budget=req.level.token_budget)
+        
 
         def run_game():
             try:
                 engine = create_engine(sink, human_player_name=req.human_name, names=req.player_names, game_design=req.level.game_design, api_client=api_client)
+                log_game_start(is_game=True, id=req.level.id, player_names=req.player_names,
+                       human_name=req.human_name, ip_address=ip_address, token_budget=req.level.token_budget, 
+                       game_id=engine.game_id)
                 engine.run()
             except Exception as e:
                 _send_error(websocket, loop, e)
@@ -110,8 +114,7 @@ async def game_ws(websocket: WebSocket):
         thread = threading.Thread(target=run_game, daemon=True)
         thread.start()
 
-        log_game_start(is_game=True, id=req.level.id, player_names=req.player_names,
-                       human_name=req.human_name, ip_address=ip_address, token_budget=req.level.token_budget)
+        
 
         await _run_game_thread(thread, api_client, websocket, sink)
 

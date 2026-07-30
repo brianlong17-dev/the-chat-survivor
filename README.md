@@ -24,7 +24,7 @@ Their inner thoughts are visible to us, the viewer. We have an honest view into 
 
 ## Context management
 
-Each character sumarises phases of play, keeping their personal memory of the game with details that are important to them. Their private thoughts are marked at each turn in the game log, allowing them strategic continuity. The game context is restructured for LLM clarity.
+Each character summarises phases of play, keeping their personal memory of the game with details that are important to them. Their private thoughts are marked at each turn in the game log, allowing them strategic continuity. The game context is restructured for LLM clarity.
 
 # Framework
 The game framework is designed to support modular agents and modular games. 
