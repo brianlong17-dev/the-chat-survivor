@@ -43,14 +43,19 @@ def load_calls(log_path: str) -> list[dict]:
         return [json.loads(line) for line in f if line.strip()]
 
 
-def diff_system_prompts(first_prompt: str, last_prompt: str) -> str:
+def diff_system_prompts(
+    first_prompt: str,
+    last_prompt: str,
+    fromfile: str = "first_call_system_prompt",
+    tofile: str = "latest_call_system_prompt",
+) -> str:
     """Unified diff between two system prompts."""
     return "".join(
         difflib.unified_diff(
             first_prompt.splitlines(keepends=True),
             last_prompt.splitlines(keepends=True),
-            fromfile="first_call_system_prompt",
-            tofile="latest_call_system_prompt",
+            fromfile=fromfile,
+            tofile=tofile,
             lineterm="",
         )
     )
@@ -83,6 +88,85 @@ def get_persona_diff(agent_name: str, log_dir: str = DEFAULT_LOG_DIR) -> Persona
         last_call=calls[-1]["call"],
         diff=diff_text or "(no differences — system_prompt identical)",
         note=None,
+    )
+
+
+class SystemPrompts(TypedDict):
+    agent: str
+    log_file: str
+    num_calls: int
+    prompts: list[dict]
+
+
+class SystemPromptDiffs(TypedDict):
+    agent: str
+    log_file: str
+    num_calls: int
+    steps: list[dict]
+
+
+def get_system_prompts_diffs(
+    agent_name: str,
+    log_dir: str = DEFAULT_LOG_DIR,
+    first: int | None = None,
+    last: int | None = None,
+) -> SystemPromptDiffs:
+    """Diff each call's system_prompt against the previous call in the range.
+
+    Where get_persona_diff compares only first vs. last, this walks the whole
+    range turn by turn: the first step in the range holds the full baseline
+    prompt, and every later step holds a unified diff against the call before
+    it — so you can pinpoint the exact turn a life lesson or persona line first
+    appeared. `first`/`last` are inclusive call numbers; omit for all calls."""
+    result = get_system_prompts(agent_name, log_dir, first, last)
+    prompts = result["prompts"]
+    steps: list[dict] = []
+    for i, p in enumerate(prompts):
+        if i == 0:
+            steps.append({"call": p["call"], "baseline": p["system_prompt"]})
+        else:
+            steps.append({
+                "call": p["call"],
+                "prev_call": prompts[i - 1]["call"],
+                "diff": diff_system_prompts(
+                    prompts[i - 1]["system_prompt"],
+                    p["system_prompt"],
+                    fromfile=f"call_{prompts[i - 1]['call']}",
+                    tofile=f"call_{p['call']}",
+                ) or "(no change from previous call)",
+            })
+    return SystemPromptDiffs(
+        agent=agent_name,
+        log_file=result["log_file"],
+        num_calls=result["num_calls"],
+        steps=steps,
+    )
+
+
+def get_system_prompts(
+    agent_name: str,
+    log_dir: str = DEFAULT_LOG_DIR,
+    first: int | None = None,
+    last: int | None = None,
+) -> SystemPrompts:
+    """Return the full system_prompt for each call in an agent's latest log.
+
+    Unlike get_persona_diff (first-vs-last diff), this pulls every prompt
+    verbatim so you can inspect any single turn. `first`/`last` bound the call
+    range (inclusive, by the call number in the log); omit them for all calls."""
+    log_path = find_latest_log(agent_name, log_dir)
+    calls = load_calls(log_path)
+    prompts = [
+        {"call": c["call"], "system_prompt": c["system_prompt"]}
+        for c in calls
+        if (first is None or c["call"] >= first)
+        and (last is None or c["call"] <= last)
+    ]
+    return SystemPrompts(
+        agent=agent_name,
+        log_file=os.path.basename(log_path),
+        num_calls=len(calls),
+        prompts=prompts,
     )
 
 

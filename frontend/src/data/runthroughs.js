@@ -11,4 +11,10 @@ export const RUNTHROUGHS = [
     file: 'game_brian_quirrell_diana.jsonl',
     description: 'A complete playthrough down to the final three.',
   },
+  {
+    id: 'morty-gollum',
+    name: 'Morty Smith vs Gollum',
+    file: 'game_morty_gollum.jsonl',
+    description: 'The loudest players in the room — Trump, Logan Roy, Lady Macbeth — tore each other apart, and the trembling kid who kept begging everyone to stop giving him points walked out champion.',
+  },
 ]

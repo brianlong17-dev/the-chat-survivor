@@ -20,6 +20,8 @@ from mcp_service.core import (
     MASTER_LOG_DIR,
     MoodTimeline,
     PersonaDiff,
+    SystemPromptDiffs,
+    SystemPrompts,
     character_usage_counts,
     get_api_summary_log,
     get_daily_token_log,
@@ -28,6 +30,8 @@ from mcp_service.core import (
     get_master_game_log,
     get_mood_timeline,
     get_persona_diff,
+    get_system_prompts,
+    get_system_prompts_diffs,
     list_agents,
     list_game_logs as get_recent_game_logs,
 )
@@ -54,6 +58,44 @@ def persona_drift(agent_name: str, log_dir: str = DEFAULT_LOG_DIR) -> PersonaDif
     know the exact agent name.
     """
     return get_persona_diff(agent_name, log_dir)
+
+
+@mcp.tool()
+def system_prompts(
+    agent_name: str,
+    log_dir: str = DEFAULT_LOG_DIR,
+    first: int | None = None,
+    last: int | None = None,
+) -> SystemPrompts:
+    """Extract the full system prompt for each call in an agent's latest game.
+
+    Where `persona_drift` only diffs the first vs. last call, this returns every
+    call's system_prompt verbatim so you can inspect any single turn — e.g. to
+    see exactly when a life lesson or persona change first appeared. Pass `first`
+    and/or `last` (inclusive call numbers) to bound the range and avoid a large
+    dump; omit both for every call. Call `list_logged_agents` first if unsure of
+    the exact name.
+    """
+    return get_system_prompts(agent_name, log_dir, first, last)
+
+
+@mcp.tool()
+def system_prompt_diffs(
+    agent_name: str,
+    log_dir: str = DEFAULT_LOG_DIR,
+    first: int | None = None,
+    last: int | None = None,
+) -> SystemPromptDiffs:
+    """Walk an agent's system prompt call-by-call, diffing each against the previous.
+
+    Where `persona_drift` only diffs the first vs. last call and `system_prompts`
+    dumps every prompt verbatim, this returns the full baseline prompt for the first
+    call in the range and a unified diff for each later call — so you can pinpoint the
+    exact turn a life lesson or persona line first appeared. Pass `first` and/or `last`
+    (inclusive call numbers) to bound the range; omit both for every call. Call
+    `list_logged_agents` first if unsure of the exact name.
+    """
+    return get_system_prompts_diffs(agent_name, log_dir, first, last)
 
 
 @mcp.tool()
