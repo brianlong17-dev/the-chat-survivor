@@ -14,7 +14,7 @@ if __name__ == "__main__":
     sink = ConsoleGameEventSink()
     api_client = create_api_client(sink, token_budget=200_000)
     generator = CharacterGenerator(sink, api_client=api_client)
-    namesx = ["Gollum", "Ice King", "Lady Macbeth", "Elle Woods", "BMO", "Lumpy Space Princess", "Luke Skywalker", "Jake the Dog", "Finn the Human", "Miranda Priestly", "Lady Diana"]
+    namesx = ["Elena “Lenù” Greco", "Gollum", "Ice King", "Lady Macbeth", "Elle Woods", "BMO", "Lumpy Space Princess"] #, "Luke Skywalker", "Jake the Dog", "Finn the Human", "Miranda Priestly", "Lady Diana"]
     names = ["Jo March", "Amy March", "Meg March", "Beth March", "Marmee March", "Elena “Lenù” Greco", "Rafaella “Lila” Cerullo"]
     names = ["Tree Trunks (Adventure Tiem)", "Pricess Diana", "Ice King"]
     heros = ["Avatar Aang", "Finn the Human", "Frodo"]
