@@ -228,7 +228,7 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self._eliminate_player(loser)
         final_q = (f"{winner.name}, how does it feel to be champion? What did you learn from the competition? What advice would you give to yourself if you had to start the game from scratch?")
         self._host_broadcast(final_q)
-        self._result_react(winner, f"React to host message: {final_q}", "Say how you feel at the end with a crown! ")
+        self._result_react(winner, f"React to host message: {final_q}", "Say how you feel to finish with the crown! ")
        
     #####################
     #  Run              #

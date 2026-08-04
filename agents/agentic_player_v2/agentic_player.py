@@ -106,7 +106,7 @@ class AgenticPlayer(AbstractAgenticPlayer):
                                         ("Only populate if you want to update your game strategy. "
                                         "Based on your initial persona written in initial speaking style- what's your long term game plan? "))) 
         fields["life_lessons"] =  (Optional[str], Field(default=None, description=
-                                ("OPTIONAL: What new strategic lessons have you learned? Write from your persona. ")))
+                                ("OPTIONAL: From your unique persona perspective- Is there a life lesson you want to carry forward? (Write in initial speaking style.)")))
         
         fields["additional_persona_coloring"] = self._persona_coloring_field_description()
         fields["character_strategy"] =( Optional[str], Field(default=None, description=

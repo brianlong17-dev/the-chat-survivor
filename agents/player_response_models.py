@@ -112,7 +112,7 @@ class AgentResponseModelFactory:
         for i, name in enumerate(others):
             field_name = cls.impression_field(name)
             if i == 0:
-                description = f"OPTIONAL: Since last turn, your updated impression of the following players- (don't lose any existing key memories, but update with any new noticings). {i + 1}: {name} "
+                description = f"Player Impressions - Selectively update players where your impression has evolved: {i + 1}: {name} "
             else:
                 description = f"{i + 1}: {name}"
             ordered_fields[field_name] = (

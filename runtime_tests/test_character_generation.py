@@ -14,13 +14,14 @@ if __name__ == "__main__":
     sink = ConsoleGameEventSink()
     api_client = create_api_client(sink, token_budget=200_000)
     generator = CharacterGenerator(sink, api_client=api_client)
-    names = ["Gollum", "Ice King", "Lady Macbeth", "Elle Woods", "BMO", "Lumpy Space Princess", "Luke Skywalker", "Jake the Dog", "Finn the Human", "Miranda Priestly", "Lady Diana"]
+    namesx = ["Gollum", "Ice King", "Lady Macbeth", "Elle Woods", "BMO", "Lumpy Space Princess", "Luke Skywalker", "Jake the Dog", "Finn the Human", "Miranda Priestly", "Lady Diana"]
     names = ["Jo March", "Amy March", "Meg March", "Beth March", "Marmee March", "Elena “Lenù” Greco", "Rafaella “Lila” Cerullo"]
     names = ["Tree Trunks (Adventure Tiem)", "Pricess Diana", "Ice King"]
     heros = ["Avatar Aang", "Finn the Human", "Frodo"]
-    for name in heros:
+    names = ["Hermione Granger"]
+    for name in namesx:
         
-        mj = generator.generate_debater(name, allow_rename=False)
-        print(f"Name: {mj.name}")
-        #print(f"\nPersona:\n{mj.persona}")
-        #print(f"\nSpeaking Style:\n{mj.speaking_style}")
+        player = generator.generate_agent(name, allow_rename=False)
+        print(f"Name: {player.name}")
+        print(f"\nPersona:\n{player.initial_persona}")
+        print(f"\nSpeaking Style:\n{player.initial_speaking_style}")
