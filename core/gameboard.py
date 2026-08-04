@@ -99,7 +99,7 @@ class GameBoard:
         self.round_number += 1
         self.score_changed_in_round = False
         self.scores_at_round_start = dict(self.agent_scores)
-        self.game_log.start_round(self.phase_number, self.round_number)
+        self.game_log.start_round(self.phase_number, self.round_number, self.phase_runner.current_round_index)
         self.game_sink.on_round_start(self.round_number, self.score_string())
 
     def endPhase(self):

@@ -1,6 +1,7 @@
+from dataclasses import replace
 from typing import TYPE_CHECKING
-from core.game_context.dashboard import Dashboard
 from core.game_context.models import RoundBlock, MessageBlock
+from core.game_context.formatting import header, subheader, subsubheader
 
 if TYPE_CHECKING:
     from core.gameboard import GameBoard
@@ -76,15 +77,15 @@ class ContextBuilder:
     def _scores_inline(self, scores: dict, label: str) -> str:
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         inner = " | ".join(f"{name}: {score}" for name, score in sorted_scores)
-        return Dashboard.header(f"{label}: {inner}")
+        return header(f"{label}: {inner}")
 
     def _round_after_id(self, round_block, message_id):
         round_messages = []
         for message_block in round_block.conversation_entries:
             if message_block.id > message_id:
                 round_messages.append(message_block)
-        return RoundBlock(phase_number=round_block.phase_number, round_number=round_block.round_number, conversation_entries=round_messages)
-
+        return replace(round_block, conversation_entries=round_messages)
+        
     def _previous_round_entries_for_context(self):
         rounds = self.game_log.completed_phase_rounds(self.game_board.phase_number)
         if len(rounds) < self.min_rounds_for_context:
@@ -100,10 +101,11 @@ class ContextBuilder:
         for i, r in enumerate(rounds):
             is_recent = i == len(rounds) - self._recent_rounds_in_full
             if not is_recent and r.game_ledger and use_game_ledger:
-                formatted.append(f"\n{self._round_header(r)}\n===ROUND SUMMARY LEDGER===\n{r.game_ledger}")
+                formatted.append(f"\n{self._round_header(r)}\n{self._ledger_header(r)}\n{r.game_ledger}")
             else:
                 formatted.append(self._formatted_round(r, agent))
-        rounds_string = f"=== PAST {len(rounds)} ROUNDS  ===\n"
+        label = "Previous Round" if len(rounds) == 1 else f"Past {len(rounds)} Rounds"
+        rounds_string = subheader(label) + "\n"
         rounds_string += "\n\n".join(formatted)
         return rounds_string
     
@@ -121,7 +123,10 @@ class ContextBuilder:
         return "\n\n".join(history_blocks)
 
     def _round_header(self, round_block):
-        return f"--- Phase: {round_block.phase_number}, Round: {round_block.round_number} ---"
+        return subheader(f"Phase: {round_block.phase_number}, Round: {round_block.phase_round_number}")
+
+    def _ledger_header(self, round_block):
+        return subsubheader(f"Round {round_block.phase_round_number} Summary Ledger")
 
     
     def _formatted_round(self, round_block: 'RoundBlock', agent: 'BaseAgent', incl_header=True):
@@ -137,7 +142,7 @@ class ContextBuilder:
             elif agent.name in message_block.visibility_restriction:
                 output += self._formatted_restricted_block(message_block)
         if round_block.game_ledger:
-            output += "\n\n===ROUND SUMMARY LEDGER===\n"
+            output += f"\n\n{self._ledger_header(round_block)}\n"
             output += round_block.game_ledger
         return output
 
@@ -197,7 +202,3 @@ class ContextBuilder:
                 messages.extend(mb.message_entries)
         return messages
         
-
-    def get_dashboard_string(self, agent: 'BaseAgent') -> str:
-        return Dashboard.render(agent, self.game_board)
-       

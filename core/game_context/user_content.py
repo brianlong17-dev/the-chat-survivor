@@ -1,3 +1,5 @@
+from core.game_context.formatting import header, subheader
+from core.game_context.dashboard import Dashboard
 
 
 class UserContent:
@@ -6,8 +8,7 @@ class UserContent:
     def render(cls, agent, game_board, turn_instruction, game_history_override) -> str:
         #TODO the game_history_override -- eventually will have different context objects that call different render methods
         dash = []
-        dashboard = game_board.context_builder.get_dashboard_string(agent)
-        #TODO append agent.phase_strategy_notes
+        dashboard = Dashboard.render(agent, game_board)
         dash.append(dashboard)
       
         if game_history_override:
@@ -15,7 +16,7 @@ class UserContent:
         else:
             cls.append_game_context(dash, agent, game_board)
             
-        dash.append("=== YOUR TURN ===")
+        dash.append(header("YOUR TURN"))
         if turn_instruction:
             dash.append(f"{turn_instruction}")
             
@@ -32,12 +33,16 @@ class UserContent:
         previous_rounds = cb.previous_rounds_formatted(agent, use_game_ledger = True)
         
         if summaries:
-            dash.append("=== PHASE SUMMARIES ===")
+            dash.append(header("PAST PHASES: SUMMARIES"))
             dash.append(summaries)
+        
+        dash.append(header("CURRENT PHASE"))
+        dash.append(subheader("Round Progress"))
+        dash.append(game_board.phase_runner.get_phase_progress_string())
         if previous_rounds:
-            #header included in method
+            #subheader included in method
             dash.append(previous_rounds)
-        dash.append("=== CURRENT ROUND ===")
+        dash.append(header("CURRENT ROUND"))
         dash.append(current_round)
         
     

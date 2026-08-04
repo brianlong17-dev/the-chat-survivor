@@ -22,4 +22,5 @@ class RoundBlock:
     phase_number: int
     round_number: int
     conversation_entries: list[MessageBlock]
+    phase_round_number: int = 0
     game_ledger: str = ""

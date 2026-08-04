@@ -1,3 +1,6 @@
+from core.game_context.formatting import header
+
+
 class SummariesStringBuilder:
     
     DETAILED_SUMMARIES_REQUIRED = 2
@@ -39,7 +42,7 @@ class SummariesStringBuilder:
     @classmethod
     def _summarise_phase_context_string(cls, agent, game_board):
         phase_rounds_formatted = game_board.context_builder.phase_rounds_string(agent)
-        context_string = "=== YOUR SUMMARIES OF PREVIOUS PHASES ===\n"
+        context_string = header("YOUR SUMMARIES OF PREVIOUS PHASES") + "\n"
         context_string += cls.phase_summaries_string(agent) 
         context_string += "\n\n------------ The current phase to summarise into memory: ---------\n"
         context_string += phase_rounds_formatted

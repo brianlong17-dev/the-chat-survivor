@@ -72,10 +72,11 @@ class GameLog:
     def completed_phase_rounds(self, phase_number: int) -> list[RoundBlock]:
         return [r for r in self.completed_round_entries if r.phase_number == phase_number]
 
-    def start_round(self, phase_number: int, round_number: int):
+    def start_round(self, phase_number: int, overall_round_number: int, phase_round_number: int):
         self._current_round_summarisation = ""
         self._current_round_summarisation_until = None
-        self.current_round = RoundBlock(phase_number=phase_number, round_number=round_number, conversation_entries=[])
+        self.current_round = RoundBlock(phase_number=phase_number, round_number=overall_round_number,
+                                        phase_round_number=phase_round_number, conversation_entries=[])
 
     def close_round(self):
         self.completed_round_entries.append(self.current_round)
