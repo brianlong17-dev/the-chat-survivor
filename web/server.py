@@ -141,3 +141,22 @@ async def get_levels():
             for level in AVAILABLE_LEVELS
         ]
     }
+
+
+# ---------------------------------------------------------------------------
+# Models endpoint
+# ---------------------------------------------------------------------------
+
+@app.get("/api/models")
+async def get_models():
+    from core.api_client import AVAILABLE_MODELS
+    return {
+        "models": [
+            {
+                "id": model.id,
+                "name": model.name,
+                "default": model.default,
+            }
+            for model in AVAILABLE_MODELS
+        ]
+    }

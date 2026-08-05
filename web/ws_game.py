@@ -9,6 +9,7 @@ from core.bootstrap import create_engine
 from core.api_client import create_api_client
 from core.sinks.websocket_sink import WebSocketSink
 from core.levels.level_registry import get_level_by_id
+from core.api_client.model_registry import get_model_by_id
 from web import rate_limits
 from web.server_config import GAME_ENABLED, TURNSTILE_ENABLED, MAX_NAME_LENGTH, MAX_PLAYERS
 from web.server_helpers import (
@@ -27,6 +28,7 @@ class GameRequest:
     level: object
     human_name: str | None
     player_names: list
+    player_models: dict
 
 
 def _parse_game_request(msg) -> GameRequest:
@@ -48,11 +50,26 @@ def _parse_game_request(msg) -> GameRequest:
 
     names = msg.get("names", [])
     max_players = min(level.max_players, MAX_PLAYERS) - (1 if human_name else 0)
-    player_names = [sanitize_name(n[:MAX_NAME_LENGTH]) for n in names[:max_players]]
+    raw_names = names[:max_players]
+    player_names = [sanitize_name(n[:MAX_NAME_LENGTH]) for n in raw_names]
     if any(not name for name in player_names):
         raise GameRequestError("Invalid name.")
 
-    return GameRequest(level=level, human_name=human_name, player_names=player_names)
+    player_models = _parse_player_models(msg.get("models") or {}, raw_names, player_names)
+
+    return GameRequest(level=level, human_name=human_name, player_names=player_names, player_models=player_models)
+
+
+def _parse_player_models(raw_models, raw_names, player_names):
+    player_models = {}
+    for raw_name, name in zip(raw_names, player_names):
+        model_id = raw_models.get(raw_name)
+        if model_id is None:
+            continue
+        if not get_model_by_id(model_id):
+            raise GameRequestError("Invalid model.")
+        player_models[name] = model_id
+    return player_models
 
 
 async def _can_run_game(websocket: WebSocket, token, ip_address):
@@ -103,7 +120,7 @@ async def game_ws(websocket: WebSocket):
 
         def run_game():
             try:
-                engine = create_engine(sink, human_player_name=req.human_name, names=req.player_names, game_design=req.level.game_design, api_client=api_client)
+                engine = create_engine(sink, human_player_name=req.human_name, names=req.player_names, game_design=req.level.game_design, api_client=api_client, agent_models=req.player_models)
                 log_game_start(is_game=True, id=req.level.id, player_names=req.player_names,
                        human_name=req.human_name, ip_address=ip_address, token_budget=req.level.token_budget, 
                        game_id=engine.game_id)

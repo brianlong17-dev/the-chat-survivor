@@ -19,17 +19,17 @@ def create_engine(game_sink, game_design, human_player_name = None, number_of_pl
                   allow_rename = True,
                   api_client=None,
                   populate_agents=True,
-                  agentic_player_classes=None):
+                  agentic_player_classes=None,
+                  agent_models=None):
 
     game_master = GameMaster(api_client = api_client)
     game_board = GameBoard(game_sink)
     generator = CharacterGenerator(game_sink, api_client = api_client, agentic_player_classes=agentic_player_classes)
 
     if populate_agents:
-        agents = generator.generate_agents_from_names(names, allow_rename = allow_rename)
+        agents = generator.generate_agents_from_names(names, agent_models = agent_models, allow_rename = allow_rename,)
     else:
         agents = [create_blank_agent(name, api_client) for name in names]
-
 
     if human_player_name:
         human_player = Human(human_player_name)

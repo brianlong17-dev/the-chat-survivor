@@ -4,6 +4,8 @@ Shared setup helpers for demo runners and runtime tests.
 import json
 import os
 
+from core.api_client.model_registry import MODEL_2
+
 FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
@@ -46,7 +48,7 @@ def apply_agent_state(agents: dict, agent_state: dict):
             agent.phase_summaries_brief[int(phase_str)] = text
             
         if agent.name == 'Gollum':
-            agent._request_lower_model=True
+            agent.api_model = MODEL_2
 
 
 

@@ -16,8 +16,8 @@ class BaseAgent:
         self._log_path = None           # set on first write, reused within a run
         self.brevity_jail = False
         self.last_message_id = None
-        self._request_lower_model=False
         self.tracer = trace.get_tracer("chat_survivor.game")
+        self.api_model=None
 
     def __repr__(self):
         return f"<{type(self).__name__} {self.name}>"
@@ -153,7 +153,7 @@ class BaseAgent:
                 messages=messages,
                 thinking=thinking,
                 use_higher_model=use_higher_model,
-                use_lower_model=self._request_lower_model,
+                agent_api_model=self.api_model,
                 span=span
             )
             
@@ -162,8 +162,8 @@ class BaseAgent:
         if self.debug_log:
             if use_higher_model:
                 api_model = self.api_client.higher_model
-            elif self._request_lower_model and self.api_client.lower_model:
-                api_model = self.api_client.lower_model
+            elif self.api_model:
+                api_model = self.api_model
             else:
                 api_model = self.api_client.default_model
             self._log_call_index += 1

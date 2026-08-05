@@ -21,7 +21,7 @@ class BudgetExceeded(Exception):
     pass
 
 class APIClient:
-    def __init__(self, client, model: str, higher_model_name: str, lower_model_name=None,  sink: GameEventSink = None,
+    def __init__(self, client, model: str, higher_model_name: str, sink: GameEventSink = None,
                  token_budget: int = None) -> None:
         if token_budget is None:
             raise ValueError("token_budget is required")
@@ -29,7 +29,6 @@ class APIClient:
         self._client = client
         self.default_model = model
         self.higher_model = higher_model_name
-        self.lower_model = lower_model_name
         if not sink:
             self.sink = NoopGameSink()
         else:
@@ -72,7 +71,7 @@ class APIClient:
             thinking_config = types.ThinkingConfig(thinking_budget=0, include_thoughts=False)
         system_content = next((m["content"] for m in messages if m["role"] == "system"), None)
         user_content = next((m["content"] for m in messages if m["role"] == "user"), None)
-        max_429_retries = 8
+        max_429_retries = 16
         backoff = 2
         for attempt in range(max_429_retries):
             try: 
@@ -99,7 +98,7 @@ class APIClient:
             except Exception as e:
                 if attempt < max_429_retries - 1 and (_is_rate_limit(e) or _is_transient_server_error(e)):
                     wait = backoff * (2 ** attempt)
-                    reason = "429 rate limit" if _is_rate_limit(e) else "5xx server error"
+                    reason = f"{api_model} - 429 rate limit" if _is_rate_limit(e) else "5xx server error"
                     error_message = (f"server {reason} — waiting {wait}s before retry {attempt + 1}/{max_429_retries - 1}")
                     print(error_message)
                     if attempt > 1:
@@ -109,7 +108,7 @@ class APIClient:
                     raise
         return response, result
     
-    def create(self, response_model, messages: list, thinking=False, use_higher_model = False, use_lower_model=False, span=None):
+    def create(self, response_model, messages: list, thinking=False, agent_api_model=None, use_higher_model = False, span=None):
         if self._mock_output:
             return self._mock_response(response_model)
         if self._record_manager._total_api_tokens > self.token_budget:
@@ -117,8 +116,9 @@ class APIClient:
 
         if use_higher_model:
             api_model = self.higher_model
-        elif use_lower_model and self.lower_model:
-            api_model = self.lower_model
+        elif agent_api_model:
+            api_model = agent_api_model
+        
         else:
             api_model = self.default_model
 

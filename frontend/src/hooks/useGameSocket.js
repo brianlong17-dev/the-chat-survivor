@@ -219,8 +219,8 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     }
   }, [handleMessage])
 
-  const startGame = useCallback(({ names = [], humanName = null, levelId = null, turnstileToken = null } = {}) => {
-    connect(WS_GAME_URL, { type: 'start', names, human_name: humanName, levelId, turnstile_token: turnstileToken })
+  const startGame = useCallback(({ names = [], humanName = null, levelId = null, turnstileToken = null, models = {} } = {}) => {
+    connect(WS_GAME_URL, { type: 'start', names, human_name: humanName, levelId, turnstile_token: turnstileToken, models })
   }, [connect])
 
   const startDemo = useCallback(({ demoId, humanName = null, fixtureChoice = null, turnstileToken = null } = {}) => {

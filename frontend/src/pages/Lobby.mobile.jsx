@@ -66,8 +66,9 @@ export default function LobbyMobile({ onStart }) {
 
   // ── Persist (desktop-compatible shape) ──
   useEffect(() => {
+    const prev = JSON.parse(localStorage.getItem(LOBBY_STORAGE_KEY) || '{}')
     localStorage.setItem(LOBBY_STORAGE_KEY, JSON.stringify({
-      selected, humanIndex: playing ? 0 : null, humanName, customNames, selectedLevel,
+      ...prev, selected, humanIndex: playing ? 0 : null, humanName, customNames, selectedLevel,
     }))
   }, [selected, playing, humanName, customNames, selectedLevel])
 

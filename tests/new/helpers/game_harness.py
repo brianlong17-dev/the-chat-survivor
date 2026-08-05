@@ -88,15 +88,16 @@ class ScriptedAPIClient(APIClient):
             client=None,
             model="scripted",
             higher_model_name="scripted",
-            lower_model_name="scripted",
             sink=NoopGameSink(),
             token_budget=1,
         )
         self._mock_output = True
         self.speaker_name = speaker_name
         self.script = script
+        self.last_requested_model = None
 
     def create(self, response_model, messages, **kwargs):
+        self.last_requested_model = kwargs.get("agent_api_model")
         return self._build(response_model)
 
     def transcribe(self, audio_bytes, mime_type="audio/webm", model=None, hints=None):
@@ -181,6 +182,10 @@ class GameHarness:
             phase.config_mutations.append((method, args))
         return self
 
+    def uses_model(self, player: str, model_id: str) -> "GameHarness":
+        self._agent(player).api_model = model_id
+        return self
+
     def _current_round(self) -> str | None:
         runner = self._engine.phase_runner
         description = runner.current_phase_description
@@ -248,6 +253,15 @@ class GameHarness:
                 if turn["actor"] == actor and turn["state"] == "revealed":
                     return turn
         raise AssertionError(f"'{actor}' never took a turn in this game")
+
+    def model_requested_by(self, player: str) -> str | None:
+        return self._agent(player).api_client.last_requested_model
+
+    def _agent(self, player: str):
+        for agent in self._engine.agents:
+            if agent.name == player:
+                return agent
+        raise AssertionError(f"'{player}' is not a player in this game")
 
     @property
     def _board(self):

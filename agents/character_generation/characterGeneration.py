@@ -46,12 +46,12 @@ class CharacterGenerator:
         self.agentic_player_classes=agentic_player_classes or [AgenticPlayer] #[AgenticPlayer, AgenticPlayerV1]
 
 
-    def generate_agents_from_names(self, names, allow_rename = True):
-        fn = partial(self.generate_agent, allow_rename=allow_rename)
+    def generate_agents_from_names(self, names, allow_rename = True, agent_models = None):
+        fn = partial(self.generate_agent, allow_rename=allow_rename, agent_models=agent_models)
         with ThreadPoolExecutor(max_workers=min(32, len(names))) as executor:
             return list(executor.map(fn, names))
 
-    def generate_agent(self, character_name: str, allow_rename = True) -> 'AgenticPlayer':
+    def generate_agent(self, character_name: str, allow_rename = True, agent_models = None) -> 'AgenticPlayer':
         if self.api_client._mock_output:
             allow_rename = False
         system_prompt = (
@@ -79,9 +79,14 @@ class CharacterGenerator:
         #print("AD: " + profile.additional_depth)
         agent_class=random.choice(self.agentic_player_classes)
         #print(f"{final_name}: {agent_class.__name__}")
-        return agent_class(
+        agent = agent_class(
             name=final_name,
             initial_persona=f"{profile.persona}\n{profile.additional_depth}",
             api_client=self.api_client,
             speaking_style=profile.speaking_style,
         )
+        if agent_models:
+            model_id = agent_models.get(character_name)
+            if model_id:
+                agent.api_model = model_id
+        return agent

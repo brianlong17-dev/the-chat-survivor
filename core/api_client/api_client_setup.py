@@ -3,22 +3,16 @@ import google.genai as genai
 from google.auth import default
 from google.oauth2 import service_account
 from core.api_client.api_client import APIClient
-
-MODEL_3_5 = "gemini-3.5-flash-lite"
-MODEL_3 = "gemini-3.1-flash-lite"
-MODEL_2 = "gemini-2.5-flash-lite"
-DEFAULT_MODEL_NAME = MODEL_3
-DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
+from core.api_client.model_registry import DEFAULT_MODEL_NAME, DEFAULT_HIGHER_MODEL_NAME
 
 
 def create_api_client(game_sink, token_budget,
-                  model_name=DEFAULT_MODEL_NAME, 
-                  lower_model_name=MODEL_2, higher_model_name=DEFAULT_HIGHER_MODEL_NAME):
+                  model_name=DEFAULT_MODEL_NAME, higher_model_name=DEFAULT_HIGHER_MODEL_NAME):
     if os.getenv("GEMINI_API_KEY"):
-        return create_gemini_api_client(game_sink, token_budget, model_name, lower_model_name, higher_model_name)
-    return create_vertex_api_client(game_sink, token_budget, model_name, lower_model_name, higher_model_name)
+        return create_gemini_api_client(game_sink, token_budget, model_name, higher_model_name)
+    return create_vertex_api_client(game_sink, token_budget, model_name, higher_model_name)
 
-def create_vertex_api_client(game_sink, token_budget, model_name, lower_model_name, higher_model_name):
+def create_vertex_api_client(game_sink, token_budget, model_name,  higher_model_name):
 
     project=os.getenv("PROJECT")
     location=os.getenv("LOCATION")
@@ -39,9 +33,9 @@ def create_vertex_api_client(game_sink, token_budget, model_name, lower_model_na
         location=location,
         credentials=credentials
     )
-    return APIClient(client, model_name, higher_model_name, lower_model_name=lower_model_name, sink=game_sink, token_budget=token_budget)
+    return APIClient(client, model_name, higher_model_name, sink=game_sink, token_budget=token_budget)
 
 
-def create_gemini_api_client(game_sink, token_budget, model_name, lower_model_name, higher_model_name):
+def create_gemini_api_client(game_sink, token_budget, model_name, higher_model_name):
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-    return APIClient(client, model_name, higher_model_name, lower_model_name=lower_model_name, sink=game_sink, token_budget=token_budget)
+    return APIClient(client, model_name, higher_model_name, sink=game_sink, token_budget=token_budget)
