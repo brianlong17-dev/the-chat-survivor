@@ -22,7 +22,7 @@ class BudgetExceeded(Exception):
 
 class APIClient:
     def __init__(self, client, model: str, higher_model_name: str, sink: GameEventSink = None,
-                 token_budget: int = None) -> None:
+                 token_budget: int = None, european_client=None) -> None:
         if token_budget is None:
             raise ValueError("token_budget is required")
         self._mock_output = False
@@ -36,6 +36,8 @@ class APIClient:
         self._record_manager = APIRecordManager()
         self.token_budget = min(token_budget, MAX_TOKENS_PER_GAME_CAP)
         self.game_id = None
+        
+        self.european_client = european_client
         
     def _mock_response(self, response_model):
         long_text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, \n \n sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -73,9 +75,15 @@ class APIClient:
         user_content = next((m["content"] for m in messages if m["role"] == "user"), None)
         max_429_retries = 16
         backoff = 2
+        
+        if api_model == 'gemini-2.5-flash-lite' and self.european_client is not None:
+            client = self.european_client
+        else:
+            client = self._client
+        
         for attempt in range(max_429_retries):
             try: 
-                response = self._client.models.generate_content(
+                response = client.models.generate_content(
                     model=api_model,
                     contents=user_content,  # just the user message string
                     config=types.GenerateContentConfig(

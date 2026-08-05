@@ -33,7 +33,16 @@ def create_vertex_api_client(game_sink, token_budget, model_name,  higher_model_
         location=location,
         credentials=credentials
     )
-    return APIClient(client, model_name, higher_model_name, sink=game_sink, token_budget=token_budget)
+    
+    #trying to get better 429 results compared to global
+    european_client = genai.Client(
+        vertexai=True,
+        project=project,
+        location='europe-west1',
+        credentials=credentials
+    )
+    
+    return APIClient(client, model_name, higher_model_name, sink=game_sink, token_budget=token_budget, european_client=european_client)
 
 
 def create_gemini_api_client(game_sink, token_budget, model_name, higher_model_name):
