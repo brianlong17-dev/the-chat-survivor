@@ -30,6 +30,19 @@ export default function Lobby({ onStart }) {
   const saved = JSON.parse(localStorage.getItem(LOBBY_STORAGE_KEY) || '{}')
 
   const [step, setStep] = useState(0)
+  const [heroExpanded, setHeroExpanded] = useState(false)
+
+  useEffect(() => {
+    if (step !== 0 || heroExpanded) return
+    const onKeyDown = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return
+      e.preventDefault()
+      setHumanName(e.key)
+      setHeroExpanded(true)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [step, heroExpanded])
   const [tabs, setTabs] = useState({})
   const [activeTab, setActiveTab] = useState('')
   const [selected, setSelected] = useState(saved.selected || [])
@@ -190,7 +203,7 @@ export default function Lobby({ onStart }) {
 
   const remainingToMin = Math.max(0, minAI - selected.length)
   const castDisabled = remainingToMin > 0
-  const canStart = gameEnabled && selected.length >= minAI && selected.length <= maxAI && selectedLevel && (!playing || humanName.trim()) && !!defaultModelId && (!turnstileEnabled || turnstileToken)
+  const canStart = gameEnabled && castNames.length >= minAI && selectedLevel && (!playing || humanName.trim()) && !!defaultModelId && (!turnstileEnabled || turnstileToken)
 
   const goto = (target) => { if (target < step) setStep(target) }
   const back = () => setStep(Math.max(0, step - 1))
@@ -206,24 +219,24 @@ export default function Lobby({ onStart }) {
     <div className="lobby-flow">
       {step > 0 && (
         <div className="lobby-topbar">
-          <button className="lobby-back-btn" onClick={back}>← Back</button>
-          <div className="lobby-stepper">
-            {STEP_LABELS.map((label, i) => {
-              const isActive = step === i
-              const isDone = step > i
-              return (
-                <button
-                  key={label}
-                  className={`lobby-step ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}
-                  onClick={() => isDone && goto(i)}
-                  disabled={!isDone && !isActive}
-                >
-                  {i + 1}. {label}
-                </button>
-              )
-            })}
+          <div className="lobby-topbar-right">
+            <div className="lobby-stepper">
+              {STEP_LABELS.map((label, i) => {
+                const isActive = step === i
+                const isDone = step > i
+                return (
+                  <button
+                    key={label}
+                    className={`lobby-step ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}
+                    onClick={() => isDone && goto(i)}
+                    disabled={!isDone && !isActive}
+                  >
+                    {String(i + 1).padStart(2, '0')} {label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <div className="lobby-brand-mini">CHAT SURVIVOR</div>
         </div>
       )}
 
@@ -231,51 +244,64 @@ export default function Lobby({ onStart }) {
 
         {step === 0 && (
           <div className="lobby-hero">
-            <div className="lobby-title lobby-hero-title">THE CHAT SURVIVOR</div>
-            <div className="lobby-hero-tagline">A social survival game, played out entirely in a live chat feed.</div>
-            <input
-              className="lobby-hero-input"
-              value={humanName}
-              maxLength={40}
-              placeholder="Your name"
-              onChange={e => setHumanName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && humanName.trim()) setStep(1) }}
-              autoFocus
-            />
-            <button
-              className="lobby-cta-btn"
-              disabled={!humanName.trim()}
-              onClick={() => humanName.trim() && setStep(1)}
-            >
-              Enter the chat →
-            </button>
-            <div className="lobby-hero-hint">Next: pick a level, then build your cast.</div>
+            {!heroExpanded ? (
+              <>
+                <button className="lobby-hero-hook" onClick={() => setHeroExpanded(true)}>
+                  Enter the chat<span className="lobby-cursor" aria-hidden="true" />
+                </button>
+                <div className="lobby-hero-tagline">A social survival game, played out entirely in a live chat feed.</div>
+              </>
+            ) : (
+              <div className="lobby-hero-prompt">
+                <div className="lobby-hero-prompt-row">
+                  <span className="lobby-hero-caret" aria-hidden="true">&gt;</span>
+                  <input
+                    className="lobby-hero-input"
+                    value={humanName}
+                    maxLength={40}
+                    placeholder="your name"
+                    aria-label="Your name"
+                    onChange={e => setHumanName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && humanName.trim()) setStep(1) }}
+                    autoFocus
+                  />
+                </div>
+                {humanName.trim() && (
+                  <button className="lobby-hero-continue" onClick={() => setStep(1)}>Continue →</button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
         {step === 1 && (
           <div className="lobby-step-body">
-            <div className="lobby-step-label">Step 2 of 4</div>
+            <div className="lobby-step-label sc-label">01 — Level</div>
             <div className="lobby-step-heading">Choose a level</div>
-            <div className="lobby-step-sub">Pick a format — you can change this later.</div>
-            <div className="level-cards level-cards-flow">
-              {levels.map(level => {
+            <div className="lobby-step-sub">Pick a format. You can change this later.</div>
+            <div className="level-list">
+              {levels.map((level, i) => {
                 const p = LEVEL_PRESENTATION[level.id] || {}
                 const isSel = selectedLevel === level.id
                 return (
                   <button
                     key={level.id}
-                    className={`level-card level-card-flow ${isSel ? 'selected' : ''}`}
+                    className={`level-row ${isSel ? 'selected' : ''}`}
                     onClick={() => chooseLevel(level.id)}
                   >
-                    {p.recommended && <div className="level-card-badge">Never played? Start here</div>}
-                    <div className="level-card-name">{levelDisplayName(level)}</div>
-                    {p.tagline && <div className="level-card-tagline">{p.tagline}</div>}
-                    <div className="level-card-description">{p.description || level.description}</div>
-                    <div className="level-card-info level-card-info-row">
+                    <span className="level-row-marker">{isSel ? '▸' : String(i + 1).padStart(2, '0')}</span>
+                    <span className="level-row-main">
+                      <span className="level-row-title">
+                        <span className="level-row-name">{levelDisplayName(level)}</span>
+                        {p.tagline && <span className="level-row-tagline sc-label">{p.tagline}</span>}
+                        {p.recommended && <span className="level-row-badge">start here</span>}
+                      </span>
+                      <span className="level-row-description">{p.description || level.description}</span>
+                    </span>
+                    <span className="level-row-meta">
                       <span>{level.min_players}–{level.max_players} players</span>
                       {p.minutes && <span>{p.minutes}</span>}
-                    </div>
+                    </span>
                   </button>
                 )
               })}
@@ -291,12 +317,12 @@ export default function Lobby({ onStart }) {
 
         {step === 2 && (
           <div className="lobby-step-body">
-            <div className="lobby-step-label">Step 3 of 4</div>
+            <div className="lobby-step-label sc-label">02 — Cast</div>
             <div className="lobby-step-heading">Build your cast</div>
             <div className="lobby-step-sub">{castSubText}</div>
 
             <div className="lobby-selected">
-              <span className="lobby-selected-label">
+              <span className="lobby-selected-label sc-label">
                 {Math.min(selected.length, maxAI)} / {maxAI} selected
                 <button className="lobby-dice" onClick={randomize} title="Randomly fill players" aria-label="Randomly fill players">
                   <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
@@ -416,17 +442,17 @@ export default function Lobby({ onStart }) {
 
         {step === 3 && (
           <div className="lobby-step-body">
-            <div className="lobby-step-label">Step 4 of 4</div>
+            <div className="lobby-step-label sc-label">03 — Review</div>
             <div className="lobby-step-heading">Review</div>
             <div className="lobby-step-sub">Confirm your setup before entering the chat.</div>
 
             <div className="lobby-recap-panel">
-              <div className="lobby-recap-row"><span className="lobby-recap-label">Your role</span><span>{playing ? `Playing as ${humanName.trim()}` : 'Watching only'}</span></div>
-              <div className="lobby-recap-row"><span className="lobby-recap-label">Level</span><span>{selectedLevelObj ? levelDisplayName(selectedLevelObj) : '—'}</span></div>
+              <div className="lobby-recap-row"><span className="lobby-recap-label sc-label">Your role</span><span>{playing ? `Playing as ${humanName.trim()}` : 'Watching only'}</span></div>
+              <div className="lobby-recap-row"><span className="lobby-recap-label sc-label">Level</span><span>{selectedLevelObj ? levelDisplayName(selectedLevelObj) : '—'}</span></div>
             </div>
 
             <div className="lobby-review-cast">
-              <div className="lobby-review-header">Cast</div>
+              <div className="lobby-review-header sc-label">Cast</div>
               {castNames.map(name => (
                 <div key={name} className="lobby-review-row">
                   <span className="lobby-review-name">{name}</span>

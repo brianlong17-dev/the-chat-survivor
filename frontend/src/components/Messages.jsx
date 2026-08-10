@@ -17,17 +17,14 @@ const WORD_ANIM_SNAP_PAUSE_MS = 400        // pause before flushing snapped sent
 const WORD_ANIM_SNAP_FADE_S = 0.4          // CSS fade-in duration (seconds) for snapped text
 const WORD_ANIM_END_LINGER_CHOICES_MS = [500, 1000, 1500]  // cursor linger at end; one picked at random per message
 
-const SPEAKER_COLORS = [
-  '#e07b54', '#5b8dd9', '#67b37d', '#c97bc4',
-  '#d4a84b', '#5bbccc', '#d9706a', '#8d7fd9',
-]
+// Palette values live in index.css as --speaker-0..7, one pair per theme.
+const SPEAKER_COLOR_COUNT = 8
 
 export function getSpeakerColor(name, colorMap) {
-  if (!colorMap[name]) {
-    const idx = Object.keys(colorMap).length % SPEAKER_COLORS.length
-    colorMap[name] = SPEAKER_COLORS[idx]
+  if (colorMap[name] == null) {
+    colorMap[name] = Object.keys(colorMap).length % SPEAKER_COLOR_COUNT
   }
-  return colorMap[name]
+  return `var(--speaker-${colorMap[name]})`
 }
 
 function renderBold(text) {
@@ -523,10 +520,8 @@ function NextRoundButton({ onSend, nextRoundButtonActive}) {
   )
 }
 
-const HOST_RAIL = '#8a8a8a'
-
 function railColor(msg, colorMap) {
-  if (msg.speaker === 'HOST' || msg.speaker === 'SYSTEM') return HOST_RAIL
+  if (msg.speaker === 'HOST' || msg.speaker === 'SYSTEM') return 'var(--rail-host)'
   return getSpeakerColor(msg.speaker, colorMap)
 }
 

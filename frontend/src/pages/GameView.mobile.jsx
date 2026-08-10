@@ -8,6 +8,9 @@ import InputRequest from '../components/InputRequest'
 import SegmentTracker from '../components/SegmentTracker'
 import PrivateChatsPanel from '../components/PrivateChatsPanel'
 import { SpeechBubbleIcon, LockIcon, InfoIcon, ListIcon } from '../components/FeedIcons'
+import { SETTINGS_DEFS, VISIBLE_TOGGLE_KEYS } from '../utils/settings'
+
+const SETTINGS_TOGGLES = SETTINGS_DEFS.filter(t => VISIBLE_TOGGLE_KEYS.has(t.key))
 
 export default function GameViewMobile({
   status, events, scores, evicted,
@@ -16,7 +19,7 @@ export default function GameViewMobile({
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound
 }) {
-  const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs } = settings
+  const { showPrivateThoughts, autoRun, animateText, showPrivateChats, mobileOutputs } = settings
 
   const replayRunthroughId = (window.location.pathname.match(/^\/runthrough\/([^/]+)/) || [])[1] || null
   const scrolledToRef = useRef(null)
@@ -135,7 +138,7 @@ export default function GameViewMobile({
     }
   }, [privateConversations, activeTab])
 
-  const visibleEvents = showPrivate
+  const visibleEvents = showPrivateThoughts
     ? events
     : events.filter(e => e.type !== 'private_thought')
 
@@ -149,34 +152,27 @@ export default function GameViewMobile({
             </button>
             {settingsOpen && (
               <div className="settings-dropdown-mobile settings-dropdown-left-mobile">
-                <label className="toggle-label">
-                  <input type="checkbox" checked={showPrivate} onChange={e => updateSetting('showPrivate', e.target.checked)} />
-                  Show private thoughts
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={autoRun} onChange={e => updateSetting('autoRun', e.target.checked)} />
-                  Auto-run
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={animateText} onChange={e => updateSetting('animateText', e.target.checked)} />
-                  Animate text
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={showPrivateChats} onChange={e => updateSetting('showPrivateChats', e.target.checked)} />
-                  Show private conversations
-                </label>
-                <div className="toggle-label-with-info">
-                  <label className="toggle-label">
-                    <input type="checkbox" checked={!!mobileOutputs} onChange={e => updateSetting('mobileOutputs', e.target.checked)} />
-                    Mobile outputs
-                  </label>
-                  <button
-                    className="setting-info-btn"
-                    onClick={e => { e.stopPropagation(); setMobileOutputsInfoOpen(o => !o) }}
-                    title="About mobile outputs"
-                  >ⓘ</button>
-                </div>
-                {mobileOutputsInfoOpen && (
+                {SETTINGS_TOGGLES.map(t => (
+                  t.key === 'mobileOutputs' ? (
+                    <div className="toggle-label-with-info" key={t.key}>
+                      <label className="toggle-label">
+                        <input type="checkbox" checked={!!mobileOutputs} onChange={e => updateSetting('mobileOutputs', e.target.checked)} />
+                        {t.label}
+                      </label>
+                      <button
+                        className="setting-info-btn"
+                        onClick={e => { e.stopPropagation(); setMobileOutputsInfoOpen(o => !o) }}
+                        title="About mobile outputs"
+                      >ⓘ</button>
+                    </div>
+                  ) : (
+                    <label className="toggle-label" key={t.key}>
+                      <input type="checkbox" checked={!!settings[t.key]} onChange={e => updateSetting(t.key, e.target.checked)} />
+                      {t.label}
+                    </label>
+                  )
+                ))}
+                {mobileOutputsInfoOpen && VISIBLE_TOGGLE_KEYS.has('mobileOutputs') && (
                   <p className="setting-info-text">Switch on for character output refined for mobile play.</p>
                 )}
                 <div className="settings-divider-mobile" />

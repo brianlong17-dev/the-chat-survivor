@@ -6,6 +6,10 @@ import RoundWidget from '../components/RoundWidget'
 import InputRequest from '../components/InputRequest'
 import SegmentTracker from '../components/SegmentTracker'
 import PrivateChatsPanel from '../components/PrivateChatsPanel'
+import useTheme from '../hooks/useTheme'
+import { SETTINGS_DEFS, VISIBLE_TOGGLE_KEYS } from '../utils/settings'
+
+const SETTINGS_TOGGLES = SETTINGS_DEFS.filter(t => VISIBLE_TOGGLE_KEYS.has(t.key))
 
 export default function GameView({
   status, events, scores, evicted,
@@ -14,7 +18,8 @@ export default function GameView({
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound, devMode
 }) {
-  const { showPrivate, autoRun, animateText, showPrivateChats, mobileOutputs, autoExpandThoughts } = settings
+  const { showPrivateThoughts, autoRun, animateText, showPrivateChats, mobileOutputs, autoExpandThoughts } = settings
+  const [theme, toggleTheme] = useTheme()
 
   // A replay deep-link keeps the URL /runthrough/:id#<msgId> even after App swaps to GameView.
   // The msgId lives in the hash so clicking a link on an already-open replay only scrolls.
@@ -182,7 +187,7 @@ export default function GameView({
     }
   }, [privateConversations, activeTab])
 
-  const visibleEvents = showPrivate
+  const visibleEvents = showPrivateThoughts
     ? events
     : events.filter(e => e.type !== 'private_thought')
 
@@ -190,56 +195,62 @@ export default function GameView({
     <div className="app">
       <header className="app-header">
         <div className="header-left">
-          <h1 className="app-title app-title-two-line app-title-clickable" onClick={() => setExitConfirmOpen(true)}>CHAT<br />SURVIVOR</h1>
+          <h1 className="app-title app-title-clickable" onClick={() => setExitConfirmOpen(true)}>Chat Survivor</h1>
           {showPrivateChats && (
             <div className="header-tabs">
               <button className={`header-tab${activeTab === 'feed' ? ' active' : ''}`} onClick={() => setActiveTab('feed')}>
-                Main Feed
+                main feed
               </button>
               <button className={`header-tab${activeTab === 'private' ? ' active' : ''}`} onClick={() => { setActiveTab('private'); setSeenPrivateCount(privateConversations.length) }}>
-                Private Conversations
-                {privateConversations.length > seenPrivateCount && <span className="feed-tab-badge">{privateConversations.length - seenPrivateCount}</span>}
+                private conversations
+                {privateConversations.length > seenPrivateCount && <span className="feed-tab-badge" />}
               </button>
             </div>
           )}
         </div>
         <div className="header-controls">
+          <button
+            className="header-theme-toggle"
+            onClick={toggleTheme}
+            title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
+            aria-label={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
+          >
+            {theme === 'light' ? (
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13.5 9.3 A6 6 0 1 1 6.7 2.5 A4.8 4.8 0 0 0 13.5 9.3 Z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="8" cy="8" r="3.2" />
+                <path d="M8 1.5 V3 M8 13 V14.5 M1.5 8 H3 M13 8 H14.5 M3.4 3.4 L4.5 4.5 M11.5 11.5 L12.6 12.6 M12.6 3.4 L11.5 4.5 M4.5 11.5 L3.4 12.6" />
+              </svg>
+            )}
+          </button>
           <div className="settings-menu" ref={settingsRef}>
             <button className="gear-btn" onClick={() => setSettingsOpen(o => !o)}>⚙</button>
             {settingsOpen && (
               <div className="settings-dropdown">
-                <label className="toggle-label">
-                  <input type="checkbox" checked={showPrivate} onChange={e => updateSetting('showPrivate', e.target.checked)} />
-                  Show private thoughts
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={autoRun} onChange={e => updateSetting('autoRun', e.target.checked)} />
-                  Auto-run
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={animateText} onChange={e => updateSetting('animateText', e.target.checked)} />
-                  Animate text
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={!!autoExpandThoughts} onChange={e => updateSetting('autoExpandThoughts', e.target.checked)} />
-                  Auto-expand thoughts
-                </label>
-                <label className="toggle-label">
-                  <input type="checkbox" checked={showPrivateChats} onChange={e => updateSetting('showPrivateChats', e.target.checked)} />
-                  Show private conversations
-                </label>
-                <div className="toggle-label-with-info">
-                  <label className="toggle-label">
-                    <input type="checkbox" checked={!!mobileOutputs} onChange={e => updateSetting('mobileOutputs', e.target.checked)} />
-                    Mobile outputs
-                  </label>
-                  <button
-                    className="setting-info-btn"
-                    onClick={e => { e.stopPropagation(); setMobileOutputsInfoOpen(o => !o) }}
-                    title="About mobile outputs"
-                  >ⓘ</button>
-                </div>
-                {mobileOutputsInfoOpen && (
+                {SETTINGS_TOGGLES.map(t => (
+                  t.key === 'mobileOutputs' ? (
+                    <div className="toggle-label-with-info" key={t.key}>
+                      <label className="toggle-label">
+                        <input type="checkbox" checked={!!mobileOutputs} onChange={e => updateSetting('mobileOutputs', e.target.checked)} />
+                        {t.label}
+                      </label>
+                      <button
+                        className="setting-info-btn"
+                        onClick={e => { e.stopPropagation(); setMobileOutputsInfoOpen(o => !o) }}
+                        title="About mobile outputs"
+                      >ⓘ</button>
+                    </div>
+                  ) : (
+                    <label className="toggle-label" key={t.key}>
+                      <input type="checkbox" checked={!!settings[t.key]} onChange={e => updateSetting(t.key, e.target.checked)} />
+                      {t.label}
+                    </label>
+                  )
+                ))}
+                {mobileOutputsInfoOpen && VISIBLE_TOGGLE_KEYS.has('mobileOutputs') && (
                   <p className="setting-info-text">Switch on for character output refined for mobile play.</p>
                 )}
               </div>

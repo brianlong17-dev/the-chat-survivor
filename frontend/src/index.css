@@ -15,6 +15,43 @@
   --sys-color: #888;
   --font-mono: 'Courier New', Courier, monospace;
   --font-ui: Georgia, 'Times New Roman', serif;
+
+  /* Dark-mode hues are tuned to glow against black; light mode reuses the same
+     hues but darker and more saturated, or they wash out against cream. */
+  --speaker-0: #e07b54;
+  --speaker-1: #5b8dd9;
+  --speaker-2: #67b37d;
+  --speaker-3: #c97bc4;
+  --speaker-4: #d4a84b;
+  --speaker-5: #5bbccc;
+  --speaker-6: #d9706a;
+  --speaker-7: #8d7fd9;
+  --rail-host: #8a8a8a;
+}
+
+:root[data-theme="light"] {
+  --bg: #efe9df;
+  --bg2: #e2d9c8;
+  --bg3: #d6cab3;
+  --border: #b9ac95;
+  --text: #1c1a17;
+  --text-dim: #6b6355;
+  --accent: #e07b54;
+  --phase-color: #3f6bb0;
+  --round-color: #b7ac98;
+  --summary-bg: #d3d2e8;
+  --thought-bg: #ddd0ba;
+  --sys-color: #8d8577;
+
+  --speaker-0: #bb4213;
+  --speaker-1: #1a57b4;
+  --speaker-2: #2b693d;
+  --speaker-3: #ab33a3;
+  --speaker-4: #876212;
+  --speaker-5: #1a717f;
+  --speaker-6: #bd2820;
+  --speaker-7: #4229c9;
+  --rail-host: #8d8577;
 }
 
 html, body, #root { height: 100%; }

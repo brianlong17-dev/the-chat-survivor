@@ -21,7 +21,7 @@ function linkify(text) {
   })
 }
 
-function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel, levelLabel, selectedId, setSelectedId, finaleType, setFinaleType, intro, moduleRows }) {
+function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel, levelLabel, selectedId, setSelectedId, finaleType, setFinaleType, intro, moduleRows, onFixtureCount }) {
   const [fixtures, setFixtures] = useState([])
   const [modules, setModules] = useState([])
   const [mode, setMode] = useState('watch')
@@ -40,6 +40,7 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
       .then(data => {
         const matched = data.fixtures.filter(f => !!f.finale === finale)
         setFixtures(matched)
+        onFixtureCount?.(matched.length)
         if (matched.length > 0 && selectedId === null) setSelectedId(matched[0].id)
       })
     fetch('/api/modules')
@@ -125,12 +126,23 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
       {intro && <p className="finale-intro">{intro}</p>}
       <div className="finale-row-label">{levelLabel}</div>
       <div className="format-step">
-        <div className={`format-info-card${activeModule ? ' format-info-card--active' : ''}`}>
+        <div className="format-info-card">
           {activeModule ? (
-            <div className="format-info-inner">
+            <>
               <div className="format-info-title">{activeModule.title}</div>
-              <div className="format-info-desc">{activeModule.description}</div>
-            </div>
+              {(() => {
+                const paras = (activeModule.description || '').split(/\n+/).map(p => p.trim()).filter(Boolean)
+                if (paras.length === 0) return null
+                return (
+                  <>
+                    <p className="format-info-lead">{paras[0]}</p>
+                    {paras.slice(1).map((p, i) => (
+                      <p key={i} className="format-info-para">{p}</p>
+                    ))}
+                  </>
+                )
+              })()}
+            </>
           ) : (
             <div className="format-info-empty">Select a format →</div>
           )}
@@ -144,9 +156,10 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
           onClick={() => setFixturesOpenOverride(!fixturesOpen)}
         >
           <span className="finale-subheader-left">
-            <span className={`collapsible-caret${fixturesOpen ? ' open' : ''}`}>▸</span>
+            <span className={`collapsible-caret${fixturesOpen ? ' open' : ''}`}>{fixturesOpen ? '▾' : '▸'}</span>
             {fixtureLabel}
           </span>
+          <span className="finale-subrule" />
           <span className="finale-subcount">{fixtures.length} fixtures</span>
         </button>
         <div className={`finale-subbody${fixturesOpen ? ' open' : ''}`}>
@@ -211,9 +224,10 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
           onClick={() => setWatchPlayOpenOverride(!watchPlayOpen)}
         >
           <span className="finale-subheader-left">
-            <span className={`collapsible-caret${watchPlayOpen ? ' open' : ''}`}>▸</span>
+            <span className={`collapsible-caret${watchPlayOpen ? ' open' : ''}`}>{watchPlayOpen ? '▾' : '▸'}</span>
             Watch / Play
           </span>
+          <span className="finale-subrule" />
         </button>
         <div className={`finale-subbody${watchPlayOpen ? ' open' : ''}`}>
           <div className="finale-subbody-inner">
@@ -247,13 +261,9 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
                 </div>
               )}
               {mode === 'play' && (
-                <input
-                  className="lobby-name-input lobby-name-input-wide"
-                  placeholder="Your name"
-                  value={humanName}
-                  onChange={e => setHumanName(e.target.value)}
-                  autoFocus
-                />
+                <div className={`demo-seat-hint${humanName ? '' : ' demo-seat-hint--pick'}`}>
+                  {humanName ? `you play ${humanName}` : 'pick a seat above'}
+                </div>
               )}
               <div className="watchplay-footer">
                 <div className="mode-switch">
@@ -262,7 +272,7 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
                 </div>
                 {turnstileEnabled && <div ref={turnstileRef} />}
                 <button
-                  className="lobby-start-btn"
+                  className="demo-run-btn"
                   disabled={!canStart}
                   onClick={() => onStart({
                     demoId: finaleType,
@@ -271,7 +281,7 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
                     turnstileToken,
                   })}
                 >
-                  Run Demo
+                  {mode === 'play' && !humanName ? 'pick a seat' : 'Run demo →'}
                 </button>
               </div>
             </div>
@@ -285,6 +295,8 @@ function FixtureModuleSection({ onStart, turnstileEnabled, finale, fixtureLabel,
 export default function DemosPage({ onStart }) {
   const [turnstileEnabled, setTurnstileEnabled] = useState(null)
   const [openSection, setOpenSection] = useState(null)
+  const [finaleCount, setFinaleCount] = useState(null)
+  const [gameCount, setGameCount] = useState(null)
   const [finaleFixture, setFinaleFixture] = useState(() => localStorage.getItem('demo_finaleFixture') || null)
   const [finaleModule, setFinaleModule] = useState(() => localStorage.getItem('demo_finaleModule') || null)
   const [gameFixture, setGameFixture] = useState(() => localStorage.getItem('demo_gameFixture') || null)
@@ -306,46 +318,63 @@ export default function DemosPage({ onStart }) {
   return (
     <div className="demos-page">
       <MobileNav />
-      <h1 className="lobby-title">Demos</h1>
-      <p className="demos-subtitle">Pre-loaded game scenarios from real playthroughs.</p>
+      <div className="demos-column">
+        <header className="demos-hero">
+          <h1 className="demos-title">Demos<span className="demos-cursor" aria-hidden="true" /></h1>
+          <p className="demos-subtitle">Pre-loaded game scenarios from real playthroughs.</p>
+        </header>
 
-      <CollapsibleSection title="Finales" open={openSection === 'finales'} onToggle={() => toggleSection('finales')}>
-        <FixtureModuleSection
-          onStart={onStart}
-          turnstileEnabled={turnstileEnabled}
-          finale={true}
-          intro="The finale game rounds to determine a winner. The Prisoner's Dilemma finale is currently in production; Reunion is still to be integrated."
-          fixtureLabel="Fixtures"
-          levelLabel="Finale Format"
-          selectedId={finaleFixture}
-          setSelectedId={setFinaleFixturePersist}
-          finaleType={finaleModule}
-          setFinaleType={setFinaleModulePersist}
-        />
-      </CollapsibleSection>
+        <div className="demos-sections">
+          <CollapsibleSection title="Finales" meta={finaleCount != null ? `${finaleCount} fixtures` : null} open={openSection === 'finales'} onToggle={() => toggleSection('finales')}>
+            <FixtureModuleSection
+              onStart={onStart}
+              turnstileEnabled={turnstileEnabled}
+              finale={true}
+              intro="The finale game rounds to determine a winner. The Prisoner's Dilemma finale is currently in production; Reunion is still to be integrated."
+              fixtureLabel="Fixtures"
+              levelLabel="Finale Format"
+              selectedId={finaleFixture}
+              setSelectedId={setFinaleFixturePersist}
+              finaleType={finaleModule}
+              setFinaleType={setFinaleModulePersist}
+              onFixtureCount={setFinaleCount}
+            />
+          </CollapsibleSection>
 
-      <CollapsibleSection title="Game modules" open={openSection === 'game-modules'} onToggle={() => toggleSection('game-modules')}>
-        <FixtureModuleSection
-          onStart={onStart}
-          turnstileEnabled={turnstileEnabled}
-          finale={false}
-          intro="These games haven't been integrated yet — they're works in progress. Some ideas just don't work well in practice, others just need refinement. The framework means implementing games is now quite straightforward. If you're interested the git is linked in info. "
-          moduleRows={[
-            ['knives', 'mob', 'circle'],
-            ['sob_story', 'comedy_roast'],
-            ['wisdom'],
-            ['sacrifice', 'elect_leader'],
-          ]}
-          fixtureLabel="Fixtures"
-          levelLabel="Game Level"
-          selectedId={gameFixture}
-          setSelectedId={setGameFixturePersist}
-          finaleType={gameModule}
-          setFinaleType={setGameModulePersist}
-        />
-      </CollapsibleSection>
+          <CollapsibleSection title="Game modules" meta={gameCount != null ? `${gameCount} fixtures` : null} open={openSection === 'game-modules'} onToggle={() => toggleSection('game-modules')}>
+            <FixtureModuleSection
+              onStart={onStart}
+              turnstileEnabled={turnstileEnabled}
+              finale={false}
+              intro="These games haven't been integrated yet — they're works in progress. Some ideas just don't work well in practice, others just need refinement. The framework means implementing games is now quite straightforward. If you're interested the git is linked in info. "
+              moduleRows={[
+                ['knives', 'mob', 'circle'],
+                ['sob_story', 'comedy_roast'],
+                ['wisdom'],
+                ['sacrifice', 'elect_leader'],
+              ]}
+              fixtureLabel="Fixtures"
+              levelLabel="Game Level"
+              selectedId={gameFixture}
+              setSelectedId={setGameFixturePersist}
+              finaleType={gameModule}
+              setFinaleType={setGameModulePersist}
+              onFixtureCount={setGameCount}
+            />
+          </CollapsibleSection>
 
-      <RunthroughsSection open={openSection === 'runthroughs'} onToggle={() => toggleSection('runthroughs')} />
+          <RunthroughsSection open={openSection === 'runthroughs'} onToggle={() => toggleSection('runthroughs')} />
+        </div>
+
+        <footer className="demos-footer">
+          <div className="demos-footer-links">
+            <a href="https://github.com/brianlong17-dev/the-chat-survivor" target="_blank" rel="noreferrer">GitHub</a>
+            <span className="demos-footer-links-sep">·</span>
+            <a href="https://brian904434.substack.com/" target="_blank" rel="noreferrer">Substack</a>
+          </div>
+          <p className="demos-footer-note">Demos run from fixed transcripts — no setup required.</p>
+        </footer>
+      </div>
     </div>
   )
 }

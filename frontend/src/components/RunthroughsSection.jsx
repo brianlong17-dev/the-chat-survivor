@@ -19,7 +19,7 @@ export default function RunthroughsSection({ open, onToggle }) {
   }
 
   return (
-    <CollapsibleSection title="Completed Game Runs" open={open} onToggle={onToggle}>
+    <CollapsibleSection title="Completed Game Runs" meta={`${RUNTHROUGHS.length} full games`} open={open} onToggle={onToggle}>
       <div className="demos-grid">
         {RUNTHROUGHS.map(r => (
           <div key={r.id} className="demo-card runthrough-card">
