@@ -242,9 +242,9 @@ class AgenticPlayer(AbstractAgenticPlayer):
         self.currently_summarising=True
         phase_number = game_board.phase_number
         prompt = ("PRIVATE TURN: From your perspective, write a summary of what happened in this phase. "
-            "This will be your logged memory of this phase going forward. ")
+            "This will be your logged memory of this phase going forward. This should be detailed - it's your only record of what happened - commit everything important to memory. ")
         if not self.game_over:
-            prompt += ("Retain everything that happened to you, but retain all specific strategic regarding other players that could be important later. ")
+            prompt += ("Retain everything that happened to you, but retain all specific strategic details regarding other players that could be important later. ")
         if self.game_over:
             prompt += ("You will be asked to vote in the finale to crown a winner. Retain all information about your impressions of each player. "
                        "How do you feel about how they treated your allies or enemies? ")

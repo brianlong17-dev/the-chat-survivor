@@ -94,10 +94,12 @@ class GameDesign:
     
     @classmethod 
     def human_only_game_intro(cls):
-        topicString = ("Welcome to the arena... are you ready to play? The others are just getting ready to join. "
-                    "In this game you will compete for points- those points will determine your vulnerability to eviction. "
-                    "You will be judged by a council of your peers- players will vote for who they want to send home. "
-                    "Enjoy! Make friends! Make enemies! Make memories xo")
+        topicString = ("Welcome to the game! The others are just getting ready to join. "
+                       "The game consists of discussion rounds, game rounds and elimination rounds. "
+                       "Discussion rounds are just chatting- but you can make friends, alliances and fight your status in the group. "
+                       "In the game rounds you will compete for points. "
+                       "Players with the lowest points will be vulnerable in the elimination round. "
+                       "Good luck! ")
         return topicString
 
 

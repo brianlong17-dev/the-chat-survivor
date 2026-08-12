@@ -13,6 +13,7 @@ MAX_TOKENS_PER_GAME_CAP = int(os.environ.get("MAX_TOKENS_PER_GAME", 1500000))
 
 from core.sinks.game_sink import NoopGameSink
 from core.api_client.api_record_manager import APIRecordManager
+from core.api_client.model_registry import MODEL_2
 
 if TYPE_CHECKING:
     from core.sinks.game_sink import GameEventSink
@@ -76,7 +77,7 @@ class APIClient:
         max_429_retries = 16
         backoff = 2
         
-        if api_model == 'gemini-2.5-flash-lite' and self.european_client is not None:
+        if api_model == MODEL_2 and self.european_client is not None:
             client = self.european_client
         else:
             client = self._client
@@ -106,7 +107,7 @@ class APIClient:
             except Exception as e:
                 if attempt < max_429_retries - 1 and (_is_rate_limit(e) or _is_transient_server_error(e)):
                     wait = backoff * (2 ** attempt)
-                    reason = f"{api_model} - 429 rate limit" if _is_rate_limit(e) else "5xx server error"
+                    reason = f"{client._api_client.location} - {api_model} - 429 rate limit" if _is_rate_limit(e) else "5xx server error"
                     error_message = (f"server {reason} — waiting {wait}s before retry {attempt + 1}/{max_429_retries - 1}")
                     print(error_message)
                     if attempt > 1:

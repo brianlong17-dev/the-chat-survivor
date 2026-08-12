@@ -7,6 +7,32 @@ from agents.character_generation.character_lister import CharacterLister
 from agents.agentic_player_v2.agentic_player import AgenticPlayer
 from agents.agentic_player_v1.agent_player_v1 import AgenticPlayerV1
 
+additional_depth_string = (
+    " An extra line (in first person) — "
+    "one countervailing note that cuts against the surface. "
+    "Pick the one truest to them; it does not have to be a wound or a soft heart. "
+    "If Baddie: what's the other side — a private appetite or delight, a grudge they enjoy, a vanity, "
+    "a hypocrisy they can't see, a loyalty that surprises, or (if it's truly them) a wound or longing? "
+    "If Hero: what makes them less perfect and more fun — a cheeky hypocrisy, a pettiness, an appetite, "
+    "good humour, a stubbornness, a vanity, or a private sadness? "
+    "If Sweet: where's the shrewdness, the dry edge, the mischief, or the streak of self-interest? "
+    "Otherwise: one thing that complicates them — an appetite, a contradiction, a pettiness, a secret pride, or a quiet ache. Not necessarily sad. "
+                           
+    
+)
+
+additional_depth_string_competitive = (
+    " An extra line (in first person) — why I want to win. "
+    "one countervailing note that cuts against the surface. "
+    "Pick the one truest to them; it does not have to be a wound or a soft heart. "
+    "If Baddie: what's the other side — a private appetite or delight, a grudge they enjoy, a vanity, "
+    "a hypocrisy they can't see, a loyalty that surprises, or (if it's truly them) a wound or longing? "
+    "If Hero: what makes them less perfect and more fun — a cheeky hypocrisy, a pettiness, an appetite, "
+    "good humour, a stubbornness, a vanity, or a private sadness? "
+    "If Sweet: where's the shrewdness, the dry edge, the mischief, or the streak of self-interest? "
+    "Otherwise: one thing that complicates them — an appetite, a contradiction, a pettiness, a secret pride, or a quiet ache. Not necessarily sad. "
+    
+)
 class CharacterProfile(BaseModel):
     who: str = Field(description="If it's a name - what is the source of this person in popular culture or history?")
     vocal_register: str = Field(description="What register do they speak in? Use this to write them, since it's a self description. ") 
@@ -16,20 +42,11 @@ class CharacterProfile(BaseModel):
                          "implied contradictions and blind spots. A vivid character with a real emotional core - a full personality they'll live through, "
                          "rather than a strategy. What is the sensitive nuance behind this person?")
     
-    speaking_style: str = Field(description="(First perosn) Their speaking style, how they talk, writen in their unique register- to preserve the character from context bleed. Do not write specific phrases. ")
+    speaking_style: str = Field(description="(First person) Their speaking style, how they talk, written in their unique register- to preserve the character from context bleed. Do not write specific phrases. ")
     name: Optional[str] = Field(description="If a character is nameless, or has non title descriptors in their name - ie Drunk Girl or BMO (adventure time). Then you may rename them: ie Tiffany or BMO, etc. If the source is specified i.e. Thomas Wake (The Lighthouse) just return the name.")
     character_type: str = Field(description="Would you categorise this person as Hero, Baddie, Simpleton, Sweet, Complex Character or Shrewd Normal Character")
     
-    additional_depth: str = Field(description=" An extra line (in first person) — "
-    "one countervailing note that cuts against the surface. "
-    "Pick the one truest to them; it does not have to be a wound or a soft heart. "
-    "If Baddie: what's the other side — a private appetite or delight, a grudge they enjoy, a vanity, "
-    "a hypocrisy they can't see, a loyalty that surprises, or (if it's truly them) a wound or longing? "
-    "If Hero: what makes them less perfect and more fun — a cheeky hypocrisy, a pettiness, an appetite, "
-    "good humour, a stubbornness, a vanity, or a private sadness? "
-    "If Sweet: where's the shrewdness, the dry edge, the mischief, or the streak of self-interest? "
-    "Otherwise: one thing that complicates them — an appetite, a contradiction, a pettiness, a secret pride, or a quiet ache. Not necessarily sad. "
-                            )
+    additional_depth: str = Field(description=additional_depth_string_competitive)
     non_verbal: bool = Field(description="Is this a non-verbal character that speaks only in a catchphrase or noise? Not a silent character but one noise rather than language. Ex: R2D2, Chewbacca, Grogu, Wall-e ")
     simplicity: bool = Field(default=False, description=(
     "Only True for cases characters are better as simple, impulsive, transparent thinkers - they're not especially coherent, or complex reasoners. "
@@ -54,12 +71,14 @@ class CharacterGenerator:
     def generate_agent(self, character_name: str, allow_rename = True, agent_models = None) -> 'AgenticPlayer':
         if self.api_client._mock_output:
             allow_rename = False
-        system_prompt = (
+        system_prompt = ( 
             "You are generating a starting profile for a character about to be dropped into a chaotic, social gameshow. "
             "Develop a full, colorful personality of who they are outside the game. "
             "This is a self description - so they're describing themselves, but it sets the basis of their character to build from. "
             "Give them a vivid character with a real emotional core underneath. "
             "How do they move through a group where survival is key, perhaps in spite of themself? "
+            "How, and why, in their unique way would they want to win? "
+            "Make them competitive - they should try to win, but only in a way in line with their character. "
             "The name is usually someone from popular culture or history - base the character on them. "
         )
         user_content = (f"Create a rich, first-person persona and description for the historical figure or character: {character_name}. "
