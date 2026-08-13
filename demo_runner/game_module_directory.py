@@ -226,7 +226,7 @@ Is it worth your own points to take points off someone else? In the end it's a b
         module_class=GameTargetedChoiceGiveOrTake,
         description="As it says on the tin really!",
         game=True,
-        hidden=True,
+        hidden=False,
     ),
     ModuleEntry(
         id="give",
@@ -250,7 +250,7 @@ Is it worth your own points to take points off someone else? In the end it's a b
         module_class=None,
         description="test",
         game=True,
-        hidden=False,
+        hidden=True,
     ),
     ModuleEntry(
         id="discussionDirected",

@@ -8,6 +8,8 @@ class DiscussionLoop:
     host_message: Optional[str] = None
     additional_thought_prompt: Optional[str] = None
     public_response_prompt: Optional[str] = None
+    human_turn_tutorial_message: Optional[str] = None
+    cut_human_turn: bool = False
     #separate directed fields to avoid defaults
     directed_turn_prompt: str = ""
     directed_public_response_prompt: str = ""

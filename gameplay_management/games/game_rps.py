@@ -103,6 +103,31 @@ class GameRockPaperScissors(GameMechanicsMixin):
         self._widget_pairs = [self._widget_pair_entry_initial(pair) for pair in pairs]
         self._emit_widget()
 
+    def _tutorial_result_message(self, pair, winner):
+        if not self.cfg.tutorial_mode:
+            return
+        human = self.human_player
+        if not human or human not in pair:
+            return
+        opponent = self.non_human_agents[0]
+
+        if winner == human.name:
+            message = ("You won! Points can keep you safe in elimination rounds "
+                       "and eventually win the competition. ")
+        elif winner != "draw":
+            message = ("Oh dear... rotten luck! Points keep you safe "
+                       "in elimination rounds, and you're walking in without any. ")
+        else:
+            message = ("A tie! Points keep you safe "
+                       "at elimination, so you're both going in exposed. ")
+
+        thoughts_message = (f"If you haven't noticed, *private thoughts* are hidden under each message. "
+                            f"Some of {opponent.name}'s inner workings are here - do you ever wonder what people are thinking about you? ") 
+                
+        self.game_board.game_sink.output_tutorial_message(message)
+        self.game_board.game_sink.output_tutorial_message(thoughts_message)
+        
+
     def _execute_pairs(self, pairs):
         for agent0, agent1 in pairs:
             self.game_board.host_broadcast(f"{agent0.name} vs {agent1.name} — Rock, Paper, or Scissors?\n")
@@ -138,8 +163,11 @@ class GameRockPaperScissors(GameMechanicsMixin):
 
             self.game_board.host_broadcast(f"{msg}\n")
 
+            self._tutorial_result_message((agent0, agent1), winner)
+
             for agent in (agent0, agent1):
-                self.turn_manager.respond_to(agent, msg, broadcast=True, is_reply=True)
+                if not agent.is_human():
+                    self.turn_manager.respond_to(agent, msg, broadcast=True, is_reply=True)
 
     def run_game(self):
         rps_game_intro = (

@@ -2,6 +2,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
 from gameplay_management.game_cycle.game_cycle import CycleRound
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 @dataclass
@@ -64,6 +65,13 @@ class GameKnives(CycleRound):
 
     # ─────────────────────────── per-player turn ───────────────────────────
 
+    def _human_response_description(self, state):
+        pages = [[f"knife_{i}"] for i in range(1, state.held + 1)]
+        if self.SECRET_NOTES:
+            pages.append(["secret_note_target", "note_content"])
+        pages.append(["public_response"])
+        return HumanInputDescription(pages=pages)
+
     def _make_choice(self, state, players, chatty):
         circle_names = [p.name for p in players]
         other_names = [n for n in circle_names if n != state.name]
@@ -117,6 +125,7 @@ class GameKnives(CycleRound):
                 "Who is the biggest threat? Should you spread your knives or focus on one target? "
                 "Is it worth passing to save knives for later?" + secret_note_additional_thought
             ),
+            human_input_description_object=self._human_response_description(state),
         )
         if chatty:
             self.turn_manager._output_response(state.agent, result)

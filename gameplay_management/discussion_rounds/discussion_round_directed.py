@@ -1,10 +1,17 @@
 from gameplay_management.discussion_rounds.discussion_base_round import DiscussionBaseRound
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 class DiscussionRoundDirected(DiscussionBaseRound):
 
     short = False
 
+    def _human_response_description(self):
+        return HumanInputDescription(titles={"public_response": "Say something to {choice}"})
+
+    def _human_response_description_response(self, name):
+            return HumanInputDescription(titles={"public_response": f"Respond to {name}"})
+    
     @classmethod
     def display_name(cls, cfg):
         return "Discussion Round"
@@ -42,7 +49,8 @@ class DiscussionRoundDirected(DiscussionBaseRound):
                 turn_prompt += loop.directed_turn_prompt
                 
                 
-                response = self.turn_manager._ask_directed_question(player, names, turn_prompt, public_response_prompt, additional_thought_nudge)
+                response = self.turn_manager._ask_directed_question(player, names, turn_prompt, public_response_prompt, additional_thought_nudge,
+                    human_input_description_object=self._human_response_description())
 
                 chosen_name = self.turn_manager._get_target_name_from_response(response)
                 chosen_agent = self._agent_by_name(chosen_name.strip())
@@ -59,5 +67,6 @@ class DiscussionRoundDirected(DiscussionBaseRound):
 
                     user_prompt = f"Respond directly to {player.name}'s last message to you. Don't ask a question in response. {appendage}"
                     self.turn_manager.respond_to(chosen_agent, user_prompt, public_response_prompt="Your public response. ",
-                                                broadcast=True, is_reply=True, prefix_turn_prompt=False)
+                                                broadcast=True, is_reply=True, prefix_turn_prompt=False, 
+                                                human_input_description_object=self._human_response_description_response(player.name))
         self.cfg.discussion_index += 1

@@ -25,15 +25,18 @@ class ConsoleGameEventSink(GameEventSink):
     
     def get_user_input_form(self, form):
         values = {}
+        chosen = ""
         for page in form.pages:
             print("---\n")
             if page.underline:
                 print(f" ({page.underline})")
             for input_field in page.inputs:
+                title = input_field.title.replace("{choice}", chosen)
                 if input_field.is_multiple_choice:
-                    value = self.get_user_input_multiple_choice(input_field.id, input_field.title, input_field.choices)
+                    value = self.get_user_input_multiple_choice(input_field.id, title, input_field.choices)
+                    chosen = value or ""
                 else:
-                    value = self.get_user_input_simple(input_field.id, input_field.title, input_field.placeholder)
+                    value = self.get_user_input_simple(input_field.id, title, input_field.placeholder)
                 values[input_field.id] = value
         return values
         

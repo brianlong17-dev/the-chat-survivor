@@ -59,13 +59,15 @@ class IntroRound(BaseRound):
         player.initialising = False
         self.game_board.system_broadcast(f"{player.name} has entered the chat.", private = True)
         return conversation_id
-            
+    
+    def _wake_up_process(self):
+        conversation_ids = self._run_tasks([[agent] for agent in self.non_human_agents], 
+                                                   self._wake_up_player_i, parallel = True)
+        for conv_id in conversation_ids:
+            self.game_board.close_private_conversation(conv_id)
 
     def run_game(self):
         self.game_board._loading_string("Preparing our players")
-        conversation_ids = self._run_tasks([[agent] for agent in self._shuffled_agents() if not agent.is_human()], 
-                                           self._wake_up_player_i, parallel = True)
-        for conv_id in conversation_ids:
-            self.game_board.close_private_conversation(conv_id)
+        self._wake_up_process()
         self.game_board._end_loading("Done.")
         #shoot one message
