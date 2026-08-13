@@ -38,6 +38,14 @@ class SimulationEngine:
         self.api_client.game_id = self.game_id
         
     
+    @property
+    def human_agent(self):
+        return next((agent for agent in self.agents if agent.is_human()), None)
+
+    @property
+    def non_human_agents(self):
+        return [agent for agent in self.agents if not agent.is_human()]
+
     def _generate_game_id(self):
         return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
             

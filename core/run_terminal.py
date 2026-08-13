@@ -17,9 +17,9 @@ if __name__ == "__main__":
     sink = ConsoleGameEventSink()
     game_design = GameDesignQuickStart #RockPaperScissors quickstart
     api_client = create_api_client(sink, token_budget=2_000_000)
+    human_player_name = "Brian" #None
 
-    number_of_players=5
-    names=CharacterLister().goats[:number_of_players]
+    names=CharacterLister().goats[:game_design.min_players() - (1 if human_player_name else 0)]
 
-    engine = create_engine(sink, game_design, human_player_name = None, names=names, allow_rename=False, api_client=api_client)
+    engine = create_engine(sink, game_design, human_player_name = human_player_name, names=names, allow_rename=False, api_client=api_client)
     engine.run()

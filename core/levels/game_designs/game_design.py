@@ -92,13 +92,18 @@ class GameDesign:
     def server_timeout_string(cls):
         return f"\n\n*NOTE: To preserve server space, games will timeout after {INACTIVITY_TIMEOUT // 60} minutes of inactivity!* "
     
+    @classmethod
+    def intro_tutorial_messages(cls, human_name=None, opponent_names=None):
+        return []
+            
+            
     @classmethod 
     def human_only_game_intro(cls):
-        topicString = ("Welcome to the game! The others are just getting ready to join. "
-                       "The game consists of discussion rounds, game rounds and elimination rounds. "
-                       "Discussion rounds are just chatting- but you can make friends, alliances and fight your status in the group. "
-                       "In the game rounds you will compete for points. "
-                       "Players with the lowest points will be vulnerable in the elimination round. "
+        topicString = ("Welcome to the game! The others are just getting ready to join. \n"
+                       "The game consists of discussion rounds, game rounds and elimination rounds. \n"
+                       " - *Discussion Rounds* are just chatting — but you can make friends, alliances and fight your status in the group. \n"
+                       " - In the *Game Rounds* you will compete for points. \n"
+                       " - In the *Elimination Round* players with low points will face elimination. "
                        "Good luck! ")
         return topicString
 

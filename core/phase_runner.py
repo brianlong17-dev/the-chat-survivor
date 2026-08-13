@@ -39,13 +39,26 @@ class PhaseRunner:
         self.game_board.game_sink.on_phase_rounds(round_names)
         
     def _introduce_game(self):
-        host_intro_human_only = self.simulation_engine.game_design.human_only_game_intro()
-        if host_intro_human_only:
-            self.game_board.game_sink.on_game_intro(host_intro_human_only) 
-            self.game_board.game_sink.on_linebreak() 
+        human_agent = self.simulation_engine.human_agent
+        human_player_name = human_agent.name if human_agent else None
+        opponent_names = [agent.name for agent in self.simulation_engine.non_human_agents]
+        tutorial_messages = self.simulation_engine.game_design.intro_tutorial_messages(human_player_name, opponent_names)
+        if tutorial_messages:
+            for message in tutorial_messages:
+                self.game_board.game_sink.output_tutorial_message(message)
+            
+        else:
+            host_intro_human_only = self.simulation_engine.game_design.human_only_game_intro()
+            if host_intro_human_only:
+                self.game_board.game_sink.on_game_intro(host_intro_human_only) 
+                self.game_board.game_sink.on_linebreak() 
     
     def _use_round_gate(self):
-        return self.game_board.first_message_send and not self._dev_mode
+        if not self.game_board.first_message_sent:
+            return False
+        #if self._dev_mode:
+        return not self.game_board.auto_run
+        #return True
     
     def run_round(self, round):
         if self._use_round_gate():
@@ -55,6 +68,7 @@ class PhaseRunner:
         self.game_board.game_sink.on_phase_round_index(self.current_round_index - 1)
         if self.current_round_index == 1:
             self._introduce_phase()
+        
             
         if self.game_board.phase_number == 1 and self.current_round_index == 1:
             self._introduce_game()
