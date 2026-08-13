@@ -20,7 +20,7 @@ class GenerateAgentsDescription:
 def create_blank_agent(name, api_client):
     return AgenticPlayer(name, '', api_client = api_client)
 
-def _clip_agents(self, game_design, agents):
+def _clip_agents(game_design, agents):
 
     max_players, min_players = game_design.max_players(), game_design.min_players()
 
