@@ -14,7 +14,7 @@ const SETTINGS_TOGGLES = SETTINGS_DEFS.filter(t => VISIBLE_TOGGLE_KEYS.has(t.key
 export default function GameView({
   status, events, scores, evicted,
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
-  submitInputForm, sendNext, skipAnimation, exitGame, restartGame, transcribe, onAnimationComplete, skipRef,
+  submitInputForm, sendNext, startLevel, skipAnimation, exitGame, restartGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound, devMode
 }) {
@@ -25,6 +25,19 @@ export default function GameView({
   // The msgId lives in the hash so clicking a link on an already-open replay only scrolls.
   const replayRunthroughId = (window.location.pathname.match(/^\/runthrough\/([^/]+)/) || [])[1] || null
   const scrolledToRef = useRef(null)
+  const nextBtnRef = useRef(null)
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key !== 'Enter') return
+      const btn = nextBtnRef.current
+      if (!btn || btn.disabled || document.activeElement === btn) return
+      e.preventDefault()
+      btn.click()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false)
@@ -263,7 +276,7 @@ export default function GameView({
               ? { label: 'Next Round ›', action: sendNextRound, active: true }
               : { label: 'Next Turn ›', action: sendNext, active: awaitingNext }
             return (
-              <button className="next-turn-btn" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
+              <button ref={nextBtnRef} className="next-turn-btn" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
                 {skipOrNext.label}
               </button>
             )
@@ -347,6 +360,7 @@ export default function GameView({
               awaitingNextRound={awaitingNextRound}
               sendNext={sendNext}
               awaitingNext={awaitingNext}
+              startLevel={startLevel}
               runthroughId={replayRunthroughId}
             />
             <div ref={bottomRef} />

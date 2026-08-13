@@ -72,11 +72,11 @@ class WebSocketSink(GameEventSink):
     def on_game_intro(self, message: str):
         self._send({"type": "game_intro", "message": message})
 
-    def output_tutorial_message(self, message: str, hold: bool = True):
+    def output_tutorial_message(self, message: str, hold: bool = True, next_level: str | None = None):
         self._public_action_count += 1
         self._send({"type": "public_action", "speaker": "HOST", "message": message,
                     "animate_as_player": False, "should_hold": False, "is_human": False,
-                    "tutorial_message": True, "tutorial_hold": hold,
+                    "tutorial_message": True, "tutorial_hold": hold, "next_level": next_level,
                     "message_id": f"0-{self._public_action_count}"})
 
     def on_linebreak(self):

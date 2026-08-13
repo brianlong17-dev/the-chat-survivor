@@ -49,6 +49,7 @@ class GameDesignQuickStart(GameDesign):
     def get_phase_description(cls, phase_number, agent_number, cfg: GameConfig):
         if agent_number == 2:
             cfg.tutorial_mode = True
+            cfg.next_level_id = "beginner"
             cfg.set_discussion_settings(DiscussionRoundSettings(loops=[
                 DiscussionLoop(
                     turn_prompt="Say hello! If you don't know them, introduce yourself- if you already know them, you can greet them. ",

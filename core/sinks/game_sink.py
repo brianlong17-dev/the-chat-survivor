@@ -24,9 +24,11 @@ class GameEventSink(ABC):
         """The host's opening monologue. Fired once at the very start."""
         ...
 
-    def output_tutorial_message(self, message: str, hold: bool = True) -> None:
+    def output_tutorial_message(self, message: str, hold: bool = True, next_level: str | None = None) -> None:
         """Scripted tutorial line for human players. For now: a public host message.
-        hold=False renders it complete without gating the feed on a NEXT press."""
+        hold=False renders it complete without gating the feed on a NEXT press.
+        next_level is a level id; the web client turns the NEXT press into a jump
+        back to the lobby with that level preselected."""
         self.on_public_action("HOST", message, animate_as_player=False, should_hold=False)
 
     @abstractmethod

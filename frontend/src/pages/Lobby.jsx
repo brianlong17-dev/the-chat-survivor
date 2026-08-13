@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-
-const LOBBY_STORAGE_KEY = 'lobby_state'
+import { LOBBY_STORAGE_KEY } from '../utils/settings'
 
 const LEVEL_PRESENTATION = {
   quickstart: {
@@ -13,8 +12,8 @@ const LEVEL_PRESENTATION = {
     displayName: 'Intro',
     tagline: 'Fast & tactical',
     minutes: '10 min',
-    recommended: true,
-    description: 'A six-player, six-phase game. Enough space for real strategy without dragging on.',
+    recommended: false,
+    description: "A six-player, six-phase game. You'll need to navigate the group's dynamics to win.",
   },
   '8p': {
     displayName: 'Intermediate',
@@ -26,10 +25,14 @@ const LEVEL_PRESENTATION = {
 
 const STEP_LABELS = ['You', 'Level', 'Cast', 'Review']
 
-export default function Lobby({ onStart }) {
+export default function Lobby({ onStart, initialStep = 0, onInitialStepUsed }) {
   const saved = JSON.parse(localStorage.getItem(LOBBY_STORAGE_KEY) || '{}')
 
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(initialStep)
+
+  useEffect(() => {
+    if (initialStep) onInitialStepUsed?.()
+  }, [])
   const [heroExpanded, setHeroExpanded] = useState(false)
 
   useEffect(() => {

@@ -14,7 +14,7 @@ const SETTINGS_TOGGLES = SETTINGS_DEFS.filter(t => VISIBLE_TOGGLE_KEYS.has(t.key
 export default function GameViewMobile({
   status, events, scores, evicted,
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
-  submitInputForm, sendNext, skipAnimation, exitGame, transcribe, onAnimationComplete, skipRef,
+  submitInputForm, sendNext, startLevel, skipAnimation, exitGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound
 }) {
@@ -263,6 +263,7 @@ export default function GameViewMobile({
               awaitingNextRound={awaitingNextRound}
               sendNext={sendNext}
               awaitingNext={awaitingNext}
+              startLevel={startLevel}
               runthroughId={replayRunthroughId}
             />
             <div ref={bottomRef} />

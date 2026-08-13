@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import MobileNav from '../components/MobileNav'
 import './Lobby.mobile.css'
+import { LOBBY_STORAGE_KEY } from '../utils/settings'
 
 // Mobile lobby for The Chat Survivor.
 // Same data contract as the desktop Lobby:
@@ -11,7 +12,6 @@ import './Lobby.mobile.css'
 // name sheet; confirming seats "You" at the front (humanIndex 0). You can't be
 // reordered — switch back via the toggle or the You chip's ×.
 
-const LOBBY_STORAGE_KEY = 'lobby_state'
 const HARD_CAP = 12
 
 export default function LobbyMobile({ onStart }) {

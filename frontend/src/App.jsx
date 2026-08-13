@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import './App.mobile.css'
-import { loadSettings, saveSettings } from './utils/settings'
+import { loadSettings, saveSettings, presetLobbyLevel, LOBBY_LEVEL_STEP } from './utils/settings'
 import { useGameSocket } from './hooks/useGameSocket'
 import LobbyRouter from './pages/LobbyRouter'
 import DemosPage from './pages/DemosPage'
@@ -15,6 +15,7 @@ export default function App() {
   const [settings, setSettings] = useState(loadSettings)
   const [transcriptionEnabled, setTranscriptionEnabled] = useState(false)
   const [devMode, setDevMode] = useState(false)
+  const [lobbyInitialStep, setLobbyInitialStep] = useState(0)
 
   useEffect(() => {
     fetch('/api/flags')
@@ -40,14 +41,15 @@ export default function App() {
 
   if (status !== 'idle') {
     const exitGame = () => { socket.exitGame(); navigate('/') }
-    return <GameViewRouter {...socket} exitGame={exitGame} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} devMode={devMode} />
+    const startLevel = (levelId) => { presetLobbyLevel(levelId); setLobbyInitialStep(LOBBY_LEVEL_STEP); exitGame() }
+    return <GameViewRouter {...socket} exitGame={exitGame} startLevel={startLevel} settings={settings} updateSetting={updateSetting} transcriptionEnabled={transcriptionEnabled} devMode={devMode} />
   }
 
   return (
     <Routes>
       <Route path="/" element={
         <IdleLayout view="lobby">
-          <LobbyRouter onStart={startGame} />
+          <LobbyRouter onStart={startGame} initialStep={lobbyInitialStep} onInitialStepUsed={() => setLobbyInitialStep(0)} />
         </IdleLayout>
       } />
       <Route path="/demos" element={

@@ -17,7 +17,9 @@ class GameConfig:
         self.testing_human_as_agent = False
 
         self.tutorial_mode = False
-        
+
+        self.next_level_id = None
+
         self.discussion_index = 0
 
         self.phase_discussion_settings = PhaseDiscussionRoundSettings()
