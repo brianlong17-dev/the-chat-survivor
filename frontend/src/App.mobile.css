@@ -424,53 +424,66 @@
 /* ── Input Adjustments (mobile only) ── */
 
 @media (max-width: 767px) {
-  .input-bar {
-    padding: 6px 10px 8px;
-    border-top: 1px solid var(--border);
-    background: var(--bg2);
+  .turn-input {
+    padding: 10px 12px 14px;
     flex-shrink: 0;
   }
 
-  .input-prompt {
+  .turn-input-inner {
+    gap: 10px;
+  }
+
+  .turn-input-section {
+    gap: 6px;
+  }
+
+  .turn-input-label {
     font-size: 9px;
-    margin-bottom: 4px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.16em;
   }
 
-  .input-row {
-    gap: 4px;
-    align-items: flex-end;
+  .turn-input-tiles,
+  .turn-input-tiles.compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 6px;
   }
 
-  .input-text {
-    font-size: 16px;
-    padding: 5px 8px;
-    min-height: 28px;
-    max-height: 120px;
-    line-height: 1.4;
-    resize: none;
+  .turn-input-tiles .turn-input-tile,
+  .turn-input-tiles.compact .turn-input-tile {
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 12px;
+    gap: 8px;
   }
 
-  .input-text::placeholder {
-    font-size: 13px;
-    opacity: 0.5;
+  .turn-input-prompt-row {
+    gap: 8px;
+    padding-bottom: 8px;
   }
 
-  .input-submit {
-    padding: 6px 10px;
+  .turn-input-caret {
+    font-size: 15px;
+  }
+
+  .turn-input-text {
+    font-size: calc(16px * var(--tf-scale, 1));
+    max-height: 28vh;
+  }
+
+  .turn-input {
+    --turn-btn-h: 30px;
+  }
+
+  .turn-input-send {
+    padding: 0 12px;
     font-size: 10px;
-    flex-shrink: 0;
   }
 
   .mic-btn {
-    padding: 6px 8px;
+    padding: 0 8px;
     font-size: 12px;
     flex-shrink: 0;
-  }
-
-  .choice-btn {
-    padding: 4px 10px;
-    font-size: 10px;
   }
 }
 

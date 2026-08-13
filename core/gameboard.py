@@ -27,11 +27,15 @@ class GameBoard:
         self.score_changed_in_round = False
         self.scores_at_round_start: dict[str, int] = {}
         
-        self.first_message_send = False
+        self.first_message_sent = False
 
     @property
     def mobile_outputs(self) -> bool:
         return getattr(self.game_sink, 'mobile_outputs', False)
+
+    @property
+    def auto_run(self) -> bool:
+        return getattr(self.game_sink, 'auto_run', False)
 
     def _human_in_restriction(self, restricted_users):
         if not restricted_users:
@@ -167,7 +171,7 @@ class GameBoard:
         self.game_sink.on_public_action(agent.name, message, color=color, animate_as_player=True, should_hold=True,
                                         directed_to_name = directed_to_name, is_reply = is_reply, is_human=agent.is_human())
         self.game_sink.delay(delay)
-        self.first_message_send = True
+        self.first_message_sent = True
         return message_id
 
     def broadcast_public_action_non_player(self, speaker: str, message: str, color: str = "", directed_to_name = None, is_reply = False, 

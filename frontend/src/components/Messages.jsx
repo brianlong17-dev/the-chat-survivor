@@ -347,7 +347,8 @@ function PopWrap({ children, onComplete }) {
   )
 }
 
-function PublicAction({ speaker, message, color, animate_as_player, is_human, onComplete, skipRef, animateText, message_id, runthroughId, pop_wrap }) {
+function PublicAction({ speaker, message, color, animate_as_player, is_human, onComplete,
+  skipRef, animateText, message_id, runthroughId, pop_wrap, tutorial_message, tutorial_hold, onNext, nextButtonActive }) {
   const isHost = speaker === 'HOST'
   const isSystem = speaker === 'SYSTEM'   // shouldn't happen (backend asserts), render harmlessly
 
@@ -359,16 +360,30 @@ function PublicAction({ speaker, message, color, animate_as_player, is_human, on
     if (isSystem) return <span className="message-text">{renderBold(message)}</span>
     const complete = suppressComplete ? undefined : onComplete
     if (animate_as_player && !is_human) return <WordByWord text={message} onComplete={complete} skipRef={skipRef} animateText={animateText} />
-    if (isHost)   return <HostStagger text={message} onComplete={complete} skipRef={skipRef} animateText={animateText} />
+    if (isHost && !tutorial_message) return <HostStagger text={message} onComplete={complete} skipRef={skipRef} animateText={animateText} />
     return <span className="message-text">{renderBold(message)}</span>
   }
 
   const anchorProps = message_id ? { id: `msg-${message_id}` } : {}
+  const showTutorialNext = tutorial_message && tutorial_hold && nextButtonActive
+
+  const contentElement = pop_wrap ? (
+    <PopWrap onComplete={onComplete}>{body(true)}</PopWrap>
+  ) : (
+    body()
+  )
 
   return (
-    <div className={`msg public-action ${(isHost || isSystem) ? 'system' : ''}`} {...anchorProps}>
+    <div className={`msg public-action ${(isHost || isSystem) ? 'system' : ''}${tutorial_message ? ' tutorial' : ''}${showTutorialNext ? ' pulsing' : ''}`} {...anchorProps}>
       {label}
-      {pop_wrap ? <PopWrap onComplete={onComplete}>{body(true)}</PopWrap> : body()}
+      {tutorial_message ? (
+        <span className="tutorial-line" key={`tutorial-${message_id}`}>
+          {contentElement}
+          {showTutorialNext && <span className="feed-tutorial-next-btn" onClick={() => onNext?.()}>NEXT ›</span>}
+        </span>
+      ) : (
+        <div key={`content-${message_id}`}>{contentElement}</div>
+      )}
       {message_id && runthroughId && <MessageLink messageId={message_id} runthroughId={runthroughId} />}
     </div>
   )
@@ -525,7 +540,7 @@ function railColor(msg, colorMap) {
   return getSpeakerColor(msg.speaker, colorMap)
 }
 
-export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts, onAnimationComplete, skipRef, sendNextRound, awaitingNextRound, runthroughId}) {
+export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts, onAnimationComplete, skipRef, sendNextRound, awaitingNextRound, sendNext, awaitingNext, runthroughId}) {
   const groups = groupThread(events)
   const lastEvent = events[events.length - 1]
   const lastNextRoundIdx = events.reduce((acc, e, i) => e.type === 'next_round_request' ? i : acc, -1)
@@ -547,6 +562,8 @@ export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts
         autoExpandThoughts={autoExpandThoughts}
         sendNextRound={sendNextRound}
         awaitingNextRound={awaitingNextRound && events.indexOf(evt) === lastNextRoundIdx}
+        sendNext={sendNext}
+        awaitingNext={awaitingNext && isLast}
         runthroughId={runthroughId}
       />
     )
@@ -577,7 +594,7 @@ export function ThreadedFeed({ events, colorMap, animateText, autoExpandThoughts
   })
 }
 
-export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, skipRef, animateText, autoExpandThoughts, sendNextRound, awaitingNextRound, runthroughId }) {
+export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, skipRef, animateText, autoExpandThoughts, sendNextRound, awaitingNextRound, sendNext, awaitingNext, runthroughId }) {
   switch (event.type) {
     case 'phase_header':
       return <PhaseHeader {...event} />
@@ -585,7 +602,7 @@ export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, sk
       return <RoundHeader {...event} onComplete={onRoundHeaderComplete} />
     case 'public_action':
       return <PublicAction {...event} color={getSpeakerColor(event.speaker, colorMap)} onComplete={onComplete} skipRef={skipRef}
-      animateText={animateText} runthroughId={runthroughId}/>
+      animateText={animateText} runthroughId={runthroughId} onNext={sendNext} nextButtonActive={awaitingNext}/>
     case 'round_summary':
       return <RoundSummary {...event} />
     case 'private_thought':

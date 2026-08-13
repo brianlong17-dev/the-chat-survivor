@@ -10,6 +10,9 @@ if TYPE_CHECKING:
 
 class Human(AgenticPlayer):
 
+    HIDDEN_FIELDS = {"private_thoughts"}
+
+
     def __init__(self, name: str):
         super().__init__(name=name, initial_persona='', api_client=None, speaking_style="")
         self.is_testing = False

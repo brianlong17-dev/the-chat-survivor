@@ -8,6 +8,7 @@ function isAnimatableEvent(evt, animateText) {
   if (!animateText) return false
   if (evt.type === 'round_start') return true
   if (evt.type !== 'public_action' || evt.is_human) return false
+  if (evt.tutorial_message) return false
   return evt.animate_as_player === true || evt.speaker === 'HOST'
 }
 
@@ -33,7 +34,11 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const lastConnectRef = useRef(null)
   const transcribePendingRef = useRef(null)
   const autoRunRef = useRef(autoRun)
-  useEffect(() => { autoRunRef.current = autoRun }, [autoRun])
+  useEffect(() => {
+    autoRunRef.current = autoRun
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN)
+      wsRef.current.send(JSON.stringify({ type: 'set_flag', flag: 'auto_run', value: autoRun }))
+  }, [autoRun])
 
   const animateTextRef = useRef(animateText)
   useEffect(() => { animateTextRef.current = animateText }, [animateText])
@@ -59,14 +64,23 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const drainDelayRef = useRef(0)
   const pacingRef = useRef(false)
 
+  //are we paused?
+  //isAnimating or waitingForUserToPressNextTurn
+  //waitingForUserToPressNextRound
+
+
   const drainQueue = useCallback(() => {
     while (pendingQueue.current.length > 0) {
       const peek = pendingQueue.current[0]
       if (isAnimating.current) break
       if (awaitingNextRef.current && peek.type !== 'private_thought') break
+
       if (awaitingNextRoundRef.current) break
+
       if (pacingRef.current) break
 
+      
+      
       if (!autoRunRef.current && peek.type === 'public_action' && peek.should_hold && !peek.is_human) {
         if (!firstPlayerMessageSeenRef.current) {
           firstPlayerMessageSeenRef.current = true
@@ -79,8 +93,10 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
         }
       }
 
+      // Yay! we're through the breaks ! Lets get something out the queue! 
+
       const evt = pendingQueue.current.shift()
-      if (evt.type === 'input_request') { setInputRequest(evt); return }
+      if (evt.type === 'input_form_request') { setInputRequest(evt); return }
 
       if (evt.type === 'delay') {
         if (evt.ms > 0) {
@@ -102,6 +118,11 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
         setFeedMarkers(prev => [...prev, evt.label])
         setEvents(prev => [...prev, evt])
         continue
+      }
+
+      if (evt.tutorial_message && evt.tutorial_hold) {
+        awaitingNextRef.current = true
+        setAwaitingNext(true)
       }
 
       if (evt.type === 'next_round_request') {
@@ -165,7 +186,6 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
       return
     }
     if (evt.type === 'cast') { setPlayerNames(evt.names ?? []); return }
-    //if (evt.type === 'input_request') { setInputRequest(evt); return }
     if (evt.type === 'loading') { setEvents(prev => [...prev, evt]); return }
     if (evt.type === 'loading_done') {
       setEvents(prev => prev.map(e => e.type === 'loading' ? { ...e, done: true, completed_message: evt.message ?? null } : e))
@@ -208,6 +228,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     ws.onopen = () => {
       ws.send(JSON.stringify(initMsg))
       ws.send(JSON.stringify({ type: 'set_flag', flag: 'mobile_outputs', value: mobileOutputsRef.current }))
+      ws.send(JSON.stringify({ type: 'set_flag', flag: 'auto_run', value: autoRunRef.current }))
       setStatus('running')
     }
     ws.onmessage = handleMessage
@@ -231,9 +252,9 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     connect(WS_REPLAY_URL, { type: 'start_replay', replay_file: replayFile })
   }, [connect])
 
-  const submitInput = useCallback((value) => {
+  const submitInputForm = useCallback((values) => {
     if (wsRef.current) {
-      wsRef.current.send(JSON.stringify({ type: 'input_response', value }))
+      wsRef.current.send(JSON.stringify({ type: 'input_form_response', values }))
       setInputRequest(null)
     }
   }, [])
@@ -317,7 +338,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     status, events, scores, evicted,
     inputRequest, awaitingNext,  awaitingNextRound, phaseRounds, currentRoundIndex, feedMarkers, segmentTitles,
     widget, privateConversations, playerNames,
-    startGame, startDemo, startReplay, submitInput, sendNext, sendNextRound, skipAnimation, exitGame, restartGame, transcribe,
+    startGame, startDemo, startReplay, submitInputForm, sendNext, sendNextRound, skipAnimation, exitGame, restartGame, transcribe,
     onAnimationComplete, skipRef, isAnimating: isAnimatingState,
   }
 }

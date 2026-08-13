@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState } from 'react'
-import '../App.whatsapp.css'
 import { ThreadedFeed } from '../components/Messages'
 import Scoreboard from '../components/Scoreboard'
 import RoundTracker from '../components/RoundTracker'
@@ -15,11 +14,11 @@ const SETTINGS_TOGGLES = SETTINGS_DEFS.filter(t => VISIBLE_TOGGLE_KEYS.has(t.key
 export default function GameViewMobile({
   status, events, scores, evicted,
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
-  submitInput, sendNext, skipAnimation, exitGame, transcribe, onAnimationComplete, skipRef,
+  submitInputForm, sendNext, skipAnimation, exitGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound
 }) {
-  const { showPrivateThoughts, autoRun, animateText, showPrivateChats, mobileOutputs } = settings
+  const { showPrivateThoughts, animateText, showPrivateChats, mobileOutputs } = settings
 
   const replayRunthroughId = (window.location.pathname.match(/^\/runthrough\/([^/]+)/) || [])[1] || null
   const scrolledToRef = useRef(null)
@@ -212,7 +211,7 @@ export default function GameViewMobile({
               ? { label: 'Skip', action: skipAnimation, active: true }
               : awaitingNextRound
               ? { label: 'Next Round', action: sendNextRound, active: true }
-              : { label: 'Next Turn', action: sendNext, active: awaitingNext && !autoRun }
+              : { label: 'Next Turn', action: sendNext, active: awaitingNext }
             return (
               <button className="next-turn-btn-mobile" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
                 {skipOrNext.label}
@@ -221,7 +220,7 @@ export default function GameViewMobile({
           })()}
           <span className={`start-btn-mobile status-${status}`} style={{ cursor: 'default' }}>
             {status === 'connecting' && '○'}
-            {status === 'running' && (awaitingNext && !autoRun && !isAnimating ? '⋯' : '▶')}
+            {status === 'running' && (awaitingNext && !isAnimating ? '⋯' : '▶')}
             {status === 'done' && '✓'}
             {status === 'error' && '⚠'}
           </span>
@@ -262,6 +261,8 @@ export default function GameViewMobile({
               skipRef={skipRef}
               sendNextRound={sendNextRound}
               awaitingNextRound={awaitingNextRound}
+              sendNext={sendNext}
+              awaitingNext={awaitingNext}
               runthroughId={replayRunthroughId}
             />
             <div ref={bottomRef} />
@@ -279,11 +280,11 @@ export default function GameViewMobile({
 
           <InputRequest
             request={inputRequest}
-            onSubmit={submitInput}
+            onSubmitForm={submitInputForm}
             playerNames={playerNames}
             transcribe={transcribe}
             transcriptionEnabled={transcriptionEnabled}
-            awaitingNext={awaitingNext && !autoRun}
+            awaitingNext={awaitingNext}
             sendNext={sendNext}
             skipAnimation={skipAnimation}
             isAnimating={isAnimating}

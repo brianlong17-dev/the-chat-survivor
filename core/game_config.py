@@ -15,6 +15,8 @@ class GameConfig:
     def __init__(self):
 
         self.testing_human_as_agent = False
+
+        self.tutorial_mode = False
         
         self.discussion_index = 0
 

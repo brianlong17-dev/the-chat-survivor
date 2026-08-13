@@ -14,11 +14,11 @@ const SETTINGS_TOGGLES = SETTINGS_DEFS.filter(t => VISIBLE_TOGGLE_KEYS.has(t.key
 export default function GameView({
   status, events, scores, evicted,
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
-  submitInput, sendNext, skipAnimation, exitGame, restartGame, transcribe, onAnimationComplete, skipRef,
+  submitInputForm, sendNext, skipAnimation, exitGame, restartGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
   privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound, devMode
 }) {
-  const { showPrivateThoughts, autoRun, animateText, showPrivateChats, mobileOutputs, autoExpandThoughts } = settings
+  const { showPrivateThoughts, animateText, showPrivateChats, mobileOutputs, autoExpandThoughts } = settings
   const [theme, toggleTheme] = useTheme()
 
   // A replay deep-link keeps the URL /runthrough/:id#<msgId> even after App swaps to GameView.
@@ -261,7 +261,7 @@ export default function GameView({
               ? { label: 'Skip ›', action: skipAnimation, active: true }
               : awaitingNextRound
               ? { label: 'Next Round ›', action: sendNextRound, active: true }
-              : { label: 'Next Turn ›', action: sendNext, active: awaitingNext && !autoRun }
+              : { label: 'Next Turn ›', action: sendNext, active: awaitingNext }
             return (
               <button className="next-turn-btn" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
                 {skipOrNext.label}
@@ -275,7 +275,7 @@ export default function GameView({
           )}
           <span className={`start-btn status-${status}`} style={{ cursor: 'default' }}>
             {status === 'connecting' && 'Connecting…'}
-            {status === 'running' && (awaitingNext && !autoRun && !isAnimating ? 'Waiting…' : 'Running…')}
+            {status === 'running' && (awaitingNext && !isAnimating ? 'Waiting…' : 'Running…')}
             {status === 'done' && '✓ Done'}
             {status === 'error' && '⚠ Error'}
           </span>
@@ -345,6 +345,8 @@ export default function GameView({
               skipRef={skipRef}
               sendNextRound={sendNextRound}
               awaitingNextRound={awaitingNextRound}
+              sendNext={sendNext}
+              awaitingNext={awaitingNext}
               runthroughId={replayRunthroughId}
             />
             <div ref={bottomRef} />
@@ -358,7 +360,7 @@ export default function GameView({
               <div ref={privateBottomRef} />
             </main>
           )}
-          <InputRequest request={inputRequest} onSubmit={submitInput} playerNames={playerNames} transcribe={transcribe} transcriptionEnabled={transcriptionEnabled} awaitingNext={awaitingNext && !autoRun} sendNext={sendNext} skipAnimation={skipAnimation} isAnimating={isAnimating} awaitingNextRound={awaitingNextRound} sendNextRound={sendNextRound} />
+          <InputRequest request={inputRequest} onSubmitForm={submitInputForm} playerNames={playerNames} transcribe={transcribe} transcriptionEnabled={transcriptionEnabled} awaitingNext={awaitingNext} sendNext={sendNext} skipAnimation={skipAnimation} isAnimating={isAnimating} awaitingNextRound={awaitingNextRound} sendNextRound={sendNextRound} />
         </div>
 
         <button
