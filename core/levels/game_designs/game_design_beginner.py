@@ -27,7 +27,7 @@ class GameDesignBeginner(GameDesign):
         
         if agent_number == 6:
             
-            rounds = [IntroRound, DiscussionRoundDirected, GamePrisonersDilemma, DiscussionRoundDirectedShort , VoteBottomTwo]
+            rounds = [IntroRound, DiscussionRoundDirectedShort, GamePrisonersDilemma, DiscussionRoundDirectedShort , VoteBottomTwo]
             cfg.set_directed_discussion_group_allowed(True)
             cfg.pd_get_reactions = False
             cfg.set_pd_pairing_random()

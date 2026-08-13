@@ -1,12 +1,15 @@
 from collections import Counter
 from typing import Sequence
 from gameplay_management.base_manager import *
-   
+
 class VotingRoundBase(BaseRound):
     dont_miss_string = "A player that receives votes but is not eliminated will receive {points} points per failed vote. "
 
     def __init__(self, game_board, simulationEngine):
-        super().__init__(game_board, simulationEngine) 
+        super().__init__(game_board, simulationEngine)
+
+    def _human_survivor_description(self):
+        return self._human_result_description("You survived. What do you say?", "...")
     
     ###############
     #   Helper    #

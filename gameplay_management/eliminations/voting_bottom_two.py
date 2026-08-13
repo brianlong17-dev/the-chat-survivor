@@ -1,5 +1,6 @@
 from collections import Counter
 from gameplay_management.eliminations.voting_round_base import VotingRoundBase
+from gameplay_management.human_turn_form import HumanInputDescription
 
 class VoteBottomTwo(VotingRoundBase):
 
@@ -53,6 +54,7 @@ class VoteBottomTwo(VotingRoundBase):
                 private_thoughts_prompt="How are you feeling, and how does that impact what you want to say? ",
                 broadcast=True,
                 is_reply=True,
+                human_input_description_object=self._human_survivor_description(),
             )
 
         if dont_miss:
@@ -212,9 +214,48 @@ class VoteBottomTwo(VotingRoundBase):
         response = self.turn_manager._targeted_turn(leader, self._names(candidates),
                                                    "Who do you choose to eliminate from the competition? ",
                                                    turn_prompt,
-                                                   public_response_prompt, additional_thought_nudge)
+                                                   public_response_prompt, additional_thought_nudge,
+                                                   human_input_description_object=self._human_leader_choice_description())
         return self._handle_vote_response(leader, response)
     
+    def _human_candidate_vote_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "Who are you voting to eliminate?",
+                "public_response": "Make your case — why should they keep you?",
+            },
+            placeholders={"public_response": "explain your vote or plead your case"},
+            underlines=["your vote is revealed with your message"],
+        )
+
+    def _human_normal_vote_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "Who are you voting to eliminate?",
+                "public_response": "Why?",
+            },
+            placeholders={"public_response": "explain your vote"},
+            underlines=["your vote is revealed with your message"],
+        )
+
+    def _human_revote_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "Changing your vote, or sticking?",
+                "public_response": "(Optional) Anything to add?",
+            },
+            placeholders={"public_response": "last word?"},
+        )
+
+    def _human_leader_choice_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "The deciding vote is yours — who goes home?",
+                "public_response": "What do you say?",
+            },
+            underlines=["you alone are sending them home"],
+        )
+
     def _reminder(self, candidates):
         #SCAF
         return f"REMINDER: You can only vote for the following players: {self.format_list(candidates)}"
@@ -226,11 +267,12 @@ class VoteBottomTwo(VotingRoundBase):
         public_response_prompt = ("After your vote is revealed — if you haven't changed your vote you don't need to say anything about it. "
         "Don't repeat your case, only speak directly to individual players if you want to clap back, or change their mind. Keep it snappy. ")
         additional_thought_nudge = ("Do you think you can change anyone's mind? ")
-        return self.turn_manager._targeted_turn(agent, self._names(candidates), 
+        return self.turn_manager._targeted_turn(agent, self._names(candidates),
                                         "Who do you vote to eliminate from the competition? ",
                                         turn_prompt,
-                               public_response_prompt, additional_thought_nudge)
-    
+                               public_response_prompt, additional_thought_nudge,
+                               human_input_description_object=self._human_revote_description())
+
     def _collect_vote_from_candidate(self, agent, candidates):
         
         turn_prompt = ("You are up for elimination. You and the other candidates vote first. "
@@ -241,11 +283,13 @@ class VoteBottomTwo(VotingRoundBase):
         "you can state your case to the other voters- should they vote to ELIMINATE another player? "
         f"{self._reminder(candidates)}\n")
         additional_thought_nudge = ("Who do you want to send home and why? What can you say to get others to vote with you? ")
-        return self.turn_manager._targeted_turn(agent, self._names(candidates), 
+        return self.turn_manager._targeted_turn(agent, self._names(candidates),
                                         "Who do you vote to eliminate from the competition? ",
                                         turn_prompt,
-                               public_response_prompt, additional_thought_nudge)
-        
+                               public_response_prompt, additional_thought_nudge,
+                               human_input_description_object=self._human_candidate_vote_description())
+
+
     def _collect_vote_normal(self, agent, candidates, revote = False):
         if revote:
             turn_prompt = ("It's going to a revote. Will you change your vote? If you are changing your vote, explain why and what changed your mind.\n"
@@ -258,8 +302,10 @@ class VoteBottomTwo(VotingRoundBase):
             public_response_prompt = ("After your vote is revealed — explain why you chose to vote to ELIMINATE this person from the game. "
             "You can explain your choice, or choose not to. Or give a zippy one-liner. ")
             additional_thought_nudge = ("Who do you want to send home, and why is this the right move for your game? Will you explain yourself or just a give a quip? ")
-        return self.turn_manager._targeted_turn(agent, self._names(candidates), 
+        description = self._human_revote_description() if revote else self._human_normal_vote_description()
+        return self.turn_manager._targeted_turn(agent, self._names(candidates),
                                         "Who do you vote to eliminate from the competition? ",
                                         turn_prompt,
-                               public_response_prompt, additional_thought_nudge)
+                               public_response_prompt, additional_thought_nudge,
+                               human_input_description_object=description)
      

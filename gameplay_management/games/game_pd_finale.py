@@ -1,4 +1,5 @@
 from gameplay_management.games.game_prisoners_dilemma import GamePrisonersDilemma
+from gameplay_management.human_turn_form import HumanInputDescription
 from pydantic import Field
 
 
@@ -41,6 +42,23 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             f"You trust and Split | They Steal: You get 0 | They get +{cfg.pd_points_steal}. {final(0, cfg.pd_points_steal)}\n"
         )
 
+    def _human_pre_game_exchange_description(self, is_tie):
+        if is_tie:
+            return HumanInputDescription(
+                titles={"public_response": "You're tied going in. What do you say?"},
+                placeholders={"public_response": "trust them?"},
+            )
+        return HumanInputDescription(
+            titles={"public_response": "The final. Anything to say to your opponent?"},
+            placeholders={"public_response": "what do you want to say?"},
+        )
+
+    def _human_pre_game_exchange_2_description(self):
+        return HumanInputDescription(
+            titles={"public_response": "Your last word before the game"},
+            placeholders={"public_response": "one last word?"},
+        )
+
     def _pre_game_exchange(self, player, is_tie = False):
         game_logic_fields = {
             "goal": (str, Field(description="What is the outcome you want?")),
@@ -58,7 +76,8 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
             broadcast=True,
             is_reply = True,
             thinking = False,
-            use_higher_model=True)
+            use_higher_model=True,
+            human_input_description_object=self._human_pre_game_exchange_description(is_tie))
         
     def _pre_game_exchange_2(self, player, is_coronation=False, is_tie = False):
         coronation_string = "If you have nothing new to add, keep it brief. " if is_coronation else ""
@@ -70,15 +89,17 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
                         f"React to what they said. Do not reveal your choice.\n ",
             public_response_prompt=f"Your last word before the game. Play it however you want. {coronation_string} {self.sfx}",
             game_logic_fields={"method": (str, Field(description="Do you want to influence your opponent? If so, how?"))},
-            broadcast=True, 
-            is_reply = True)
-    
-    def _result_react(self, agent, turn_prompt, public_response_prompt):
+            broadcast=True,
+            is_reply = True,
+            human_input_description_object=self._human_pre_game_exchange_2_description())
+
+    def _result_react(self, agent, turn_prompt, public_response_prompt, human_input_description_object=None):
         self.turn_manager.respond_to(agent,
             turn_prompt,
             public_response_prompt=public_response_prompt,
             is_reply=True,
-            broadcast=True)
+            broadcast=True,
+            human_input_description_object=human_input_description_object)
 
     #####################
     #   Split / Steal   #
@@ -153,7 +174,8 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         for agent in self.agents:
             self._result_react(agent, 
             "You are a co-champion. You both split. You won together! This is your final turn to say everything you have left to say, and to celebrate your win! ",
-            "How does it feel? What do you say to your co-champion and to everyone watching? LETS MAKE IT BIG !!! WOOHOO!!!")
+            "How does it feel? What do you say to your co-champion and to everyone watching? LETS MAKE IT BIG !!! WOOHOO!!!",
+            self._human_result_description("You both won! What do you say?", "celebrate!"))
         self.game_board.game_over = True
         
     def _double_loss(self):
@@ -162,7 +184,8 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         for agent in list(self.agents):
             self._result_react(agent,
             "You both stole. Neither of you won. It's over. This is your final turn, these are your final words. What do you have to say?",
-            "You came so close. What do you say on your final turn?")
+            "You came so close. What do you say on your final turn?",
+            self._human_result_description("You both lost. Final words?", "..."))
             self._eliminate_player(agent)
             
     def _one_winner_from_tie(self, winner, loser):
@@ -172,14 +195,16 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self._host_broadcast(f"Now to our champion, who did it against all odds, at the last moment to secure the win! {winner.name}, was it worth it? To exploit the trust of {loser.name} to become the sole champion?")
         self._result_react(winner,
             f"You stole. {loser.name} split. You are the sole champion. Victory! This is your final turn! Lay it all on the table! YOU WIN! ",
-            f"You took the crown from {loser.name}. Was it worth it? What do you say to them and to everyone watching? YOU WON!!")
+            f"You took the crown from {loser.name}. Was it worth it? What do you say to them and to everyone watching? YOU WON!!",
+            self._human_result_description("You took the crown. What do you say?", "was it worth it?"))
         
         loser_question =(f"But now, we must go our darling loser, to {loser.name}- our hearts are broken for you- so close, and to have snatched defeat from the jaws of victory. "
                          "Shock, awe, acceptance? What is going through your mind? Do you have any final words?")
         self._host_broadcast(loser_question)
         self._result_react(loser,
             f"You split. {winner.name} stole. You trusted them and they took the crown from you. You go home with nothing. Your final turn: what do you say?",
-            f"You were betrayed at the last moment by {winner.name}. What do you say to them and to everyone else watching?")
+            f"You were betrayed at the last moment by {winner.name}. What do you say to them and to everyone else watching?",
+            self._human_result_description("You were betrayed. Final words?", "..."))
 
         self._evict_and_crown(winner, loser)
          
@@ -200,12 +225,14 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
         self._host_broadcast(f"Now to our champion, at last- what you've been playing for all along- {winner.name} is our champion! {winner_q}" )
         self._result_react(winner,
             f"You are the sole champion. Victory! This is your final turn! Lay it all on the table! YOU WIN! ",
-            f"{commentary}. Respond to host question: {winner_q}. What do you say to your vanquished competitors and to everyone watching? YOU WON!! {self.sfx}")
+            f"{commentary}. Respond to host question: {winner_q}. What do you say to your vanquished competitors and to everyone watching? YOU WON!! {self.sfx}",
+            self._human_result_description("You win! What do you say?", "your victory speech"))
         
         self._host_broadcast(loser_question)
         self._result_react(loser, 
             f"You were beaten by {winner.name}. {commentary}. Then the host's question: {loser_question}.",
-            f"Respond to the final game and the host's question. Afterwards you can give your final thoughts and words to everyone. {self.sfx}")
+            f"Respond to the final game and the host's question. Afterwards you can give your final thoughts and words to everyone. {self.sfx}",
+            self._human_result_description("You lost. Final words?", "your farewell"))
         
         self._evict_and_crown(winner, loser)
     

@@ -1,4 +1,5 @@
 from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
@@ -24,6 +25,16 @@ class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
 
     def _emit_widget(self):
         self.game_board.game_sink.on_widget_update({"kind": "give_take", "turns": self._widget_turns})
+
+    def _human_choice_description(self):
+        return HumanInputDescription(
+            titles={
+                "give_or_take": "Give or Take?",
+                self.TARGET_NAME_FIELD: "Who are you choosing?",
+                "public_response": "Why them?",
+            },
+            placeholders={"public_response": "justify yourself?"},
+        )
 
     def run_game(self):
         self._init_queue(self._shuffled_agents())
@@ -59,6 +70,7 @@ class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
                 action_fields=action_fields,
                 broadcast=True,
                 is_reply=True,
+                human_input_description_object=self._human_choice_description(),
             )
 
             target_name = self.turn_manager._get_target_name_from_response(response)
@@ -70,11 +82,13 @@ class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
             choice = str(response.give_or_take).strip().lower()
 
             ledger_message = None
+            reaction_description = None
             if choice == "give":
                 self.game_board.append_agent_points(target_agent.name, points_amount)
                 result = f"Aww! {player.name} chooses to GIVE to {target_agent.name}! They receive {points_amount} points."
                 ledger_message = f"{player.name} gave points to {target_agent.name}."
                 reactor = target_agent
+                reaction_description = self._human_received_description()
                 self._update_row(player.name, target_agent.name, choice, points_amount)
             else:
                 current_victim_points = self.game_board.get_agent_score(target_agent.name)
@@ -85,6 +99,7 @@ class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
                         f"but they have empty pockets! No points changed hands."
                     )
                     reactor = player
+                    reaction_description = self._human_empty_pockets_description()
                 else:
                     self.game_board.append_agent_points(player.name, actual_take)
                     self.game_board.append_agent_points(target_agent.name, -actual_take)
@@ -94,10 +109,12 @@ class GameTargetedChoiceGiveOrTake(BaseTargetedGame):
                     )
                     ledger_message = f"{player.name} took points from {target_agent.name}."
                     reactor = target_agent
+                    reaction_description = self._human_robbed_description()
                 self._update_row(player.name, target_agent.name, choice, actual_take)
 
             self.game_board.host_broadcast(result, is_reply=True)
-            reaction = self.turn_manager.respond_to(reactor, result, is_reply=True, broadcast=False)
+            reaction = self.turn_manager.respond_to(reactor, result, is_reply=True, broadcast=False,
+                human_input_description_object=reaction_description)
             self.turn_manager._output_response(reactor, reaction, is_reply=True)
             self._push_scores_private()
             #needs to push after react, so they don't think it happened twice

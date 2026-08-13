@@ -1,6 +1,7 @@
 from core.levels.game_designs.game_design import *
 from gameplay_management.discussion_rounds.discussion_settings import DiscussionLoop, DiscussionRoundSettings
 from gameplay_management.discussion_rounds.introduction_round_empty import IntroRoundEmpty
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 class GameDesignQuickStart(GameDesign):
@@ -55,7 +56,12 @@ class GameDesignQuickStart(GameDesign):
                     turn_prompt="Say hello! If you don't know them, introduce yourself- if you already know them, you can greet them. ",
                     host_message ="Welcome to our players! Why doesn't everyone introduce themselves? Or have you two already met? ",
                     additional_thought_prompt="Do you recognise the other player - {opponent_names} - do you already know them?",
-                    
+                    human_input_description=HumanInputDescription(
+                        pages=[["public_response"]],
+                        titles={"public_response": "Introduce yourself"},
+                        placeholders={"public_response": "say hello"},
+                        underlines=["everyone hears this"],
+                    ),
                 ),
                 DiscussionLoop(
                     turn_prompt="Reply and continue the conversation. DO NOT REPEAT ANYTHING FROM YOUR PREVIOUS TURN. ",

@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import random
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 
@@ -17,8 +18,27 @@ class GameGuess(GameMechanicsMixin):
     # Guess the Number - this was an initial test for parallel turns
     # ------------------------------------------------------------------
 
+    def _human_guess_description(self):
+        return HumanInputDescription(
+            titles={"choice": "What's your guess?"},
+            placeholders={"public_response": "(optional) anything to add?"},
+            underlines=["everyone guesses at the same time"],
+        )
+
+    def _human_reaction_description(self, is_correct):
+        if is_correct:
+            return HumanInputDescription(
+                titles={"public_response": "You got it! What do you say?"},
+                placeholders={"public_response": "yay!"},
+            )
+        return HumanInputDescription(
+            titles={"public_response": "Only you missed. What do you say?"},
+            placeholders={"public_response": "..."},
+        )
+
     def _get_number_guess(self, player, turn_prompt, action_fields):
-        response = self.turn_manager.take_turn(player, turn_prompt, action_fields = action_fields)
+        response = self.turn_manager.take_turn(player, turn_prompt, action_fields = action_fields,
+            human_input_description_object=self._human_guess_description())
         return player, response
 
     def _widget_update_entry(self, name, state=None, guess=None, correct=None, points=None):
@@ -154,13 +174,14 @@ class GameGuess(GameMechanicsMixin):
         reaction_futures = []
         agents_for_response = []
         if len(correct) == 1:
-            agents_for_response.append(correct[0])
+            agents_for_response.append((correct[0], True))
         if len(incorrect) == 1:
-            agents_for_response.append(incorrect[0])
+            agents_for_response.append((incorrect[0], False))
         if agents_for_response:
             with ThreadPoolExecutor() as executor:
-                for player in agents_for_response:
-                    future = executor.submit(self.turn_manager.respond_to, player, result_string, broadcast=False)
+                for player, is_correct in agents_for_response:
+                    future = executor.submit(self.turn_manager.respond_to, player, result_string, broadcast=False,
+                        human_input_description_object=self._human_reaction_description(is_correct))
                     reaction_futures.append((player, future))
 
             

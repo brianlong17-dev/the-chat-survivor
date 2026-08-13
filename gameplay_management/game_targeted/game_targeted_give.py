@@ -1,4 +1,5 @@
 from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 class GameTargetedChoiceGive(BaseTargetedGame):
@@ -22,6 +23,15 @@ class GameTargetedChoiceGive(BaseTargetedGame):
     def _emit_widget(self):
         self.game_board.game_sink.on_widget_update({"kind": "give_take", "turns": self._widget_turns})
 
+    def _human_give_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "Who gets the points?",
+                "public_response": "Why them?",
+            },
+            placeholders={"public_response": "why them?"},
+        )
+
     def run_game(self):
         self._init_queue(self._shuffled_agents())
         self._init_widget()
@@ -40,7 +50,8 @@ class GameTargetedChoiceGive(BaseTargetedGame):
             response = self.turn_manager.take_turn(player, game_instruction,
                 model_name="GivePointsModel", action_fields=action_fields,
                 broadcast=True,
-                is_reply=True)
+                is_reply=True,
+                human_input_description_object=self._human_give_description())
 
             target_name = self.turn_manager._get_target_name_from_response(response)
             target_agent = self._agent_by_name(target_name)
@@ -53,7 +64,8 @@ class GameTargetedChoiceGive(BaseTargetedGame):
             self._update_row(player.name, target_name, "give", points_amount)
 
             self.game_board.host_broadcast(result, is_reply=True)
-            reaction = self.turn_manager.respond_to(target_agent, result, is_reply=True, broadcast=False)
+            reaction = self.turn_manager.respond_to(target_agent, result, is_reply=True, broadcast=False,
+                human_input_description_object=self._human_received_description())
             self.turn_manager._output_response(target_agent, reaction, is_reply=True)
             self._push_scores_private()
             #needs to push after react, so they don't think it happened twice

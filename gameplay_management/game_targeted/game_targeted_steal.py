@@ -1,4 +1,5 @@
 from gameplay_management.game_targeted.base_targeted import BaseTargetedGame
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 class GameTargetedChoiceSteal(BaseTargetedGame):
@@ -23,6 +24,15 @@ class GameTargetedChoiceSteal(BaseTargetedGame):
 
     def _emit_widget(self):
         self.game_board.game_sink.on_widget_update({"kind": "give_take", "turns": self._widget_turns})
+
+    def _human_steal_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "Who are you stealing from?",
+                "public_response": "Why them?",
+            },
+            placeholders={"public_response": "justify yourself?"},
+        )
 
     def run_game(self):
         self._init_queue(self._shuffled_agents())
@@ -51,6 +61,7 @@ class GameTargetedChoiceSteal(BaseTargetedGame):
                 additional_thought_nudge=thought_nudge,
                 broadcast=True,
                 is_reply=True,
+                human_input_description_object=self._human_steal_description(),
             )
 
             target_name = self.turn_manager._get_target_name_from_response(response)
@@ -63,12 +74,14 @@ class GameTargetedChoiceSteal(BaseTargetedGame):
             actual_steal = min(points_amount, max(0, current_victim_points))
 
             ledger_message = None
+            reaction_description = None
             if actual_steal <= 0:
                 result = (
                     f"Awkward... {player.name} tried to steal from {target_agent.name}, "
                     f"but they have empty pockets! No points changed hands."
                 )
                 reactor = player
+                reaction_description = self._human_empty_pockets_description()
             else:
                 result = (
                     f"Oooooh! {player.name} steals from {target_agent.name}! "
@@ -78,13 +91,15 @@ class GameTargetedChoiceSteal(BaseTargetedGame):
 
 
                 reactor = target_agent
+                reaction_description = self._human_robbed_description()
 
             self.game_board.append_agent_points(player.name, actual_steal)
             self.game_board.append_agent_points(target_agent.name, -actual_steal)
             self._update_row(player.name, target_agent.name, "take", actual_steal)
 
             self.game_board.host_broadcast(result, is_reply=True)
-            reaction = self.turn_manager.respond_to(reactor, result, is_reply=True, broadcast=False)
+            reaction = self.turn_manager.respond_to(reactor, result, is_reply=True, broadcast=False,
+                human_input_description_object=reaction_description)
             self.turn_manager._output_response(reactor, reaction, is_reply=True)
             self._push_scores_private()
             #needs to push after react, so they don't think it happened twice

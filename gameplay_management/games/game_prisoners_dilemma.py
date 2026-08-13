@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from itertools import combinations
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
+from gameplay_management.human_turn_form import HumanInputDescription
 
 class GamePrisonersDilemma(GameMechanicsMixin):
 
@@ -77,7 +78,8 @@ class GamePrisonersDilemma(GameMechanicsMixin):
             self.turn_manager.take_turn(agent, turn_prompt= turn_prompt, additional_thought_nudge=additional_thought_nudge, 
                                         public_response_prompt = public_response_prompt,
                                         broadcast = True,
-                                        is_reply = True)
+                                        is_reply = True,
+                                        human_input_description_object=self._human_pre_game_description())
     #----------- Game -----------#
     
     def run_game_choose_partner(self, available):
@@ -130,6 +132,28 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         
 
 
+    def _human_pre_game_description(self):
+        return HumanInputDescription(
+            titles={"public_response": "Anything to say before you all face off?"},
+            placeholders={"public_response": "make a deal? bluff?"},
+            underlines=["you'll play each player"],
+        )
+
+    def _human_partner_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "Who do you want to pair up with?",
+                "public_response": "What do you say to them before the game? Propose a split?",
+            },
+            placeholders={"public_response": "a pre-game message?"},
+        )
+
+    def _human_split_or_steal_description(self):
+        return HumanInputDescription(
+            titles={"action": "Split or Steal?"},
+            underlines=["both choices are revealed at the same time"],
+        )
+
     def _choose_partner(self, chooser, available_agents):
         available_agents_names = self._names(available_agents)
         turn_prompt = (
@@ -140,8 +164,9 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         public_response_prompt = (f"After your choice has been revealed what do you say? Why did you pick them, and what do you want to say to them? "
         "This is your chance to convince them to split. Keep it brief. ")
         
-        response = self.turn_manager.take_turn(chooser, turn_prompt,  public_response_prompt=public_response_prompt, 
-                                  action_fields=action_fields, broadcast = True, is_reply = True)
+        response = self.turn_manager.take_turn(chooser, turn_prompt,  public_response_prompt=public_response_prompt,
+                                  action_fields=action_fields, broadcast = True, is_reply = True,
+                                  human_input_description_object=self._human_partner_description())
         
          
         partner_name = self.turn_manager._get_target_name_from_response(response)
@@ -164,9 +189,10 @@ class GamePrisonersDilemma(GameMechanicsMixin):
         choices = ["split", "steal"]
         action_fields = self.turn_manager.create_choice_field("action", choices)
         return self.turn_manager.take_turn(player, turn_prompt= turn_prompt, additional_thought_nudge=additional_thought_nudge, 
-                                    action_fields=action_fields, 
+                                    action_fields=action_fields,
                                     public_response_prompt = public_response_prompt,
-                                    broadcast = False)
+                                    broadcast = False,
+                                    human_input_description_object=self._human_split_or_steal_description())
 
     def _calculate_pd_payout(self, choice0, choice1, name0, name1):
         cfg = self.cfg

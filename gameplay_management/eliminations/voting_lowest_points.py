@@ -1,5 +1,6 @@
 import random
 from gameplay_management.eliminations.voting_round_base import VotingRoundBase
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 class VoteLowestPoints(VotingRoundBase):
@@ -19,6 +20,13 @@ class VoteLowestPoints(VotingRoundBase):
     def run_vote(self):
         self.run_voting_lowest_points_removed()
         
+    def _human_winner_description(self):
+        return HumanInputDescription(
+            titles={"public_response": "You win! A final word to the fans?"},
+            placeholders={"public_response": "your victory speech"},
+            underlines=["the whole world is watching"],
+        )
+
     def _winner_speech(self, winner):
         final_q = (f"Congrats to {winner.name}! How does it feel to be a winner? ")
         self._host_broadcast(final_q)
@@ -26,7 +34,8 @@ class VoteLowestPoints(VotingRoundBase):
             f"React to host message: {final_q}",
             public_response_prompt="Only answer the questions- afterwards give a final speech to the fans. ",
             is_reply=True,
-            broadcast=True)
+            broadcast=True,
+            human_input_description_object=self._human_winner_description())
        
 
 
@@ -62,7 +71,7 @@ class VoteLowestPoints(VotingRoundBase):
                 message = ""
                 if human_played:
                     message = "Congrats! You win! \n" if winner.is_human() else "Sad! You lost :( \n"
-                message += ("In a real elimination, vulnerable players face a group vote. Survival depends on social dynamics. \n")
+                message += ("In a full game, vulnerable players are eliminated by a group vote. Survival depends on social dynamics. \n")
                 self.game_board.game_sink.output_tutorial_message(message)
                 
                 other_notes = "One more thing: settings can be found on the top right. 'Auto-run' and 'Animate messages' control the pace of incoming messages."

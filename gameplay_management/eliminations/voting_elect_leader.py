@@ -2,6 +2,7 @@ import random
 from collections import Counter
 
 from gameplay_management.eliminations.voting_round_base import VotingRoundBase
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 class VoteElectLeader(VotingRoundBase):
@@ -28,6 +29,38 @@ class VoteElectLeader(VotingRoundBase):
             intro += ("Each player who receives a nomination will be immune and safe from elimination. ")
         return intro
 
+
+    def _human_elect_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "Who do you elect as Executioner?",
+                "public_response": "(Optional) Why?",
+            },
+            placeholders={"public_response": "explain, or pitch yourself"},
+            underlines=["your vote also keeps them safe"] if self.immunity_plus else [],
+        )
+
+    def _human_plea_description(self):
+        return HumanInputDescription(
+            titles={"public_response": "You're at risk. Make your plea."},
+            placeholders={"public_response": "why should they spare you?"},
+        )
+
+    def _human_execution_description(self):
+        return HumanInputDescription(
+            titles={
+                self.TARGET_NAME_FIELD: "Who are you sending home?",
+                "public_response": "What do you say?",
+            },
+            placeholders={"public_response": "explain your heavy burden"},
+            underlines=["your choice is revealed after your explanation"],
+        )
+
+    def _human_clean_hands_description(self):
+        return HumanInputDescription(
+            titles={"public_response": "You never had to choose. What do you say?"},
+            placeholders={"public_response": "relieved? disappointed?"},
+        )
 
     def run_vote(self):
         self.immunity_plus = True
@@ -66,6 +99,7 @@ class VoteElectLeader(VotingRoundBase):
                 public_response_prompt=public_response_prompt,
                 additional_thought_nudge=additional_thought_prompt,
                 action_fields=action_fields,
+                human_input_description_object=self._human_elect_description(),
             )
 
             choice = self.turn_manager._get_target_name_from_response(vote_response)
@@ -139,7 +173,8 @@ class VoteElectLeader(VotingRoundBase):
                              "If you could have given someone the axe, who would it have been? ")
         self._host_broadcast(host_question)
         self.turn_manager.respond_to(self._agent_by_name(winner_name), turn_prompt=f"Respond to the events of the round: {loser_name}'s last words, and to the hosts question: {host_question}",
-                                     private_thoughts_prompt="What do you want to reveal? ", prefix_turn_prompt=False, broadcast=True)
+                                     private_thoughts_prompt="What do you want to reveal? ", prefix_turn_prompt=False, broadcast=True,
+                                     human_input_description_object=self._human_clean_hands_description())
         
         #go to winner for reaction 
 
@@ -158,7 +193,8 @@ class VoteElectLeader(VotingRoundBase):
                     private_thoughts_prompt="What is your read on the executioner? What angle will actually move them?",
                     prefix_turn_prompt=False,
                     broadcast=True,
-                    is_reply=True
+                    is_reply=True,
+                    human_input_description_object=self._human_plea_description()
                 )
 
         self.game_board.host_broadcast(
@@ -187,7 +223,8 @@ class VoteElectLeader(VotingRoundBase):
             public_response_prompt=public_response_prompt,
             additional_thought_nudge=additional_thought_prompt,
             action_fields=action_fields,
-            is_reply=True
+            is_reply=True,
+            human_input_description_object=self._human_execution_description()
         )
 
         # broadcast choice — post reveal
@@ -207,4 +244,5 @@ class VoteElectLeader(VotingRoundBase):
             for safe_player_name in safe_player_names:
                 host_msg = (f"Wow- {safe_player_name} - you narrowly survived this one- how are you feeling? What lessons will you take forward?")
                 self._host_broadcast(host_msg)
-                self.turn_manager.respond_to(self._agent_by_name(safe_player_name), "Your turn: respond to the events above, and to the hosts question.", private_thoughts_prompt = "How are you feeling, and how does that impact what you want to say? ", broadcast=True, is_reply=True)
+                self.turn_manager.respond_to(self._agent_by_name(safe_player_name), "Your turn: respond to the events above, and to the hosts question.", private_thoughts_prompt = "How are you feeling, and how does that impact what you want to say? ", broadcast=True, is_reply=True,
+                                             human_input_description_object=self._human_survivor_description())

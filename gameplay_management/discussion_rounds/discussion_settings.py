@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+from gameplay_management.human_turn_form import HumanInputDescription
+
 
 @dataclass
 class DiscussionLoop:
@@ -9,6 +11,7 @@ class DiscussionLoop:
     additional_thought_prompt: Optional[str] = None
     public_response_prompt: Optional[str] = None
     human_turn_tutorial_message: Optional[str] = None
+    human_input_description: Optional[HumanInputDescription] = None
     cut_human_turn: bool = False
     #separate directed fields to avoid defaults
     directed_turn_prompt: str = ""

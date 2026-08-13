@@ -50,6 +50,12 @@ class BaseRound:
     #   Function        #
     #####################
     
+    def _human_result_description(self, title, placeholder):
+        return HumanInputDescription(
+            titles={"public_response": title},
+            placeholders={"public_response": placeholder},
+        )
+
     def _human_elimination_description(self):
         return HumanInputDescription(
             pages=[["public_response"]],

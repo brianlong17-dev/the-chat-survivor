@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
+from gameplay_management.human_turn_form import HumanInputDescription
 
 
 class GameRockPaperScissors(GameMechanicsMixin):
@@ -29,6 +30,13 @@ class GameRockPaperScissors(GameMechanicsMixin):
             f"- LOSE → 0 points\n"
         )
 
+    def _human_response_description(self):
+        return HumanInputDescription(
+            titles={"action": "Rock, Paper or Scissors?"},
+            placeholders={"public_response": "trash talk?"},
+            underlines=["both choices are revealed at the same time"],
+        )
+
     def _get_rps_choice(self, player, opponent):
         turn_prompt = (
             "ROCK PAPER SCISSORS!\n"
@@ -47,6 +55,7 @@ class GameRockPaperScissors(GameMechanicsMixin):
             model_name="rps_choice",
             additional_thought_nudge=additional_thought_nudge,
             action_fields=action_fields,
+            human_input_description_object=self._human_response_description(),
         )
 
     def _calculate_outcome(self, choice0, choice1, name0, name1):

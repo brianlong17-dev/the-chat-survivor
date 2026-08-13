@@ -3,6 +3,15 @@ from gameplay_management.games.game_mechanicsMixin import GameMechanicsMixin
 
 class BaseTargetedGame(GameMechanicsMixin):
 
+    def _human_received_description(self):
+        return self._human_result_description("You just got points! What do you say?", "thank them?")
+
+    def _human_robbed_description(self):
+        return self._human_result_description("You've been robbed. What do you say?", "...")
+
+    def _human_empty_pockets_description(self):
+        return self._human_result_description("Empty pockets! What do you say?", "awkward...")
+
     def _push_scores_private(self):
         self.game_board.system_broadcast(self.game_board.score_string(), private=True)
 

@@ -49,7 +49,7 @@ class DiscussionRound(DiscussionBaseRound):
                     public_response_prompt=loop.public_response_prompt,
                     additional_thought_nudge=formatted_thought_prompt,
                     broadcast=True,
-                    human_input_description_object=self._human_response_description(),
+                    human_input_description_object=loop.human_input_description or self._human_response_description(),
                 )
         self.cfg.discussion_index += 1
 
