@@ -36,10 +36,11 @@ class AbstractAgenticPlayer(BaseAgent):
         return False
 
     def take_turn_standard(self, turn_prompt, game_board, model, instruction_override=None, thinking=False,
-                           use_higher_model=False):
+                           use_higher_model=False, human_input_description_object=None):
 
         full_user_content = self._get_full_user_content(game_board, turn_prompt, instruction_override)
-        response = self.get_response(full_user_content, model, game_board, thinking, use_higher_model)
+        response = self.get_response(full_user_content, model, game_board, thinking, use_higher_model,
+                                     human_input_description_object)
         self._process_standard_turn_response(response)
         return response
 

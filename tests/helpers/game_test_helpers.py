@@ -26,10 +26,7 @@ class _QueuedResponse(SimpleNamespace):
 
 
 class TestGameSink(NoopGameSink):
-    def get_user_input_simple(self, field_name, description):
-        raise RuntimeError("TestGameSink cannot collect user input")
-
-    def get_user_input_multiple_choice(self, field_name, description, choices):
+    def get_user_input_form(self, form):
         raise RuntimeError("TestGameSink cannot collect user input")
 
 

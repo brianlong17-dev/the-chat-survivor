@@ -1,5 +1,6 @@
 
 from gameplay_management.base_manager import BaseRound
+from gameplay_management.human_turn_form import HumanChoiceInput, HumanTurnForm, HumanTurnPage
 
 
 class InterviewRound(BaseRound):
@@ -16,6 +17,13 @@ class InterviewRound(BaseRound):
     @classmethod
     def is_private_round(cls):
         return True
+
+    def _continue_form(self):
+        return HumanTurnForm(pages=[HumanTurnPage(inputs=[HumanChoiceInput(
+            id="continue",
+            title="What would you like to do?",
+            choices=["Continue conversation", "End conversation"],
+        )])])
 
     def _interview_player(self, player):
         should_continue = True
@@ -36,10 +44,8 @@ class InterviewRound(BaseRound):
             self.game_board.log_message_to_conversation(conversation_id, player, result.public_response)
             print(f"{player.name}: {result.public_response} \n")
 
-            action = self.game_board.game_sink.get_user_input_multiple_choice(
-                "continue", "What would you like to do?", ["Continue conversation", "End conversation"]
-            )
-            should_continue = action == "Continue conversation"
+            values = self.game_board.game_sink.get_user_input_form(self._continue_form())
+            should_continue = values["continue"] == "Continue conversation"
 
         return conversation_id
 

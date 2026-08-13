@@ -91,22 +91,32 @@ def log_game_start(is_game, id, player_names, human_name, ip_address, token_budg
         asyncio.create_task(_notify_game_start(ntfy_url, msg))
 
 
+def _clean_form_values(values):
+    if not isinstance(values, dict):
+        raise ValueError("input_form_response 'values' must be an object")
+    return {str(field_id): str(value)[:MAX_INPUT_LENGTH] for field_id, value in values.items()}
+
+
 async def _run_game_thread(thread, api_client, websocket, sink):
     while thread.is_alive():
         try:
             data = await asyncio.wait_for(websocket.receive_text(), timeout=0.5)
             msg = json.loads(data)
-            if msg.get("type") == "input_response":
-                sink._input_queue.put(str(msg.get("value", ""))[:MAX_INPUT_LENGTH])
+            if msg.get("type") == "input_form_response":
+                sink._input_queue.put(_clean_form_values(msg.get("values")))
             elif msg.get("type") == "next_round":
                 sink.set_round_gate_open()
             elif msg.get("type") == "set_flag":
                 if msg.get("flag") == "mobile_outputs":
                     sink.mobile_outputs = bool(msg.get("value"))
+                elif msg.get("flag") == "auto_run":
+                    sink.auto_run = bool(msg.get("value"))
             elif msg.get("type") == "transcribe" and TRANSCRIPTION_ENABLED:
                 asyncio.create_task(handle_transcribe(websocket, api_client, msg))
         except asyncio.TimeoutError:
             pass
+        except (ValueError, TypeError, AttributeError, KeyError):
+            continue
 
 
 def _send_error(websocket, loop, exc):

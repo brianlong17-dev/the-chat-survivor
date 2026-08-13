@@ -21,7 +21,6 @@ class AgentResponseModelFactory:
             ordered_fields.update(action_fields)
         pub_prompt = public_response_prompt or "Your public response."
         ordered_fields["public_response"] = (str, Field(description=pub_prompt))
-        ordered_fields["private_thoughts"] = (str, Field(description="Private thoughts..."))
         return create_model('human_model', **ordered_fields)
         
     

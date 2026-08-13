@@ -10,7 +10,7 @@ _SAVED_GAMES_DIR = os.path.join(
 )
 
 # Events that drive live interaction and have no meaning in a fire-through replay.
-_SKIP_TYPES = {"input_request", "next_round_request"}
+_SKIP_TYPES = {"input_request", "input_form_request", "next_round_request"}
 
 
 def _resolve_replay_path(replay_file):

@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 import random
 from typing import Callable, Sequence
 from agents.base_agent import BaseAgent
+from gameplay_management.human_turn_form import HumanInputDescription
 from gameplay_management.turn_manager import TurnManager
 from pydantic import Field
 
@@ -49,6 +50,14 @@ class BaseRound:
     #   Function        #
     #####################
     
+    def _human_elimination_description(self):
+        return HumanInputDescription(
+            pages=[["public_response"]],
+            titles={"public_response": "You lose :(  Any final words?"},
+            placeholders={"public_response": "your farewell message"},
+            underlines=["last thing they'll ever hear from you"],
+        )
+
     def eliminate_player_by_name(self, player_name, elimination_context=None):
         victim = self._agent_by_name(player_name) 
         elimination_context = ': ' + elimination_context if elimination_context else ". "
@@ -69,7 +78,8 @@ class BaseRound:
             final_words_prompt += f"Respond to the host's question: {host_question}"
         
         final_words_response= self.turn_manager.take_turn(victim, turn_prompt, public_response_prompt=final_words_prompt,
-                                                           additional_thought_nudge="Are you mad at anyone? What have you been holding back? ", speech=True)
+                                                           additional_thought_nudge="Are you mad at anyone? What have you been holding back? ", speech=True,
+                                                           human_input_description_object=self._human_elimination_description())
         
         self.turn_manager._output_response(victim, final_words_response)
         
@@ -97,6 +107,10 @@ class BaseRound:
     
     def dead_agents(self):
         return self.simulationEngine.dead_agents
+    
+    @property
+    def non_human_agents(self):
+        return [agent for agent in self.agents if not agent.is_human()]
 
     @property
     def cfg(self):

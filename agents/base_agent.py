@@ -137,7 +137,8 @@ class BaseAgent:
     # ------------------------------------------------------------------
     # Core API call
     # ------------------------------------------------------------------
-    def get_response(self, user_content: str, response_model, game_board, thinking=False, use_higher_model=False):
+    def get_response(self, user_content: str, response_model, game_board, thinking=False, use_higher_model=False,
+                     human_input_description_object=None):
 
         system_content = self._system_prompt(game_board)
 

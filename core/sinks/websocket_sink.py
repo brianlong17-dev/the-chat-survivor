@@ -1,4 +1,5 @@
 import asyncio
+import dataclasses
 import queue
 import random
 import time
@@ -36,6 +37,7 @@ class WebSocketSink(GameEventSink):
         self._round_gate = threading.Event()
         self._round_gate.set()
         self.mobile_outputs: bool = False
+        self.auto_run: bool = False
         self._public_action_count = 0
         self.log_file = None
         if backend_config.GAME_LOGGING_ENABLED:
@@ -70,6 +72,13 @@ class WebSocketSink(GameEventSink):
     def on_game_intro(self, message: str):
         self._send({"type": "game_intro", "message": message})
 
+    def output_tutorial_message(self, message: str, hold: bool = True):
+        self._public_action_count += 1
+        self._send({"type": "public_action", "speaker": "HOST", "message": message,
+                    "animate_as_player": False, "should_hold": False, "is_human": False,
+                    "tutorial_message": True, "tutorial_hold": hold,
+                    "message_id": f"0-{self._public_action_count}"})
+
     def on_linebreak(self):
         self._send({"type": "linebreak"})
 
@@ -102,7 +111,7 @@ class WebSocketSink(GameEventSink):
     # -- Actions --------------------------------------------------------------
 
     def on_public_action(self, speaker, message: str, color: str = "", animate_as_player: bool = True, 
-                         should_hold: bool = True, directed_to_name=None, is_reply: bool = False, 
+                         should_hold: bool = True, directed_to_name=None, is_reply: bool = False,
                          is_human: bool = False, pop_wrap=False):
         if directed_to_name:
             message = f"@{directed_to_name} - {message}"
@@ -121,14 +130,6 @@ class WebSocketSink(GameEventSink):
     def on_private_thought(self, speaker, message: str):
         speaker_name = speaker.name if hasattr(speaker, "name") else str(speaker)
         self._send({"type": "private_thought", "speaker": speaker_name, "message": message})
-
-    def on_inner_workings(self, speaker, inner_workings):
-        speaker_name = speaker.name if hasattr(speaker, "name") else str(speaker)
-        self._send({
-            "type": "inner_workings",
-            "speaker": speaker_name,
-            "data": {k: str(v) for k, v in inner_workings},
-        })
 
     def on_warning(self, message: str):
         self._send({"type": "warning", "message": message})
@@ -165,30 +166,18 @@ class WebSocketSink(GameEventSink):
     def _request_continue_next_round(self):
         self._send({"type": "next_round_request"})
         
-    def get_user_input_simple(self, field_name: str, description: str) -> str:
-        self._send({"type": "input_request", "field": field_name, "description": description})
+    def get_user_input_form(self, form):
+        self._send({"type": "input_form_request", "form": dataclasses.asdict(form)})
         while True:
             try:
-                result = self._input_queue.get(timeout=INACTIVITY_TIMEOUT)
+                values = self._input_queue.get(timeout=INACTIVITY_TIMEOUT)
                 break
             except queue.Empty:
                 self._on_timeout()
         if self._disconnected:
             raise RuntimeError("Client disconnected")
-        return result
+        return values
 
-    def get_user_input_multiple_choice(self, field_name, description, choices):
-        self._send({"type": "input_request", "field": field_name, "description": description, "choices": choices})
-        while True:
-            try:
-                result = self._input_queue.get(timeout=INACTIVITY_TIMEOUT) #this will be None if its disconnected
-                break
-            except queue.Empty:
-                self._on_timeout()
-        if self._disconnected:
-            raise RuntimeError("Client disconnected")
-        return result
-    
     def _on_timeout(self):
         if not self._should_kick_idle():
             return

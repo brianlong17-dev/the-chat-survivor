@@ -1,5 +1,4 @@
 import time
-from typing import Iterable
 
 import questionary
 
@@ -15,15 +14,29 @@ class ConsoleGameEventSink(GameEventSink):
     """
     line_break = (f"\n{"="*50}")
     
-    def get_user_input_simple(self, field_name, description):
-        print(f"\n▶ {field_name.upper()}")
-        print(f"  Goal: {description}")
-        return input("  >> ")
+    def get_user_input_simple(self, field_name, description, placeholder=""):
+        print(f"▶ {description}")
+        return input(f"  ({placeholder}) >> " if placeholder else "  >> ")
 
     def get_user_input_multiple_choice(self, field_name, description, choices):
         print(f"\n▶ {field_name.upper()}")
         choice = questionary.select(description, choices=choices).ask()
         return choice
+    
+    def get_user_input_form(self, form):
+        values = {}
+        for page in form.pages:
+            print("---\n")
+            if page.underline:
+                print(f" ({page.underline})")
+            for input_field in page.inputs:
+                if input_field.is_multiple_choice:
+                    value = self.get_user_input_multiple_choice(input_field.id, input_field.title, input_field.choices)
+                else:
+                    value = self.get_user_input_simple(input_field.id, input_field.title, input_field.placeholder)
+                values[input_field.id] = value
+        return values
+        
     
     def wait_for_continue_next_round(self):
         pass
@@ -71,8 +84,8 @@ class ConsoleGameEventSink(GameEventSink):
         ConsoleRenderer.print_private("SUMMARY", f"{summary}\n", color_name="YELLOW")
 
     def on_public_action(self, speaker: Speaker, message: str, color: str = "",
-                         animate_as_player = False, should_hold: bool = True, directed_to_name = None, 
-                         is_reply: bool = False, is_human: bool = False) -> None:
+                         animate_as_player = False, should_hold: bool = True, directed_to_name = None,
+                         is_reply: bool = False, is_human: bool = False, pop_wrap: bool = False) -> None:
         if directed_to_name:
             message = f"@{directed_to_name} - {message}"
         ConsoleRenderer.print_public_action(speaker, message, color)
@@ -94,23 +107,12 @@ class ConsoleGameEventSink(GameEventSink):
         ConsoleRenderer.print_system_private(message)
         if border_bottom:
             ConsoleRenderer.print_system_private('----')
+            
+    
 
     def system_public(self, message: str, border_bottom: bool = False) -> None:
         self.system_private(message, border_bottom=border_bottom)
         
-    def on_inner_workings(
-        self,
-        speaker: Speaker,
-        inner_workings: Iterable[tuple[str, object]],
-        override: bool = False,
-    ) -> None:
-        if override: #or setting
-            for key, value in inner_workings:
-                formatted_key = key.replace('_', ' ').title() 
-                message = f"{formatted_key} : {value}"
-                self.on_private_thought(speaker, message)
-        
-
     def on_warning(self, message: str) -> None:
         ConsoleRenderer.print_system_private(f"⚠ {message}")
 

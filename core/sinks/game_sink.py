@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Union
+from typing import Union
 
 from agents.base_agent import BaseAgent
 
@@ -23,6 +23,11 @@ class GameEventSink(ABC):
     def on_game_intro(self, message: str) -> None:
         """The host's opening monologue. Fired once at the very start."""
         ...
+
+    def output_tutorial_message(self, message: str, hold: bool = True) -> None:
+        """Scripted tutorial line for human players. For now: a public host message.
+        hold=False renders it complete without gating the feed on a NEXT press."""
+        self.on_public_action("HOST", message, animate_as_player=False, should_hold=False)
 
     @abstractmethod
     def on_linebreak(self) -> None:
@@ -82,7 +87,9 @@ class GameEventSink(ABC):
     # -- Speech and thought ---------------------------------------------------
 
     @abstractmethod
-    def on_public_action(self, speaker: Speaker, message: str, color: str = "", animate_as_player: bool = True, should_hold: bool = True, directed_to_name=None, is_reply: bool = False, is_human: bool = False, pop_wrap: bool = False) -> None:
+    def on_public_action(self, speaker: Speaker, message: str, color: str = "", 
+                         animate_as_player: bool = True, should_hold: bool = True, directed_to_name=None, 
+                         is_reply: bool = False, is_human: bool = False, pop_wrap: bool = False) -> None:
         """
         A speaker acted publicly — goes into game history, visible to all agents.
         color is a hint for terminal renderers; animate_as_player signals whether the
@@ -99,19 +106,6 @@ class GameEventSink(ABC):
         """
         Internal monologue — not part of game history, display only.
         On a frontend this might be a collapsed/hoverable aside.
-        """
-        ...
-
-    @abstractmethod
-    def on_inner_workings(
-        self,
-        speaker: Speaker,
-        inner_workings: Iterable[tuple[str, object]],
-        override: bool = False,
-    ) -> None:
-        """
-        Optional structured debug output derived from non-public response fields.
-        Implementations can ignore it unless override is enabled.
         """
         ...
 
@@ -185,18 +179,8 @@ class GameEventSink(ABC):
         pass
 
     @abstractmethod
-    def get_user_input_simple(self, field_name: str, description: str) -> str:
-        """Collect freeform input for a human-controlled player."""
-        ...
-
-    @abstractmethod
-    def get_user_input_multiple_choice(
-        self,
-        field_name: str,
-        description: str,
-        choices: list[str],
-    ) -> str:
-        """Collect a single choice for a human-controlled player."""
+    def get_user_input_form(self, form) -> dict:
+        """Collect a whole turn's worth of input for a human-controlled player."""
         ...
 
 
@@ -213,10 +197,7 @@ class GameEventSink(ABC):
 class NoopGameSink(GameEventSink):
     """Silently discards all events. Use in tests that don't care about output."""
 
-    def get_user_input_simple(self, field_name, description):
-        raise RuntimeError("NoopGameSink cannot collect user input")
-
-    def get_user_input_multiple_choice(self, field_name, description, choices):
+    def get_user_input_form(self, form):
         raise RuntimeError("NoopGameSink cannot collect user input")
 
     def on_game_intro(self, message): pass
@@ -230,7 +211,6 @@ class NoopGameSink(GameEventSink):
     def on_round_summary(self, summary): pass
     def on_public_action(self, speaker, message, color="", animate_as_player=True, should_hold=True, directed_to_name=None, is_reply=False, is_human=False, pop_wrap=False): pass
     def on_private_thought(self, speaker, message): pass
-    def on_inner_workings(self, speaker, inner_workings, override=False): pass
     def system_private(self, message, border_bottom=False): pass
     def system_public(self, message, border_bottom=False): pass
     def on_warning(self, message): pass
@@ -262,16 +242,12 @@ class CapturingGameSink(GameEventSink):
         self.public_actions: list[dict] = []
         self.private_thoughts: list[dict] = []
         self.system_messages: list[dict] = []
-        self.inner_workings: list[dict] = []
         self.points_updates: list[dict[str, int]] = []
         self.evictions_updates: list[str] = []
         self.widget_updates: list = []
         
 
-    def get_user_input_simple(self, field_name, description):
-        raise RuntimeError("CapturingGameSink cannot collect user input")
-
-    def get_user_input_multiple_choice(self, field_name, description, choices):
+    def get_user_input_form(self, form):
         raise RuntimeError("CapturingGameSink cannot collect user input")
 
     def on_game_intro(self, message):
@@ -304,15 +280,6 @@ class CapturingGameSink(GameEventSink):
 
     def on_private_thought(self, speaker, message):
         self.private_thoughts.append({"speaker": speaker, "message": message})
-
-    def on_inner_workings(self, speaker, inner_workings, override=False):
-        self.inner_workings.append(
-            {
-                "speaker": speaker,
-                "inner_workings": list(inner_workings),
-                "override": override,
-            }
-        )
 
     def system_private(self, message, border_bottom=False):
         self.system_messages.append({"message": message})

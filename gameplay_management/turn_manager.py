@@ -28,6 +28,10 @@ class TurnManager:
     def _make_model_optional(self, model, agent):
         #raise Exception("This needs to be turned on in player_system_prompt(cls, agent, include_optional_response = False)")
 
+        if agent.is_human():
+            #TODO this needs to be sent to the human via response description
+            return model
+        
         buffer = agent.optional_response_buffer
 
         existing_thought_desc = model.model_fields["private_thoughts"].description or ""
@@ -61,7 +65,7 @@ class TurnManager:
     def _choose_name_field(self, allowed_names, reason_for_choosing_prompt, field_name = None):
         if not field_name:
             field_name = self.base_manager.TARGET_NAME_FIELD
-        choice_reason_prompt = f"The name of the player: {reason_for_choosing_prompt}"
+        choice_reason_prompt = f"{reason_for_choosing_prompt}"
         return self.create_choice_field(field_name, allowed_names, choice_reason_prompt)
 
     # --- Turn Execution ---
@@ -118,7 +122,8 @@ class TurnManager:
                   speech=False,
                   thinking = False,
                   use_higher_model=False,
-                  multi_answer_model=False):
+                  multi_answer_model=False,
+                  human_input_description_object=None):
 
         model = self._create_model(
             player,
@@ -134,7 +139,8 @@ class TurnManager:
         )
 
         result = player.take_turn_standard(turn_prompt, self.game_board, model, instruction_override=instruction_override, thinking=thinking,
-                                               use_higher_model=use_higher_model)
+                                               use_higher_model=use_higher_model,
+                                               human_input_description_object=human_input_description_object)
         if broadcast:
             self._output_response(player, result, is_reply=is_reply)
         return result
@@ -169,36 +175,41 @@ class TurnManager:
                       
     def respond_to(self, player: AbstractAgenticPlayer, turn_prompt: str, public_response_prompt: str = None,
                    private_thoughts_prompt: str = None, additional_thought_prompt: str = None, instruction_override = None, broadcast = True, is_reply = False,
-                   prefix_turn_prompt: bool = True):
+                   prefix_turn_prompt: bool = True, human_input_description_object = None):
 
         if prefix_turn_prompt:
             turn_prompt = f"Respond to: \n{turn_prompt}"
-        return self.take_turn(player, turn_prompt, 
+        return self.take_turn(player, turn_prompt,
                               public_response_prompt=public_response_prompt,
                               private_thoughts_prompt=private_thoughts_prompt,
                               instruction_override=instruction_override,
                               additional_thought_nudge=additional_thought_prompt,
                               broadcast = broadcast,
-                              is_reply = is_reply)
+                              is_reply = is_reply,
+                              human_input_description_object=human_input_description_object)
 
     def _ask_directed_question(self, player, possible_target_names, turn_prompt,
-                               public_response_prompt, additional_thought_nudge = None, is_reply = False):
-        target_field_description = "Who your question/statement is directed to. "
+                               public_response_prompt, additional_thought_nudge = None, is_reply = False,
+                               human_input_description_object = None):
+        target_field_description = "Direct a question or address the group.  "
         response = self._targeted_turn(player, possible_target_names, target_field_description, turn_prompt,
-                               public_response_prompt, additional_thought_nudge, broadcast=False)
+                               public_response_prompt, additional_thought_nudge, broadcast=False,
+                               human_input_description_object=human_input_description_object)
         self._output_response(player, response, include_target_name=True, is_reply=is_reply)
-        return response 
+        return response
 
     def _targeted_turn(self, player, possible_target_names, target_field_description, turn_prompt,
                                public_response_prompt, additional_thought_nudge = None, broadcast = False,
-                               include_target_name = False, is_reply = False):
+                               include_target_name = False, is_reply = False,
+                               human_input_description_object = None):
         action_fields = self._choose_name_field(possible_target_names, target_field_description)
         return self.take_turn(player, turn_prompt,
                               public_response_prompt=public_response_prompt,
                               additional_thought_nudge=additional_thought_nudge,
                               action_fields=action_fields,
                               broadcast=broadcast,
-                              is_reply = is_reply)
+                              is_reply = is_reply,
+                              human_input_description_object=human_input_description_object)
         
     def _basic_turn(self, agent, turn_prompt, public_response_prompt,
                     private_thoughts_prompt = None):
@@ -228,7 +239,8 @@ class TurnManager:
             self.base_manager.debug_print(f"{agent.name} spends buffer - new buffer: {agent.optional_response_buffer} ")
         else:
             self.base_manager.debug_print(f"{agent.name} passes, buffer: {agent.optional_response_buffer}")
-            self.base_manager.debug_print(f"{agent.name} thoughts: {result.private_thoughts}")
+            if not agent.is_human():
+                self.base_manager.debug_print(f"{agent.name} thoughts: {result.private_thoughts}")
         return result
         
     def _low_buffer_message(self, agent):
