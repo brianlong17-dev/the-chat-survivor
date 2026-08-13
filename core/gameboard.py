@@ -233,6 +233,13 @@ class GameBoard:
                 i += 1
             candidate = f"{name}_{i}"
         return candidate
+    
+    def _rename_agent(self, agent_name, new_name):
+        existing = [n for n in self.agent_names() if n != agent_name]
+        new_name = self._unique_name(new_name, existing)
+        self.agent_scores[new_name] = self.agent_scores.pop(agent_name)
+        self.game_sink.on_points_update(dict(self.agent_scores))
+        return new_name
 
     def initialize_agents(self, agent_list):
         seen = set()

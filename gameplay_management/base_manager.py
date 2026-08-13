@@ -58,7 +58,6 @@ class BaseRound:
 
     def _human_elimination_description(self):
         return HumanInputDescription(
-            pages=[["public_response"]],
             titles={"public_response": "You lose :(  Any final words?"},
             placeholders={"public_response": "your farewell message"},
             underlines=["last thing they'll ever hear from you"],

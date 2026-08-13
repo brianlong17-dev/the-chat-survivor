@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     
 class SimulationEngine:
     def __init__(self, agents: list[AbstractAgenticPlayer], game_board: GameBoard, game_master: GameMaster, generator: CharacterGenerator,
-                 game_design: GameDesign, api_client):
+                 game_design: GameDesign, api_client, generate_agents_description=None):
 
         self.game_master = game_master
         self.game_design = game_design
@@ -25,6 +25,7 @@ class SimulationEngine:
 
         self.game_board = game_board
         self.generator = generator
+        self.generate_agents_description = generate_agents_description
         self.gameplay_config = GameConfig()
         self.game_design.initialise_game_config(self.gameplay_config)
         self.phase_runner = PhaseRunner(self)
@@ -64,9 +65,24 @@ class SimulationEngine:
             for agent in self.agents:
                 agent.debug_log = True
                     
+    def _generate_agents(self):
+        if self.generate_agents_description:
+            self.game_board._loading_string("Generating players")
+            new_agents = self.generator.generate_agents_from_description(self.generate_agents_description)
+            self.game_board._end_loading()
+            for name, agent in new_agents.items():
+                self._replace_agent(name, agent)
+                
+    def _replace_agent(self, name, agent):
+        agent.name = self.game_board._rename_agent(name, agent.name)
+        index = next(i for i, a in enumerate(self.agents) if a.name == name)
+        self.agents[index] = agent
 
+        
     def run(self):
         self.initialiseGameBoard()
+        self._generate_agents()
+        
         self.run_phase_loop()
     
     def run_demo_phase(self, phase):

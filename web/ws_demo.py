@@ -75,7 +75,7 @@ async def demo_ws(websocket: WebSocket):
 
         def run_demo():
             try:
-                engine, phase_desc = create_engine_for_demo(demo_id, fixture_choice, sink, api_client, human_name=human_name)
+                engine, phase_desc = create_engine_for_demo(demo_id, fixture_choice, sink, api_client, human_name=human_name,)
                 log_game_start(is_game=False, id=demo_id, player_names=[], human_name=human_name,
                        ip_address=get_client_ip(websocket), token_budget=DEMO_TOKEN_BUDGET, game_id=engine.game_id)
                 engine.run_demo_phase(phase_desc)

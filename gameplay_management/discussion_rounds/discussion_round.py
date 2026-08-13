@@ -14,7 +14,6 @@ class DiscussionRound(DiscussionBaseRound):
 
     def _human_response_description(self):
         return HumanInputDescription(
-            pages=[["public_response"]],
             titles={"public_response": "Your turn to talk"},
             placeholders={"public_response": "say something"},
             underlines=["everyone hears this"],

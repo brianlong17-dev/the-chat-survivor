@@ -120,7 +120,8 @@ async def game_ws(websocket: WebSocket):
 
         def run_game():
             try:
-                engine = create_engine(sink, human_player_name=req.human_name, names=req.player_names, game_design=req.level.game_design, api_client=api_client, agent_models=req.player_models)
+                engine = create_engine(sink, human_player_name=req.human_name, names=req.player_names, game_design=req.level.game_design, 
+                                       api_client=api_client, agent_models=req.player_models, generate_agents_in_game=True)
                 log_game_start(is_game=True, id=req.level.id, player_names=req.player_names,
                        human_name=req.human_name, ip_address=ip_address, token_budget=req.level.token_budget, 
                        game_id=engine.game_id)

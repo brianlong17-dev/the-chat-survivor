@@ -57,7 +57,6 @@ class GameDesignQuickStart(GameDesign):
                     host_message ="Welcome to our players! Why doesn't everyone introduce themselves? Or have you two already met? ",
                     additional_thought_prompt="Do you recognise the other player - {opponent_names} - do you already know them?",
                     human_input_description=HumanInputDescription(
-                        pages=[["public_response"]],
                         titles={"public_response": "Introduce yourself"},
                         placeholders={"public_response": "say hello"},
                         underlines=["everyone hears this"],

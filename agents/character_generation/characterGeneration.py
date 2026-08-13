@@ -63,12 +63,24 @@ class CharacterGenerator:
         self.agentic_player_classes=agentic_player_classes or [AgenticPlayer] #[AgenticPlayer, AgenticPlayerV1]
 
 
+    def generate_agents_from_description(self, generate_agents_description):
+        names = generate_agents_description.names
+        print(f"[generate_agents_from_description] starting for names={names}")
+        fn = partial(self.generate_agent, allow_rename=generate_agents_description.allow_rename,
+                    agent_models=generate_agents_description.models)
+        with ThreadPoolExecutor(max_workers=min(32, len(names))) as executor:
+            new_agents = list(executor.map(fn, names))
+        print(f"[generate_agents_from_description] done, got {len(new_agents)} agents")
+        return dict(zip(names, new_agents))
+        
+    
     def generate_agents_from_names(self, names, allow_rename = True, agent_models = None):
         fn = partial(self.generate_agent, allow_rename=allow_rename, agent_models=agent_models)
         with ThreadPoolExecutor(max_workers=min(32, len(names))) as executor:
             return list(executor.map(fn, names))
 
     def generate_agent(self, character_name: str, allow_rename = True, agent_models = None) -> 'AgenticPlayer':
+        print(f"[generate_agent] starting for {character_name}")
         if self.api_client._mock_output:
             allow_rename = False
         system_prompt = ( 
@@ -90,8 +102,9 @@ class CharacterGenerator:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}
             ],
-            use_higher_model=True
+            use_higher_model=False
         )
+        print(f"[generate_agent] api_client.create returned for {character_name}")
         final_name = profile.name if (allow_rename and profile.name) else character_name
         #print("Who: " + profile.who)
         #print("character_type: " + profile.character_type)

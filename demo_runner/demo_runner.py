@@ -56,7 +56,7 @@ def _set_up_fixture(fixture_id: str, game_design, sink, api_client):
     elimination_order = fixture_data.get("elimination_order", [])
     phase_number = fixture_data.get("phase_number")
 
-    engine = create_engine(sink, game_design=game_design, names=all_names, populate_agents=False, api_client=api_client)
+    engine = create_engine(sink, game_design=game_design, names=all_names, populate_agents=False, api_client=api_client,)
 
     if phase_number:
         engine.game_board.phase_number = phase_number
