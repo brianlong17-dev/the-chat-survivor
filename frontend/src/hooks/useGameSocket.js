@@ -188,7 +188,11 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     if (evt.type === 'cast') { setPlayerNames(evt.names ?? []); return }
     if (evt.type === 'loading') { setEvents(prev => [...prev, evt]); return }
     if (evt.type === 'loading_done') {
-      setEvents(prev => prev.map(e => e.type === 'loading' ? { ...e, done: true, completed_message: evt.message ?? null } : e))
+      setEvents(prev => {
+        const idx = prev.map(e => e.type === 'loading' && !e.done).lastIndexOf(true)
+        if (idx === -1) return prev
+        return prev.map((e, i) => i === idx ? { ...e, done: true, completed_message: evt.message ?? null } : e)
+      })
       return
     }
         

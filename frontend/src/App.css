@@ -2499,6 +2499,7 @@
   border: none;
   border-bottom: 1px solid var(--lb-rule);
   background: transparent;
+  margin-top: 4em;
   margin-bottom: 0;
 }
 .lobby-search input {
@@ -2629,11 +2630,13 @@
 
 .lobby-recap-row {
   display: flex;
-  justify-content: space-between;
+  gap: 12px;
   font-size: 13.5px;
 }
 
-.lobby-recap-label {}
+.lobby-recap-label {
+  flex: 0 0 96px;
+}
 
 .lobby-review-cast {
   border-top: 1px solid var(--lb-hair);

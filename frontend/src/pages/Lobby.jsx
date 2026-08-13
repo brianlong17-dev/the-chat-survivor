@@ -302,7 +302,7 @@ export default function Lobby({ onStart, initialStep = 0, onInitialStepUsed }) {
                       <span className="level-row-description">{p.description || level.description}</span>
                     </span>
                     <span className="level-row-meta">
-                      <span>{level.min_players}–{level.max_players} players</span>
+                      <span>{level.min_players === level.max_players ? level.max_players : `${level.min_players}–${level.max_players}`} players</span>
                       {p.minutes && <span>{p.minutes}</span>}
                     </span>
                   </button>
@@ -355,7 +355,7 @@ export default function Lobby({ onStart, initialStep = 0, onInitialStepUsed }) {
                     <button className="chip-remove" onClick={() => toggle(name)}>×</button>
                   </span>
                 ))}
-                {selected.length === 0 && <span className="lobby-hint">Select players below</span>}
+                {selected.length === 0 && <span className="lobby-hint">{maxAI === 1 ? (playing ? 'Select a partner below' : 'Select a player below') : 'Select players below'}</span>}
               </div>
             </div>
 
@@ -450,7 +450,10 @@ export default function Lobby({ onStart, initialStep = 0, onInitialStepUsed }) {
             <div className="lobby-step-sub">Confirm your setup before entering the chat.</div>
 
             <div className="lobby-recap-panel">
-              <div className="lobby-recap-row"><span className="lobby-recap-label sc-label">Your role</span><span>{playing ? `Playing as ${humanName.trim()}` : 'Watching only'}</span></div>
+              <div className="lobby-recap-row">
+                <span className="lobby-recap-label sc-label">{playing ? 'Your name' : 'Your role'}</span>
+                <span>{playing ? humanName.trim() : 'Watching only'}</span>
+              </div>
               <div className="lobby-recap-row"><span className="lobby-recap-label sc-label">Level</span><span>{selectedLevelObj ? levelDisplayName(selectedLevelObj) : '—'}</span></div>
             </div>
 

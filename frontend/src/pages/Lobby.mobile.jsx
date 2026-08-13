@@ -196,7 +196,7 @@ export default function LobbyMobile({ onStart }) {
                   {level.locked && <span style={{ opacity: .6 }}>🔒</span>}
                 </div>
                 <div className="ml-level-desc">{level.description}</div>
-                <div className="ml-level-info">{level.min_players}-{level.max_players} players</div>
+                <div className="ml-level-info">{level.min_players === level.max_players ? level.max_players : `${level.min_players}-${level.max_players}`} players</div>
               </button>
             ))}
           </div>
@@ -216,7 +216,7 @@ export default function LobbyMobile({ onStart }) {
               <span key={n} className={`ml-chip ${i >= aiCap ? 'inactive' : ''}`}>{n}
                 <button className="ml-chip-x" onClick={() => remove(n)}>×</button></span>
             ))}
-            {count === 0 && <span className="ml-hint">Select players below</span>}
+            {activeSelected.length === 0 && <span className="ml-hint">{aiCap === 1 ? (playing ? 'Select a partner below' : 'Select a player below') : 'Select players below'}</span>}
           </div>
         </div>}
 
