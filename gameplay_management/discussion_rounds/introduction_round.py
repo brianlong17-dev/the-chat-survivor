@@ -5,7 +5,7 @@ class IntroRound(BaseRound):
     
     @classmethod
     def display_name(cls, cfg):
-        return "Intro Round"
+        return "Rise and Shine"
 
     @classmethod
     def rules_description(cls, cfg):
@@ -15,6 +15,10 @@ class IntroRound(BaseRound):
     @classmethod
     def is_private_round(cls):
         return True
+
+    @classmethod
+    def round_type(cls):
+        return "intro"
     
     def default_welcome_message(self):
         return ("So, as you know, you're here to play the game. "

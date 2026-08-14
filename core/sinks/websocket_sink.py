@@ -16,6 +16,20 @@ from core import backend_config
 from core.shared_helpers import INACTIVITY_TIMEOUT
 INACTIVITY_MESSAGE = f"Session timed out due to inactivity ({INACTIVITY_TIMEOUT//60} minutes)"
 
+_ONES = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+         "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+         "Seventeen", "Eighteen", "Nineteen"]
+_TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+
+
+def _number_to_words(n: int) -> str:
+    if n < 20:
+        return _ONES[n]
+    if n < 100:
+        tens, ones = divmod(n, 10)
+        return _TENS[tens] + (f"-{_ONES[ones].lower()}" if ones else "")
+    return str(n)
+
 class InactivityTimeout(Exception):
     def __init__(self):
         super().__init__("Session timed out due to inactivity")
@@ -102,8 +116,8 @@ class WebSocketSink(GameEventSink):
 
     # -- Round lifecycle ------------------------------------------------------
 
-    def on_round_start(self, round_number: int, scores: str):
-        self._send({"type": "round_start", "round_number": round_number, "scores": scores})
+    def on_round_start(self, round_number: int, round_type: str, round_name: str, scores: str):
+        self._send({"type": "round_start", "round_number": _number_to_words(round_number), "round_type": round_type, "round_name": round_name, "scores": scores})
 
     def on_round_summary(self, summary: str):
         self._send({"type": "round_summary", "summary": summary})

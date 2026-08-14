@@ -61,10 +61,13 @@ class PhaseRunner:
         #return True
     
     def run_round(self, round):
+        round_type = round.round_type()
+        round_name = round.display_name(self._cfg)
         if self._use_round_gate():
             self.game_board.game_sink.wait_for_continue_next_round()
         self.current_round_index += 1
-        self.game_board.newRound()
+        self.game_board.newRound(round_type, round_name)
+
         self.game_board.game_sink.on_phase_round_index(self.current_round_index - 1)
         if self.current_round_index == 1:
             self._introduce_phase()
@@ -78,8 +81,8 @@ class PhaseRunner:
         else:
             round(self.game_board, self.simulation_engine).run_game()
         
-        round_summary = self.simulation_engine.game_master.summariseRound(self.game_board)
-        
+        #round_summary = self.simulation_engine.game_master.summariseRound(self.game_board)
+        round_summary=None
         self.game_board.endRound(round_summary)
         if self._use_round_gate():
             self.game_board.game_sink._request_continue_next_round()

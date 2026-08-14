@@ -52,6 +52,8 @@ class CharacterProfile(BaseModel):
     "Only True for cases characters are better as simple, impulsive, transparent thinkers - they're not especially coherent, or complex reasoners. "
     "Examples :(Gollum, Patrick Star). False for characters who sound vapid, but scheme (Elle Woods, Lumpy Space Princess)."
 ))
+    
+    
 class CharacterGenerator:
 
     def __init__(self, game_sink, api_client, agentic_player_classes=None):
@@ -67,7 +69,7 @@ class CharacterGenerator:
         names = generate_agents_description.names
         print(f"[generate_agents_from_description] starting for names={names}")
         fn = partial(self.generate_agent, allow_rename=generate_agents_description.allow_rename,
-                    agent_models=generate_agents_description.models)
+                    agent_models=generate_agents_description.models, sys_output=True)
         with ThreadPoolExecutor(max_workers=min(32, len(names))) as executor:
             new_agents = list(executor.map(fn, names))
         print(f"[generate_agents_from_description] done, got {len(new_agents)} agents")
@@ -79,7 +81,8 @@ class CharacterGenerator:
         with ThreadPoolExecutor(max_workers=min(32, len(names))) as executor:
             return list(executor.map(fn, names))
 
-    def generate_agent(self, character_name: str, allow_rename = True, agent_models = None) -> 'AgenticPlayer':
+    def generate_agent(self, character_name: str, allow_rename = True, agent_models = None,
+                       sys_output=False) -> 'AgenticPlayer':
         print(f"[generate_agent] starting for {character_name}")
         if self.api_client._mock_output:
             allow_rename = False
@@ -105,12 +108,13 @@ class CharacterGenerator:
             use_higher_model=False
         )
         print(f"[generate_agent] api_client.create returned for {character_name}")
+        
         final_name = profile.name if (allow_rename and profile.name) else character_name
-        #print("Who: " + profile.who)
-        #print("character_type: " + profile.character_type)
-        #print("AD: " + profile.additional_depth)
+        
+        if sys_output:
+            self.game_sink.system_private(f"Generated {final_name}")
+
         agent_class=random.choice(self.agentic_player_classes)
-        #print(f"{final_name}: {agent_class.__name__}")
         agent = agent_class(
             name=final_name,
             initial_persona=f"{profile.persona}\n{profile.additional_depth}",

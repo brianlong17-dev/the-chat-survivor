@@ -17,6 +17,8 @@ class GameBoard:
 
         self.phase_number = 0
         self.round_number = 0
+        self.round_type = None
+        self.round_name = None
 
         self.agent_scores: dict[str, int] = {}
         self.context_builder = ContextBuilder(game_board=self, game_log=self.game_log)
@@ -95,16 +97,19 @@ class GameBoard:
     ####  ...... Phase, turn management .... #########
 
     def endRound(self, round_summary):
-        self.game_sink.on_round_summary(round_summary.round_summary)
+        if round_summary:
+            self.game_sink.on_round_summary(round_summary.round_summary)
         self.game_log.close_round()
 
-    def newRound(self):
+    def newRound(self, round_type, round_name):
         #self.system_broadcast(self.score_string(), private = False) Probably a good idea for agents to read
         self.round_number += 1
+        self.round_type = round_type
+        self.round_name = round_name
         self.score_changed_in_round = False
         self.scores_at_round_start = dict(self.agent_scores)
         self.game_log.start_round(self.phase_number, self.round_number, self.phase_runner.current_round_index)
-        self.game_sink.on_round_start(self.round_number, self.score_string())
+        self.game_sink.on_round_start(self.round_number, round_type, round_name, self.score_string())
 
     def endPhase(self):
         pass

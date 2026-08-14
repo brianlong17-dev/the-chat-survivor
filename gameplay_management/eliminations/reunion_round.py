@@ -14,7 +14,11 @@ class FinaleReunionRound(VotingRoundBase):
 
     @classmethod
     def display_name(cls, cfg):
-        return "Finale Reunion Round"
+        return "Reunion"
+
+    @classmethod
+    def is_finale(cls):
+        return True
 
     @classmethod
     def rules_description(cls, cfg):

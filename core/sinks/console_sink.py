@@ -79,9 +79,9 @@ class ConsoleGameEventSink(GameEventSink):
     def on_phase_round_index(self, index: int) -> None:
         pass
 
-    def on_round_start(self, round_number: int, score_string: str) -> None:
-        ConsoleRenderer.print_public_action("SYSTEM", score_string)
-        ConsoleRenderer.print_public_action("SYSTEM", f"BEGIN ROUND {round_number}")
+    def on_round_start(self, round_number: int, round_type: str, round_name: str, scores: str) -> None:
+        ConsoleRenderer.print_public_action("SYSTEM", f"Round {round_number}: {(round_type or '').capitalize()} Round - {round_name or ''}")
+        ConsoleRenderer.print_public_action("SYSTEM", scores)
 
     def on_round_summary(self, summary: str) -> None:
         ConsoleRenderer.print_private("SUMMARY", f"{summary}\n", color_name="YELLOW")

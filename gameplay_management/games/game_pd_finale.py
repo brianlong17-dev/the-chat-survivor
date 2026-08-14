@@ -9,7 +9,11 @@ class GamePrisonersDilemmaFinale(GamePrisonersDilemma):
     
     @classmethod
     def display_name(cls, cfg):
-        return "Prisoner's Dilemma - The Finale"
+        return "Split or Steal"
+
+    @classmethod
+    def is_finale(cls):
+        return True
 
     @classmethod
     def rules_description(cls, cfg):

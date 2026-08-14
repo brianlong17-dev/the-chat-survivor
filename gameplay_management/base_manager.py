@@ -41,7 +41,23 @@ class BaseRound:
     @classmethod
     def is_vote(cls):
         return False
-    
+
+    @classmethod
+    def is_finale(cls):
+        return False
+
+    @classmethod
+    def round_type(cls):
+        if cls.is_finale():
+            return "finale"
+        if cls.is_vote():
+            return "elimination"
+        if cls.is_game():
+            return "game"
+        if cls.is_discussion():
+            return "discussion"
+        return None
+
     @classmethod
     def rules_brief(cls, cfg):
         return ""

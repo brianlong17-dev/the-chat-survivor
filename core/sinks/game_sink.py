@@ -73,12 +73,8 @@ class GameEventSink(ABC):
         ...
 
     @abstractmethod
-    def on_round_start(self, round_number: int, scores: str) -> None:
-        """
-        Signals a new round beginning. Scores are bundled here because
-        on console they always print together, and on a frontend this
-        is the moment the scoreboard widget refreshes.
-        """
+    def on_round_start(self, round_number: int, round_type: str, round_name: str, scores: str) -> None:
+        """Signals a new round beginning, with its type, display name, and current scores."""
         ...
 
     @abstractmethod
@@ -209,7 +205,7 @@ class NoopGameSink(GameEventSink):
     def on_phase_intro(self, host_text, summary_text): pass
     def on_phase_rounds(self, rounds): pass
     def on_phase_round_index(self, index): pass
-    def on_round_start(self, round_number, scores): pass
+    def on_round_start(self, round_number, round_type, round_name, scores): pass
     def on_round_summary(self, summary): pass
     def on_public_action(self, speaker, message, color="", animate_as_player=True, should_hold=True, directed_to_name=None, is_reply=False, is_human=False, pop_wrap=False): pass
     def on_private_thought(self, speaker, message): pass
@@ -269,8 +265,8 @@ class CapturingGameSink(GameEventSink):
     def on_phase_rounds(self, rounds): pass
     def on_phase_round_index(self, index): pass
 
-    def on_round_start(self, round_number, scores):
-        self.round_starts.append({"round_number": round_number, "scores": scores})
+    def on_round_start(self, round_number, round_type, round_name, scores):
+        self.round_starts.append({"round_number": round_number, "round_type": round_type, "round_name": round_name, "scores": scores})
 
     def on_round_summary(self, summary):
         self.round_summaries.append(summary)
