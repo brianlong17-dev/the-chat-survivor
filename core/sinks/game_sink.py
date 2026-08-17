@@ -160,6 +160,14 @@ class GameEventSink(ABC):
         """Push a full widget state snapshot to the sidebar. No-op by default."""
         pass
 
+    def update_is_typing(self, typing_names: list[str]) -> None:
+        """Names of agents currently mid-turn. No-op by default."""
+        pass
+
+    def add_summary_commentary_for_phase(self, agent_name: str, commentary: str, phase_number: int) -> None:
+        """An agent's private end-of-phase commentary line. No-op by default."""
+        pass
+
     def wait_for_continue_next_round(self) -> None:
         pass
 

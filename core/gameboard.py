@@ -28,6 +28,7 @@ class GameBoard:
         self.game_over = False
         self.score_changed_in_round = False
         self.scores_at_round_start: dict[str, int] = {}
+        self.is_typing_array = []
         
         self.first_message_sent = False
 
@@ -270,3 +271,16 @@ class GameBoard:
     def score_string(self) -> str:
         sorted_scores = sorted(self.agent_scores.items(), key=lambda item: item[1], reverse=True)
         return ", ".join(f"{name}: {score}" for name, score in sorted_scores)
+
+
+    def is_typing(self, agent_name):
+        self.is_typing_array.append(agent_name)
+        self.game_sink.update_is_typing(list(self.is_typing_array))
+
+    def done_typing(self, agent_name):
+        self.is_typing_array.remove(agent_name)
+        self.game_sink.update_is_typing(list(self.is_typing_array))
+        
+        
+    def add_summary_commentary(self, agent_name, commentary):
+        self.game_sink.add_summary_commentary_for_phase(agent_name, commentary, self.phase_number)

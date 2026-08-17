@@ -215,6 +215,18 @@ class WebSocketSink(GameEventSink):
     def on_widget_update(self, widget):
         self._send({"type": "widget_update", "widget": widget})
 
+    def add_summary_commentary_for_phase(self, agent_name: str, commentary: str, phase_number: int):
+        self._send({"type": "summary_commentary", "phase_id": phase_number, "speaker": agent_name, "message": commentary})
+
+    def update_is_typing(self, typing_names: list[str]):
+        if not typing_names:
+            typing_string = None
+        elif len(typing_names) == 1:
+            typing_string = f"{typing_names[0]} is typing..."
+        else:
+            typing_string = f"{len(typing_names)} players are typing..."
+        self._send({"type": "is_typing", "message": typing_string})
+
     def loading_string(self, message: str):
         self._send({"type": "loading", "message": message})
 

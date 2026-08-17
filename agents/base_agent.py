@@ -146,6 +146,8 @@ class BaseAgent:
             {"role": "system", "content": system_content},
             {"role": "user",   "content": user_content},
         ]
+        game_board.is_typing(self.name)
+        
 
         with self.tracer.start_as_current_span("agent_turn") as span:
             span.set_attribute("game.character", self.name)
@@ -157,7 +159,7 @@ class BaseAgent:
                 agent_api_model=self.api_model,
                 span=span
             )
-            
+        game_board.done_typing(self.name)
         
         
         if self.debug_log:

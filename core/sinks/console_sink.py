@@ -13,7 +13,10 @@ class ConsoleGameEventSink(GameEventSink):
     Default sink for live runs.
     """
     line_break = (f"\n{"="*50}")
-    
+
+    def __init__(self):
+        self._commentary_phases_seen = set()
+
     def get_user_input_simple(self, field_name, description, placeholder=""):
         print(f"▶ {description}")
         return input(f"  ({placeholder}) >> " if placeholder else "  >> ")
@@ -130,3 +133,9 @@ class ConsoleGameEventSink(GameEventSink):
     
     def _on_user_private_conversation(self, restricted_users, player_name, message):
         pass
+
+    def add_summary_commentary_for_phase(self, agent_name: str, commentary: str, phase_number: int) -> None:
+        if phase_number not in self._commentary_phases_seen:
+            self._commentary_phases_seen.add(phase_number)
+            ConsoleRenderer.print_private("", "(private game commentary)", print_name=False)
+        ConsoleRenderer.print_private(agent_name, commentary)

@@ -237,8 +237,6 @@ class AgenticPlayer(AbstractAgenticPlayer):
         return response_model
         
     def summarise_phase(self, game_board):
-        #NOTE this works really well with DEFAULT_HIGHER_MODEL_NAME = "gemini-2.5-flash"
-        #But other models will be brief - this needs to prompted to be detailed
         self.currently_summarising=True
         phase_number = game_board.phase_number
         prompt = ("PRIVATE TURN: From your perspective, write a summary of what happened in this phase. "
@@ -255,6 +253,7 @@ class AgenticPlayer(AbstractAgenticPlayer):
         
         response = self.take_turn_standard(prompt, game_board, response_model, instruction_override=context_string, 
                                            use_higher_model = use_higher_model_for_summary)
+        game_board.add_summary_commentary(self.name, response.game_commentary)
         self._process_summary_turn(response, phase_number)
 
     def _process_summary_turn(self, response, phase_number):

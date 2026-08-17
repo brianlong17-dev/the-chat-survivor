@@ -141,10 +141,11 @@ class PhaseRunner:
             if cfg.should_dead_players_summarise:
                 agents = agents + self.simulation_engine.dead_agents
             
-            if agents: 
+            if agents:
                 with ThreadPoolExecutor(max_workers=min(32, len(agents))) as executor:
-                    for agent in agents:
-                        executor.submit(agent.summarise_phase, self.game_board)
+                    futures = [executor.submit(agent.summarise_phase, self.game_board) for agent in agents]
+                    for future in futures:
+                        future.result()
                     
         self._cfg.set_discussion_settings(DiscussionRoundSettings())
         self.game_board.endPhase()

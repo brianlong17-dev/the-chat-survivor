@@ -27,6 +27,8 @@ class APIClient:
         if token_budget is None:
             raise ValueError("token_budget is required")
         self._mock_output = False
+        self._min_mock_time = 1
+        self._max_mock_time = 3
         self._client = client
         self.default_model = model
         self.higher_model = higher_model_name
@@ -119,6 +121,7 @@ class APIClient:
     
     def create(self, response_model, messages: list, thinking=False, agent_api_model=None, use_higher_model = False, span=None):
         if self._mock_output:
+            time.sleep(random.uniform(self._min_mock_time, self._max_mock_time))
             return self._mock_response(response_model)
         if self._record_manager._total_api_tokens > self.token_budget:
             raise BudgetExceeded(f"Token budget of {self.token_budget} exceeded")
