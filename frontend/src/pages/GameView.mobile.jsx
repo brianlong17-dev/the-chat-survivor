@@ -213,7 +213,7 @@ export default function GameViewMobile({
               ? { label: 'Next Round', action: sendNextRound, active: true }
               : { label: 'Next Turn', action: sendNext, active: awaitingNext }
             return (
-              <button className="next-turn-btn-mobile" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
+              <button className="next-turn-btn-mobile hidden" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
                 {skipOrNext.label}
               </button>
             )

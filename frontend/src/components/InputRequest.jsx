@@ -128,8 +128,10 @@ export default function InputRequest({ request, onSubmitForm, playerNames = [], 
     : awaitingNextRound ? 'Next Round ›'
     : (awaitingNext && !request) ? 'Next ›'
     : sentFlash ? '✓ Sent'
-    : (form && !isLastPage) ? 'Next ›'
+    : (form && !isLastPage) ? 'Next'
     : 'Send'
+
+  const isNextAction = actionLabel === 'Next ›' || actionLabel === 'Next Round ›' || actionLabel === 'Skip ›'
 
   const actionHandler = isAnimating ? skipAnimation
     : awaitingNextRound ? sendNextRound
@@ -178,7 +180,7 @@ export default function InputRequest({ request, onSubmitForm, playerNames = [], 
         </button>
       )}
       {withActions && (
-        <button className="turn-input-send" onClick={actionHandler} disabled={actionDisabled}>
+        <button className={`turn-input-send ${isNextAction ? 'next' : ''}`} onClick={actionHandler} disabled={actionDisabled}>
           {actionLabel}
         </button>
       )}
@@ -231,7 +233,7 @@ export default function InputRequest({ request, onSubmitForm, playerNames = [], 
         {form && page && !textInputs.length && (
           <div className="turn-input-section">
             <div className="turn-input-prompt-row bare">
-              <button className="turn-input-send" onClick={actionHandler} disabled={actionDisabled}>
+              <button className={`turn-input-send ${isNextAction ? 'next' : ''}`} onClick={actionHandler} disabled={actionDisabled}>
                 {actionLabel}
               </button>
             </div>

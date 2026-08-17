@@ -276,7 +276,7 @@ export default function GameView({
               ? { label: 'Next Round ›', action: sendNextRound, active: true }
               : { label: 'Next Turn ›', action: sendNext, active: awaitingNext }
             return (
-              <button ref={nextBtnRef} className="next-turn-btn" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
+              <button ref={nextBtnRef} className="next-turn-btn hidden" onClick={skipOrNext.action} disabled={!skipOrNext.active}>
                 {skipOrNext.label}
               </button>
             )

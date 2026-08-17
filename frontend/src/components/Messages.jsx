@@ -45,24 +45,27 @@ function HostStagger({ text, onComplete, skipRef, animateText }) {
   const onCompleteRef = useRef(onComplete)
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
   const doneRef = useRef(false)
+  const [instant, setInstant] = useState(false)
 
   useEffect(() => {
+    setInstant(false)
     if (!animateText) { onCompleteRef.current?.(); return }
 
-    const finish = () => {
+    const finish = (skipped) => {
       if (doneRef.current) return
       doneRef.current = true
+      if (skipped) setInstant(true)   // CSS animation can't be interrupted, so jump it to its end state
       onCompleteRef.current?.()
     }
-    const t = setTimeout(finish, 2000)               // 1s roll + 1s pause
+    const t = setTimeout(() => finish(false), 1000)   // call onComplete once the roll lands; pause is purely visual
     const skip = setInterval(() => {
-      if (skipRef?.current) { clearInterval(skip); clearTimeout(t); finish() }
+      if (skipRef?.current) { clearInterval(skip); clearTimeout(t); finish(true) }
     }, 100)
 
     return () => { clearTimeout(t); clearInterval(skip) }
   }, [text])
 
-  return <span className={animateText ? 'message-text host-roll' : 'message-text'}>{renderBold(text)}</span>
+  return <span className={animateText ? `message-text host-roll${instant ? ' host-roll-instant' : ''}` : 'message-text'}>{renderBold(text)}</span>
 }
 
 function WordByWord({ text, onComplete, skipRef, animateText }) {
@@ -193,9 +196,9 @@ function WordByWord({ text, onComplete, skipRef, animateText }) {
         // Let the cursor linger at the end before handing off to onComplete.
         setTyping(true)
         const linger = WORD_ANIM_END_LINGER_CHOICES_MS[Math.floor(Math.random() * WORD_ANIM_END_LINGER_CHOICES_MS.length)]
+        onCompleteRef.current?.()
         timeoutId = setTimeout(() => {
           setTyping(false)
-          onCompleteRef.current?.()
         }, linger)
         return
       }
@@ -226,35 +229,48 @@ function PhaseHeader({ phase_number }) {
   )
 }
 
-function RoundHeader({ round_number, scores, onComplete }) {
-  const [revealed, setRevealed] = useState('')
+function RoundHeader({ round_number, round_type, round_name, scores, onComplete, skipRef }) {
   const releasedRef = useRef(false)
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    const release = () => {
       if (releasedRef.current) return
       releasedRef.current = true
       onComplete?.()
-    }, 1500)
-    return () => clearTimeout(t)
+    }
+    const t = setTimeout(release, 1500)
+    const skip = setInterval(() => {
+      if (skipRef?.current) { clearInterval(skip); clearTimeout(t); release() }
+    }, 100)
+    return () => { clearTimeout(t); clearInterval(skip) }
   }, [])
 
-  useEffect(() => {
-    if (!scores) return
-    let i = 0
-    const interval = 600 / scores.length
-    const tick = setInterval(() => {
-      i++
-      setRevealed(scores.slice(0, i))
-      if (i >= scores.length) clearInterval(tick)
-    }, interval)
-    return () => clearInterval(tick)
-  }, [scores])
+  const typeCapitalized = round_type ? `${round_type.charAt(0).toUpperCase()}${round_type.slice(1)}` : null
+  const BARE_TYPES = ['intro', 'finale']
+  const typeLabel = BARE_TYPES.includes(round_type) ? typeCapitalized : (typeCapitalized ? `${typeCapitalized} Round` : null)
+
+  if (!round_type) {
+    return (
+      <div className="msg round-header round-header--plain">
+        <span className="round-label">Round {round_number}</span>
+        {scores && <span className="round-scores">{scores}</span>}
+      </div>
+    )
+  }
 
   return (
-    <div className="msg round-header">
-      <span className="round-label">Round {round_number}</span>
-      {scores && <span className="round-scores">{revealed}</span>}
+    <div className={`msg round-header round-header--${round_type}`}>
+      <span className="round-rule round-rule--thick" />
+      <span className="round-rule round-rule--thin" />
+      <span className="round-caption">
+        <span className="round-ordinal">Round {round_number}</span>
+        <span className="round-type">
+          {typeLabel}
+          {round_type !== 'discussion' && round_name && <span className="round-name">{round_name}</span>}
+        </span>
+      </span>
+      <span className="round-rule round-rule--thin" />
+      <span className="round-rule round-rule--thick" />
     </div>
   )
 }
@@ -602,7 +618,7 @@ export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, sk
     case 'phase_header':
       return <PhaseHeader {...event} />
     case 'round_start':
-      return <RoundHeader {...event} onComplete={onRoundHeaderComplete} />
+      return <RoundHeader {...event} onComplete={onRoundHeaderComplete} skipRef={skipRef} />
     case 'public_action':
       return <PublicAction {...event} color={getSpeakerColor(event.speaker, colorMap)} onComplete={onComplete} skipRef={skipRef}
       animateText={animateText} runthroughId={runthroughId} onNext={sendNext} onNextLevel={startLevel} nextButtonActive={awaitingNext}/>

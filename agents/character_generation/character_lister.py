@@ -57,11 +57,10 @@ class CharacterLister:
               "Mai (Avatar)", "Fire Lord Ozai", "Suki (Avatar)", 
               "King Bumi",   "Avatar Aang", "Katara", "Sokka", ]
 
-    goats = ['Morty Smith', 'Lady Macbeth', 'Donald Trump', 'Gollum', 'Logan Roy', 'Elle Woods',
-             'Lumpy Space Princess', 'Lemongrab', 'Jake the Dog', 'Pennywise', 'Catherine Earnshaw', "Thomas Wake (The Lighthouse)",
-             'Heathcliffe', 'Professor Quirrell', 'Buffy Summers',
-             'Amy March', 'Jo March', 'Drunk Frat Girl', "Cabbage Merchant (Avatar)", "Benoit Blanc",
-             "Patrick Bateman"
+    goats = ['Morty Smith', 'Lady Macbeth', 'Donald Trump', 'Gollum', 'Logan Roy', 'Professor Quirrell', 'Elle Woods',
+             'Jake the Dog', 'Buffy Summers', 'Lumpy Space Princess', 'Lemongrab', 'Banana Guard',
+             'Catherine Earnshaw', 'Young Heathcliffe',
+             'Amy March', 'Jo March', 'Sorority Party Girl', "Cabbage Merchant (Avatar)"
              ]
     
     ireland = ['Michael D Higgins', 'Michael Healy Rae', 'Danny Healy Rae', 'Michael O Leary', 'Bono',
