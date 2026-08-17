@@ -16,7 +16,7 @@ export default function GameView({
   inputRequest, awaitingNext, phaseRounds, currentRoundIndex,
   submitInputForm, sendNext, startLevel, skipAnimation, exitGame, restartGame, transcribe, onAnimationComplete, skipRef,
   isAnimating, settings, updateSetting, feedMarkers, segmentTitles, widget,
-  privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound, devMode
+  privateConversations, playerNames = [], transcriptionEnabled, sendNextRound, awaitingNextRound, devMode, typingMessage
 }) {
   const { showPrivateThoughts, animateText, showPrivateChats, mobileOutputs, autoExpandThoughts } = settings
   const [theme, toggleTheme] = useTheme()
@@ -288,7 +288,7 @@ export default function GameView({
           )}
           <span className={`start-btn status-${status}`} style={{ cursor: 'default' }}>
             {status === 'connecting' && 'Connecting…'}
-            {status === 'running' && (awaitingNext && !isAnimating ? 'Waiting…' : 'Running…')}
+            {status === 'running' && ((typingMessage && !awaitingNext && !isAnimating) ? typingMessage : (awaitingNext && !isAnimating ? 'Waiting…' : 'Running…'))}
             {status === 'done' && '✓ Done'}
             {status === 'error' && '⚠ Error'}
           </span>

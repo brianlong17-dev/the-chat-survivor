@@ -419,6 +419,20 @@ function RoundSummary({ summary }) {
   )
 }
 
+function SummaryCommentary({ entries }) {
+  const [open, setOpen] = useState(true)
+  return (
+    <div className="msg round-summary">
+      <button className="summary-toggle" onClick={() => setOpen(o => !o)}>
+        {open ? '▼' : '▶'} Private Commentary
+      </button>
+      {open && entries.map((entry, i) => (
+        <p className="summary-text" key={i}><strong>{entry.speaker}:</strong> {entry.message}</p>
+      ))}
+    </div>
+  )
+}
+
 function PrivateThought({ speaker, message, color, autoExpand }) {
   const [open, setOpen] = useState(autoExpand)
   useEffect(() => { setOpen(autoExpand) }, [autoExpand])
@@ -624,6 +638,8 @@ export function Message({ event, colorMap, onComplete, onRoundHeaderComplete, sk
       animateText={animateText} runthroughId={runthroughId} onNext={sendNext} onNextLevel={startLevel} nextButtonActive={awaitingNext}/>
     case 'round_summary':
       return <RoundSummary {...event} />
+    case 'summary_commentary':
+      return <SummaryCommentary {...event} />
     case 'private_thought':
       return <PrivateThought {...event} color={getSpeakerColor(event.speaker, colorMap)} autoExpand={autoExpandThoughts} />
     case 'system_private':

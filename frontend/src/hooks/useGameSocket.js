@@ -29,6 +29,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const [widget, setWidget] = useState(null)
   const [privateConversations, setPrivateConversations] = useState([])
   const [playerNames, setPlayerNames] = useState([])
+  const [typingMessage, setTypingMessage] = useState(null)
 
   const wsRef = useRef(null)
   const lastConnectRef = useRef(null)
@@ -186,6 +187,17 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
       return
     }
     if (evt.type === 'cast') { setPlayerNames(evt.names ?? []); return }
+    if (evt.type === 'is_typing') { setTypingMessage(evt.message || null); return }
+    if (evt.type === 'summary_commentary') {
+      setEvents(prev => {
+        const idx = prev.findIndex(e => e.type === 'summary_commentary' && e.phase_id === evt.phase_id)
+        if (idx === -1) {
+          return [...prev, { type: 'summary_commentary', phase_id: evt.phase_id, entries: [{ speaker: evt.speaker, message: evt.message }] }]
+        }
+        return prev.map((e, i) => i === idx ? { ...e, entries: [...e.entries, { speaker: evt.speaker, message: evt.message }] } : e)
+      })
+      return
+    }
     if (evt.type === 'loading') { setEvents(prev => [...prev, evt]); return }
     if (evt.type === 'loading_done') {
       setEvents(prev => {
@@ -214,6 +226,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     setWidget(null)
     setPrivateConversations([])
     setPlayerNames([])
+    setTypingMessage(null)
     pendingQueue.current = []
     isAnimating.current = false
     setIsAnimatingState(false)
@@ -281,6 +294,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     setWidget(null)
     setPrivateConversations([])
     setPlayerNames([])
+    setTypingMessage(null)
     setInputRequest(null)
     setAwaitingNext(false)
 
@@ -341,7 +355,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
   return {
     status, events, scores, evicted,
     inputRequest, awaitingNext,  awaitingNextRound, phaseRounds, currentRoundIndex, feedMarkers, segmentTitles,
-    widget, privateConversations, playerNames,
+    widget, privateConversations, playerNames, typingMessage,
     startGame, startDemo, startReplay, submitInputForm, sendNext, sendNextRound, skipAnimation, exitGame, restartGame, transcribe,
     onAnimationComplete, skipRef, isAnimating: isAnimatingState,
   }
