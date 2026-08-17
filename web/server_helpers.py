@@ -70,7 +70,7 @@ async def _notify_game_start(ntfy_url, msg):
         pass
 
 
-def log_game_start(is_game, id, player_names, human_name, ip_address, token_budget, game_id):
+def log_game_start(is_game, id, player_names, human_name, ip_address, token_budget, game_id, loop):
     event = "game_start" if is_game else "demo_start"
     _get_game_logger().info(json.dumps({
         "event": event,
@@ -88,7 +88,7 @@ def log_game_start(is_game, id, player_names, human_name, ip_address, token_budg
         label = "Game" if is_game else "Demo"
         name_label = human_name if human_name else "Viewer"
         msg = f"{ip_address} - {label} started ({id})— {name_label} playing with {', '.join(player_names)}"
-        asyncio.create_task(_notify_game_start(ntfy_url, msg))
+        asyncio.run_coroutine_threadsafe(_notify_game_start(ntfy_url, msg), loop)
 
 
 def _clean_form_values(values):
