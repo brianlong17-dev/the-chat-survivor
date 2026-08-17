@@ -21,14 +21,19 @@ class DiscussionRound(DiscussionBaseRound):
         
         
     
+    def _tutorial_message(self, message, loop, hold=True):
+        if not message or not self.human_player or loop.cut_human_turn:
+            return
+        self.game_board.game_sink.output_tutorial_message(
+            message.format(opponent_name=self.non_human_agents[0].name),
+            hold=hold,
+        )
+
     def run_round(self):
         settings = self.cfg.get_discussion_settings()
-        if self.cfg.tutorial_mode:
-            self.game_board.game_sink.output_tutorial_message(
-                "This is a discussion round. Here you can chat and strategise. In larger games, discussion rounds can be used "
-                "to build alliances and secure your place within the group. "
-         )
         for loop in settings.loops:
+            self._tutorial_message(loop.loop_start_tutorial_message, loop)
+
             if loop.host_message:
                 self._host_broadcast(loop.host_message)
             for player in self.simulationEngine.agents:
@@ -37,11 +42,8 @@ class DiscussionRound(DiscussionBaseRound):
 
                 formatted_thought_prompt = loop.formatted_additional_thought_prompt(self.format_list(self._opponent_names(player)))
                 
-                if player.is_human() and loop.human_turn_tutorial_message:
-                    self.game_board.game_sink.output_tutorial_message(
-                        loop.human_turn_tutorial_message.format(opponent_name=self.non_human_agents[0].name),
-                        hold=False,
-                    )
+                if player.is_human():
+                    self._tutorial_message(loop.human_turn_tutorial_message, loop, hold=False)
                 self.turn_manager.take_turn(
                     player,
                     loop.turn_prompt,

@@ -10,6 +10,7 @@ class DiscussionLoop:
     host_message: Optional[str] = None
     additional_thought_prompt: Optional[str] = None
     public_response_prompt: Optional[str] = None
+    loop_start_tutorial_message: Optional[str] = None
     human_turn_tutorial_message: Optional[str] = None
     human_input_description: Optional[HumanInputDescription] = None
     cut_human_turn: bool = False

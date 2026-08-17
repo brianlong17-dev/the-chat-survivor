@@ -56,6 +56,10 @@ class GameDesignQuickStart(GameDesign):
                     turn_prompt="Say hello! If you don't know them, introduce yourself- if you already know them, you can greet them. ",
                     host_message ="Welcome to our players! Why doesn't everyone introduce themselves? Or have you two already met? ",
                     additional_thought_prompt="Do you recognise the other player - {opponent_names} - do you already know them?",
+                    loop_start_tutorial_message=(
+                        "This is a discussion round. Here you can chat and strategise. In larger games, discussion rounds can be used "
+                        "to build alliances and secure your place within the group. "
+                    ),
                     human_input_description=HumanInputDescription(
                         titles={"public_response": "Introduce yourself"},
                         placeholders={"public_response": "say hello"},
@@ -64,7 +68,7 @@ class GameDesignQuickStart(GameDesign):
                 ),
                 DiscussionLoop(
                     turn_prompt="Reply and continue the conversation. DO NOT REPEAT ANYTHING FROM YOUR PREVIOUS TURN. ",
-                    human_turn_tutorial_message="This game is all about manipulation and influence. The upcoming round is Rock, Paper, Scissors... can you use your next turn to influence {opponent_name}'s decision? "
+                    loop_start_tutorial_message="This game is all about manipulation and influence. The upcoming round is Rock, Paper, Scissors... can you use your next turn to influence {opponent_name}'s decision? "
                 ),
                 DiscussionLoop(
                     turn_prompt="Reply and continue the conversation. DO NOT REPEAT ANYTHING FROM YOUR PREVIOUS TURN. ",
