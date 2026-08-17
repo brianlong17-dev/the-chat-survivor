@@ -12,6 +12,13 @@ function isAnimatableEvent(evt, animateText) {
   return evt.animate_as_player === true || evt.speaker === 'HOST'
 }
 
+function mergeCommentary(events, evt) {
+  const entry = { speaker: evt.speaker, message: evt.message }
+  const idx = events.findIndex(e => e.type === 'summary_commentary' && e.phase_id === evt.phase_id)
+  if (idx === -1) return [...events, { type: 'summary_commentary', phase_id: evt.phase_id, entries: [entry] }]
+  return events.map((e, i) => i === idx ? { ...e, entries: [...e.entries, entry] } : e)
+}
+
 export function useGameSocket(autoRun, animateText, mobileOutputs) {
   const [status, setStatus] = useState('idle')
   const [events, setEvents] = useState([])
@@ -115,6 +122,7 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
       if (evt.type === 'phase_rounds') { setPhaseRounds(evt.rounds); setCurrentRoundIndex(0); continue }
       if (evt.type === 'phase_round_index') { setCurrentRoundIndex(evt.index); setFeedMarkers([]); setSegmentTitles([]); setWidget(null); continue }
       if (evt.type === 'set_segments') { setSegmentTitles(evt.titles); continue }
+      if (evt.type === 'summary_commentary') { setEvents(prev => mergeCommentary(prev, evt)); continue }
       if (evt.type === 'feed_marker') {
         setFeedMarkers(prev => [...prev, evt.label])
         setEvents(prev => [...prev, evt])
@@ -188,16 +196,6 @@ export function useGameSocket(autoRun, animateText, mobileOutputs) {
     }
     if (evt.type === 'cast') { setPlayerNames(evt.names ?? []); return }
     if (evt.type === 'is_typing') { setTypingMessage(evt.message || null); return }
-    if (evt.type === 'summary_commentary') {
-      setEvents(prev => {
-        const idx = prev.findIndex(e => e.type === 'summary_commentary' && e.phase_id === evt.phase_id)
-        if (idx === -1) {
-          return [...prev, { type: 'summary_commentary', phase_id: evt.phase_id, entries: [{ speaker: evt.speaker, message: evt.message }] }]
-        }
-        return prev.map((e, i) => i === idx ? { ...e, entries: [...e.entries, { speaker: evt.speaker, message: evt.message }] } : e)
-      })
-      return
-    }
     if (evt.type === 'loading') { setEvents(prev => [...prev, evt]); return }
     if (evt.type === 'loading_done') {
       setEvents(prev => {

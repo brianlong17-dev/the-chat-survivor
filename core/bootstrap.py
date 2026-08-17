@@ -52,7 +52,8 @@ def _build_agents(game_design, generator, names, human_player_name, allow_rename
     agents = _clip_agents(game_design, agents)
 
     if generate_agents_in_game:
-        generate_agents_description = GenerateAgentsDescription(names=[a.name for a in agents],
+        generate_agents_description = GenerateAgentsDescription(
+                names=[a.name for a in agents if not a.is_human()],
                 models=agent_models, allow_rename=allow_rename)
     else:
         generate_agents_description = None

@@ -32,6 +32,7 @@ DEPLOY.md
 AWS.md
 ARCHITECTURE_NOTES.md
 tests/test_agents/TEST_PLAN_player.md
+docs/release_notes.md
 
 #frontend stuff
 frontend/node_modules/

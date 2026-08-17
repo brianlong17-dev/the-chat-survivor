@@ -5,7 +5,7 @@ export const SETTINGS_KEY = 'game_settings'
 export const SETTINGS_DEFS = [
   { key: 'showPrivateThoughts', label: 'Show private thoughts', default: true },
   { key: 'autoRun', label: 'Auto-run', default: true },
-  { key: 'animateText', label: 'Animate messages', default: false },
+  { key: 'animateText', label: 'Animate messages', default: true },
   { key: 'autoExpandThoughts', label: 'Auto-expand thoughts', default: false },
   { key: 'showPrivateChats', label: 'Show private conversations', default: true },
   { key: 'mobileOutputs', label: 'Mobile outputs', default: false },

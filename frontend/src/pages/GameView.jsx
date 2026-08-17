@@ -6,7 +6,7 @@ import RoundWidget from '../components/RoundWidget'
 import InputRequest from '../components/InputRequest'
 import SegmentTracker from '../components/SegmentTracker'
 import PrivateChatsPanel from '../components/PrivateChatsPanel'
-import useTheme from '../hooks/useTheme'
+import useTheme, { SHOW_THEME_TOGGLE } from '../hooks/useTheme'
 import { SETTINGS_DEFS, VISIBLE_TOGGLE_KEYS } from '../utils/settings'
 
 const SETTINGS_TOGGLES = SETTINGS_DEFS.filter(t => VISIBLE_TOGGLE_KEYS.has(t.key))
@@ -222,7 +222,7 @@ export default function GameView({
           )}
         </div>
         <div className="header-controls">
-          <button
+          {SHOW_THEME_TOGGLE && <button
             className="header-theme-toggle"
             onClick={toggleTheme}
             title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
@@ -238,7 +238,7 @@ export default function GameView({
                 <path d="M8 1.5 V3 M8 13 V14.5 M1.5 8 H3 M13 8 H14.5 M3.4 3.4 L4.5 4.5 M11.5 11.5 L12.6 12.6 M12.6 3.4 L11.5 4.5 M4.5 11.5 L3.4 12.6" />
               </svg>
             )}
-          </button>
+          </button>}
           <div className="settings-menu" ref={settingsRef}>
             <button className="gear-btn" onClick={() => setSettingsOpen(o => !o)}>⚙</button>
             {settingsOpen && (

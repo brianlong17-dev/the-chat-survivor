@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 
 const THEME_KEY = 'theme'
 
+export const SHOW_THEME_TOGGLE = false
+
 // Applied at module load so the attribute is present before React's first
 // paint — otherwise the bare `:root` (dark) tokens flash in before the effect.
-const initialTheme = localStorage.getItem(THEME_KEY) || 'light'
+const initialTheme = SHOW_THEME_TOGGLE ? (localStorage.getItem(THEME_KEY) || 'dark') : 'dark'
 document.documentElement.setAttribute('data-theme', initialTheme)
 
 // Global theme toggle. Currently only Lobby styles react to `data-theme`

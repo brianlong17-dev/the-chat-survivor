@@ -3774,12 +3774,44 @@
   color: var(--lb-body);
 }
 
+.about-tabs {
+  margin-top: 34px;
+  padding-bottom: 2px;
+}
+
 .about-sections {
   display: flex;
   flex-direction: column;
   gap: 34px;
-  margin-top: 44px;
+  margin-top: 28px;
 }
+
+.about-release {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.about-release-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--lb-ink);
+}
+
+.about-release-list {
+  margin: 0;
+  padding-left: 16px;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--lb-body);
+  text-wrap: pretty;
+}
+
+.about-release-list li::marker { color: var(--lb-accent); }
 
 .about-section {
   display: flex;

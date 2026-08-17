@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import useTheme from '../hooks/useTheme'
+import useTheme, { SHOW_THEME_TOGGLE } from '../hooks/useTheme'
 
 export default function IdleLayout({ view, children }) {
   const navigate = useNavigate()
@@ -14,7 +14,7 @@ export default function IdleLayout({ view, children }) {
             <button className={`nav-btn ${view === 'demos' ? 'active' : ''}`} onClick={() => navigate('/demos')} aria-current={view === 'demos' ? 'page' : undefined}>Demos</button>
             <button className={`nav-btn ${view === 'about' ? 'active' : ''}`} onClick={() => navigate('/about')} aria-current={view === 'about' ? 'page' : undefined}>About</button>
           </div>
-          <button
+          {SHOW_THEME_TOGGLE && <button
             className="main-nav-theme-toggle"
             onClick={toggleTheme}
             title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
@@ -30,7 +30,7 @@ export default function IdleLayout({ view, children }) {
                 <path d="M8 1.5 V3 M8 13 V14.5 M1.5 8 H3 M13 8 H14.5 M3.4 3.4 L4.5 4.5 M11.5 11.5 L12.6 12.6 M12.6 3.4 L11.5 4.5 M4.5 11.5 L3.4 12.6" />
               </svg>
             )}
-          </button>
+          </button>}
         </div>
       </nav>
       {children}

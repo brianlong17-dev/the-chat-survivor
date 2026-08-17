@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileNav from '../components/MobileNav'
+import { RELEASE_NOTES } from '../data/releaseNotes'
 
 const TAGS = ['RUDE', 'FUNNY', 'SPITEFUL', 'KIND', 'LOYAL', 'WELL-MEANING']
 
@@ -80,8 +82,14 @@ const SECTIONS = [
   },
 ]
 
+const TABS = [
+  { id: 'about', label: 'about' },
+  { id: 'releases', label: 'release notes' },
+]
+
 export default function AboutPage() {
   const navigate = useNavigate()
+  const [tab, setTab] = useState('about')
 
   return (
     <div className="about-page">
@@ -95,14 +103,50 @@ export default function AboutPage() {
           </p>
         </header>
 
-        <div className="about-sections">
-          {SECTIONS.map(({ label, body }) => (
-            <section key={label} className="about-section">
-              <h2 className="about-section-label sc-label">{label}</h2>
-              {body}
-            </section>
+        <div className="about-tabs lobby-tabs">
+          {TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              className={`tab-btn ${tab === id ? 'active' : ''}`}
+              onClick={() => setTab(id)}
+            >
+              {label}
+            </button>
           ))}
         </div>
+
+        {tab === 'about' ? (
+          <div className="about-sections">
+            {SECTIONS.map(({ label, body }) => (
+              <section key={label} className="about-section">
+                <h2 className="about-section-label sc-label">{label}</h2>
+                {body}
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="about-sections">
+            {RELEASE_NOTES.map(({ id, date, intro, sections }) => (
+              <div key={id} className="about-release">
+                <section className="about-section">
+                  <h2 className="about-section-label sc-label">{date}</h2>
+                  <p className="about-prose">{intro}</p>
+                </section>
+                {sections.map(({ title, blurb, items }) => (
+                  <section key={title} className="about-section">
+                    <div className="about-release-title">{title}</div>
+                    {blurb && <p className="about-prose">{blurb}</p>}
+                    {items.length > 0 && (
+                      <ul className="about-release-list">
+                        {items.map(item => <li key={item}>{item}</li>)}
+                      </ul>
+                    )}
+                  </section>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="about-footer">
           <div className="about-links">
