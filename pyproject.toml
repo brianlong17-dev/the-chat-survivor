@@ -27,6 +27,9 @@ dependencies = [
 dev = [
     "pytest>=9.0.2",
 ]
+game-analysis = [
+    "matplotlib>=3.11.1",
+]
 [tool.pytest.ini_options]
 pythonpath = [
   "."
